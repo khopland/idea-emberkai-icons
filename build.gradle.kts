@@ -1,15 +1,15 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    java
+    kotlin("jvm") version "2.4.21"
     id("org.jetbrains.intellij.platform") version "2.16.0"
 }
 
 group = "com.github.khopland.symbols"
 version = providers.gradleProperty("pluginVersion").get()
 
-java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+kotlin {
+    jvmToolchain(21)
 }
 
 repositories {
