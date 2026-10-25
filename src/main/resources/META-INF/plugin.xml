@@ -1,9 +1,10 @@
 <idea-plugin>
     <id>com.github.khopland.symbols</id>
-    <name>Symbols Icons (Native JVM)</name>
+    <name>Emberkai Icons</name>
     <vendor url="https://github.com/khopland/idea-symbols">khopland</vendor>
     <description><![CDATA[
-        <p>Symbols file and folder icons, with native IntelliJ icons for Java and Kotlin.</p>
+        <p>Emberkai Icons brings the Symbols file and folder icon set to JetBrains IDEs,
+        as a companion to the Emberkai theme.</p>
         <p>Java and Kotlin files retain their type icons and modifier badges.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>

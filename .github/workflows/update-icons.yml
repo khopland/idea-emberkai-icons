@@ -1,0 +1,45 @@
+name: Update icons
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: Upstream branch, tag, or commit
+        default: main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    name: Fetch icons and build plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Update bundled icons
+        env:
+          UPSTREAM_REF: ${{ inputs.upstream_ref }}
+        run: ./scripts/update-icons.sh --ref "$UPSTREAM_REF"
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Test, verify structure, and build
+        run: ./gradlew --no-daemon test verifyPluginStructure buildPlugin
+      - name: Upload updated sources
+        uses: actions/upload-artifact@v7
+        with:
+          name: vscode-symbols-update
+          path: |
+            src/main/resources/symbols/
+            licenses/vscode-symbols-LICENSE.txt
+            NOTICE
+          if-no-files-found: error
+      - name: Upload installable plugin
+        uses: actions/upload-artifact@v7
+        with:
+          name: emberkai-icons
+          path: build/distributions/*.zip
+          if-no-files-found: error

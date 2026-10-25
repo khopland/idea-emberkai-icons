@@ -1,1 +1,1 @@
-rootProject.name = "Symbols"
+rootProject.name = "emberkai-icons"

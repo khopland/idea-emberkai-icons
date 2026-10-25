@@ -4,6 +4,7 @@ import com.intellij.ide.IconProvider;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiUtilCore;
+import org.jspecify.annotations.NonNull;
 
 import javax.swing.Icon;
 import java.util.Locale;
@@ -16,7 +17,7 @@ public final class SymbolsIconProvider extends IconProvider {
             "symbols.icons", Locale.ROOT, SymbolsIconProvider.class.getClassLoader());
 
     @Override
-    public Icon getIcon(PsiElement element, int flags) {
+    public Icon getIcon(@NonNull PsiElement element, int flags) {
         var file = PsiUtilCore.getVirtualFile(element);
         if (file == null) return null;
 
