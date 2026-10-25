@@ -34,6 +34,7 @@ jobs:
           name: vscode-symbols-update
           path: |
             src/main/resources/symbols/
+            src/main/resources/emberkai/
             licenses/vscode-symbols-LICENSE.txt
             NOTICE
           if-no-files-found: error

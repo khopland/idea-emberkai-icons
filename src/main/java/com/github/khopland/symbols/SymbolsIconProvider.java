@@ -1,51 +1,32 @@
 package com.github.khopland.symbols;
 
+import com.intellij.ide.FileIconProvider;
 import com.intellij.ide.IconProvider;
-import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFileSystemItem;
 import com.intellij.psi.util.PsiUtilCore;
 import org.jspecify.annotations.NonNull;
 
 import javax.swing.Icon;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.Set;
 
-public final class SymbolsIconProvider extends IconProvider {
-    private static final Set<String> NATIVE_EXTENSIONS = Set.of("java", "class", "kt", "kts");
-    private static final ResourceBundle ICONS = ResourceBundle.getBundle(
-            "symbols.icons", Locale.ROOT, SymbolsIconProvider.class.getClassLoader());
+/** IntelliJ entry points; matching and tool-specific rules live in focused helpers. */
+public final class SymbolsIconProvider extends IconProvider implements FileIconProvider, DumbAware {
+    private final IconResolver resolver = new IconResolver();
 
     @Override
     public Icon getIcon(@NonNull PsiElement element, int flags) {
         var file = PsiUtilCore.getVirtualFile(element);
         if (file == null) return null;
-
-        String name = file.getName().toLowerCase(Locale.ROOT);
-        if (file.isDirectory()) {
-            Icon icon = icon("folder." + name);
-            return icon != null ? icon : icon("folder");
-        }
-
-        // Defer to the IDE so Java/Kotlin type icons and modifier badges survive.
-        String extension = file.getExtension();
-        if (extension != null && NATIVE_EXTENSIONS.contains(extension.toLowerCase(Locale.ROOT))) {
-            return null;
-        }
-
-        Icon icon = icon("file." + name);
-        while (icon == null) {
-            icon = icon("extension." + name);
-            int dot = name.indexOf('.');
-            if (dot < 0) break;
-            name = name.substring(dot + 1);
-        }
-        return icon;
+        // Gradle scripts get file icons; declarations still use IDE type icons.
+        if (!(element instanceof PsiFileSystemItem) && NativeIconPolicy.isSource(file)) return null;
+        return resolver.resolve(file, element.getProject());
     }
 
-    private static Icon icon(String key) {
-        return ICONS.containsKey(key)
-                ? IconLoader.getIcon("/symbols/icons/" + ICONS.getString(key), SymbolsIconProvider.class)
-                : null;
+    @Override
+    public Icon getIcon(@NonNull VirtualFile file, int flags, Project project) {
+        return resolver.resolve(file, project);
     }
 }

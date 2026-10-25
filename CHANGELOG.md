@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+- Moved local mappings, native-icon preferences, and custom artwork into a separate `emberkai/` resource folder.
+- Split icon resolution into focused classes for mappings, native-icon policy, and extensible Helm/Spring context rules.
+- Kept IntelliJ folder icons for IDE metadata, JVM layouts, source/test/resource and library trees, content roots, and exclusions; `.mvn` now uses the Maven feather folder.
+- Added Gradle Kotlin DSL and version-catalog icons, plus Gradle convention-build folders, while keeping native Kotlin declaration icons.
+- Added custom Spring Boot and Helm artwork with build/chart context detection and cached build-file checks.
+- Added an Emberkai plugin logo with light and dark variants, pairing geometric symbols with the theme's ember mark.
+- Added contextual GitHub Actions and metadata icons, Dev Containers, Renovate variants, and missing Vue, PHP, Clojure, and CoffeeScript associations.
+- Added a custom Maven feather for POMs and Maven configuration, and fixed Gradle wrapper and GitLab CI filename variants.
+- Registered virtual-file icons for project views, editor tabs, and indexing, while retaining native Java/Kotlin icons.
+- Refreshed upstream icons and kept custom mappings and artwork separate so updates preserve them.
+
 ## [0.1.0] - 2026-10-25
 
 - Renamed the plugin to Emberkai Icons to complement the Emberkai theme.

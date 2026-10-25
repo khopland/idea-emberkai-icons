@@ -1,10 +1,12 @@
 Emberkai Icons
 https://github.com/khopland/idea-symbols
 
-Icons: vscode-symbols v0.26.0 by Miguel Solorio
+Icons: vscode-symbols by Miguel Solorio (commit 2c95b15b0a8ef95ac62855e3784a6024ee6e5d2e)
 https://github.com/miguelsolorio/vscode-symbols
 Copyright (c) 2020-22 Miguel Solorio
 The original MIT license is included in licenses/vscode-symbols-LICENSE.txt.
+
+Custom Maven, Spring, and Helm artwork is part of Emberkai Icons and covered by the project MIT license.
 
 Originally based on Symbols Icons for JetBrains:
 https://github.com/joansgarcia/jetbrains-symbols

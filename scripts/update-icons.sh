@@ -6,6 +6,7 @@ usage() {
 Usage: update-icons.sh [--ref REF] [--check]
 
 Refresh bundled icons, associations, license, and NOTICE from vscode-symbols.
+Local configuration and artwork in src/main/resources/emberkai/ are preserved.
 Requires Bash 3.2+, Git, jq 1.6+, and standard Unix tools.
 
   --ref REF  Fetch this upstream branch, tag, or commit (default: main).
@@ -138,7 +139,8 @@ awk -v commit="$commit" '
 ' "$root/NOTICE" > "$staged/NOTICE" || fail 'Expected one vscode-symbols attribution in NOTICE.'
 
 target="$root/src/main/resources/symbols"
-if diff -qr "$staged/symbols" "$target" >/dev/null \
+if diff -qr "$staged/symbols/icons" "$target/icons" >/dev/null \
+        && diff -q "$staged/symbols/icons.properties" "$target/icons.properties" >/dev/null \
         && diff -q "$staged/LICENSE" "$root/licenses/vscode-symbols-LICENSE.txt" >/dev/null \
         && diff -q "$staged/NOTICE" "$root/NOTICE" >/dev/null; then
     printf 'Icons are up to date at %s.\n' "$commit"
@@ -153,6 +155,7 @@ fi
 
 # Network, JSON, SVG, and mapping validation have all completed before writes.
 # Replace the icon directory so deleted upstream icons do not linger.
+# Local configuration and artwork live separately in resources/emberkai/.
 rm -rf -- "$target/icons"
 cp -R "$staged/symbols/." "$target/"
 cp "$staged/LICENSE" "$root/licenses/vscode-symbols-LICENSE.txt"
