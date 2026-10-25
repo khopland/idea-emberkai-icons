@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.khopland.symbols</id>
     <name>Symbols Icons (Native JVM)</name>
-    <vendor url="https://github.com/khopland/jetbrains-symbols">khopland</vendor>
+    <vendor url="https://github.com/khopland/idea-symbols">khopland</vendor>
     <description><![CDATA[
         <p>Symbols file and folder icons, with native IntelliJ icons for Java and Kotlin.</p>
         <p>Java and Kotlin files retain their type icons and modifier badges.</p>

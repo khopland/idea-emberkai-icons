@@ -6,7 +6,7 @@ Java sources (`.java`), compiled classes (`.class`), Kotlin sources (`.kt`), and
 
 ## Install
 
-1. Download the ZIP from [Releases](https://github.com/khopland/jetbrains-symbols/releases/latest).
+1. Download the ZIP from [Releases](https://github.com/khopland/idea-symbols/releases/latest).
 2. Disable the original Symbols Icons plugin if installed.
 3. Open **Settings > Plugins > ⚙️ > Install Plugin from Disk...** and select the ZIP.
 4. Restart if prompted.
