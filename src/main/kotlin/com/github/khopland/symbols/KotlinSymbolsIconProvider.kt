@@ -1,5 +1,6 @@
 package com.github.khopland.symbols
 
+import com.intellij.ide.IconProvider
 import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.PsiElement
 import com.intellij.ui.RowIcon
@@ -25,13 +26,27 @@ class KotlinSymbolsIconProvider : KotlinIconProvider() {
 
         if (psiElement is KtEnumEntry) return null
         if (psiElement is KtClassOrObject) {
-            return replaceTypeIcon(super.getIcon(psiElement, flags), typeIcon(psiElement))
+            return springIcon(psiElement, flags)
+                ?: replaceTypeIcon(super.getIcon(psiElement, flags), typeIcon(psiElement))
         }
         if (psiElement is KtFile) return fileIcon(psiElement, flags)
         if (psiElement is KtLightClass) {
             val origin = psiElement.kotlinOrigin
             if (origin !is KtClassOrObject || origin is KtEnumEntry) return null
-            return replaceTypeIcon(super.getIcon(psiElement, flags), typeIcon(origin))
+            return springIcon(psiElement, flags)
+                ?: replaceTypeIcon(super.getIcon(psiElement, flags), typeIcon(origin))
+        }
+        return null
+    }
+
+    /**
+     * This provider must run before the bundled Kotlin provider, so extension order cannot
+     * also put Spring Boot ahead of it. Yield to Spring's icons explicitly instead.
+     */
+    private fun springIcon(element: PsiElement, flags: Int): Icon? {
+        for (provider in IconProvider.EXTENSION_POINT_NAME.extensionList) {
+            if (provider === this || !provider.javaClass.name.startsWith("com.intellij.spring.")) continue
+            provider.getIcon(element, flags)?.let { return it }
         }
         return null
     }

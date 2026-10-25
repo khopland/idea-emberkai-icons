@@ -2,6 +2,7 @@ package com.github.khopland.symbols
 
 import com.intellij.ide.IconProvider
 import com.intellij.openapi.util.IconLoader
+import com.intellij.spring.test.TestSpringIconProvider
 import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.psi.PsiElement
@@ -93,6 +94,17 @@ internal class KotlinSymbolsIconProviderTest : BasePlatformTestCase() {
         for (member: PsiElement in type.declarations) {
             assertNull(provider.getIcon(member, 0))
         }
+    }
+
+    fun testSpringFrameworkIconsTakePrecedence() {
+        val marker = IconManager.getInstance().getPlatformIcon(PlatformIcons.JunitTestMark)
+        IconProvider.EXTENSION_POINT_NAME.point.registerExtension(
+            TestSpringIconProvider(marker),
+            testRootDisposable,
+        )
+        val file = configureSourceFile("class Example")
+        val type = file.declarations.first() as KtClassOrObject
+        assertSame(marker, provider.getIcon(type, 0))
     }
 
     fun testPrivateTypeKeepsVisibilityBadge() {
