@@ -209,7 +209,8 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
     fun testNewArtworkRendersAtIdeSize() {
         for (name in arrayOf(
             "migration", "openapi", "kubernetes", "kustomize", "sdkman", "pre-commit", "just",
-            "mise", "snapshot", "folders/folder-migration", "folders/folder-api", "folders/folder-kubernetes",
+            "mise", "snapshot", "openapi_dark", "folders/folder-migration", "folders/folder-api",
+            "folders/folder-api_dark", "folders/folder-kubernetes",
             "folders/folder-kustomize", "folders/folder-fixtures", "folders/folder-testdata",
             "folders/folder-snapshots",
         )) {
