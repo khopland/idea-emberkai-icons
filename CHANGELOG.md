@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.0] - 2026-10-25
 
 - Expanded icon coverage for CI and GitOps tools, Ansible and infrastructure configuration, Spring Boot and Helm, database migrations, API contracts, Kubernetes/Kustomize, Gradle, and common developer tooling.
 - Added context-aware file and folder detection, including build and chart metadata, Kotlin Multiplatform layouts, IntelliJ roots, and structured YAML/JSON. Cached inspections account for unsaved editor changes, and native icons remain intact for IDE metadata and unsupported roots.
@@ -14,5 +14,6 @@
 - Established the Symbols-based Java/Kotlin icon provider, checked-in SVG assets, and a minimal Gradle build.
 - Added upstream icon, license, and attribution updates with a check mode and manual CI workflow; included original icon notices under the MIT license.
 
-[Unreleased]: https://github.com/khopland/idea-symbols/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/khopland/idea-symbols/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/khopland/idea-symbols/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/khopland/idea-symbols/releases/tag/v0.1.0
