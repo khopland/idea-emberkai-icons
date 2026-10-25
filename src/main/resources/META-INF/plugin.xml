@@ -17,7 +17,6 @@
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
-    <depends optional="true">com.intellij.java</depends>
     <extensions defaultExtensionNs="com.intellij">
         <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
