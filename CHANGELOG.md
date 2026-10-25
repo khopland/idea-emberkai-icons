@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## [0.2.0-native-jvm.1] - 2026-10-25
+
+### Changed
+
+- Preserve native IntelliJ icons for Java sources (`.java`), compiled classes (`.class`), Kotlin sources (`.kt`), and Kotlin scripts (`.kts`), including declarations inside these files.
+- Keep Symbols icons for other files and folders.
+- Give the fork a separate plugin identity and distribute installable ZIPs through GitHub Releases.
+
 ## [0.2.0]
 
 ### Fixed
@@ -37,7 +45,8 @@ For stable releases, please refer to [CHANGELOG.md](https://github.com/joangarci
 - Normalized generated SVG dimensions for JetBrains tree rendering.
 - CI release guards to fail when generated icon assets are out of sync.
 
-[Unreleased]: https://github.com/joangarciaa-dev/jetbrains-symbols/compare/0.2.0...HEAD
+[Unreleased]: https://github.com/khopland/jetbrains-symbols/compare/0.2.0-native-jvm.1...HEAD
+[0.2.0-native-jvm.1]: https://github.com/khopland/jetbrains-symbols/releases/tag/0.2.0-native-jvm.1
 [0.2.0]: https://github.com/joangarciaa-dev/jetbrains-symbols/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/joangarciaa-dev/jetbrains-symbols/compare/0.1.1...0.1.2
 [0.1.1]: https://github.com/joangarciaa-dev/jetbrains-symbols/compare/0.1.0...0.1.1

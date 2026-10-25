@@ -128,6 +128,13 @@ kover {
 }
 
 tasks {
+    processResources {
+        from("_submodules/vscode-symbols/LICENSE") {
+            into("META-INF/licenses")
+            rename { "vscode-symbols-LICENSE.txt" }
+        }
+    }
+
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
     }

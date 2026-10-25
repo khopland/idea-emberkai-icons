@@ -18,6 +18,10 @@ class IconProvider : IconProvider() {
     return when {
       virtualFile?.isDirectory == true -> Icons.FOLDER_TO_ICON[virtualFile.name.lowercase()]
         ?: Icons.folder
+
+      // Let the IDE's language providers supply class/interface/enum icons and
+      // modifier badges, for both files and declarations inside those files.
+      virtualFile?.extension?.lowercase() in NATIVE_JVM_EXTENSIONS -> null
       
       else -> findFileIcon(virtualFile)
     }
@@ -42,5 +46,9 @@ class IconProvider : IconProvider() {
       Icons.EXT_TO_ICON[ext]?.let { return it }
     }
     return null
+  }
+
+  private companion object {
+    val NATIVE_JVM_EXTENSIONS = setOf("java", "class", "kt", "kts")
   }
 }

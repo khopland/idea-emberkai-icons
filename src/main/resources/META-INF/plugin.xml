@@ -1,17 +1,18 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-  <id>com.github.sebastiandotdev.symbols</id>
-  <name>Symbols Icons</name>
+  <id>com.github.khopland.symbols</id>
+  <name>Symbols Icons (Native JVM)</name>
   
   <description><![CDATA[
-        <h2>Symbols for JetBrains</h2>
+        <h2>Symbols Icons (Native JVM)</h2>
         <p>A simple file icon theme for JetBrains IDEs, based on
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>
         by Miguel Solorio.</p>
-        <p>Minimal, clean icons for your project tree.</p>
+        <p>Preserves native Java and Kotlin icons and their class, interface,
+        enum, and modifier information. Other files and folders use Symbols icons.</p>
     ]]></description>
   
-  <vendor url="https://github.com/joansebgarcia">joansebgarcia</vendor>
+  <vendor url="https://github.com/khopland/jetbrains-symbols">khopland</vendor>
   
   <depends>com.intellij.modules.platform</depends>
   <extensions defaultExtensionNs="com.intellij">
