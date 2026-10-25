@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Added matching artwork and scoped detection for database migrations, OpenAPI/Swagger contracts, Kubernetes manifests, and Kustomize folders.
+- Added SDKMAN, pre-commit, just, and mise configuration icons, plus fixtures, test data, and snapshots.
+- Extended source/test/resource/package folder cues to Kotlin Multiplatform layouts and imported root types, retaining generated/excluded root icons.
+- Shared cached inspection across Spring and structured metadata, including unsaved editor changes and bounded YAML/JSON parsing.
 - Moved local mappings, native-icon preferences, and custom artwork into a separate `emberkai/` resource folder.
 - Split icon resolution into focused classes for mappings, native-icon policy, and extensible Helm/Spring context rules.
 - Combined Symbols folder outlines with IntelliJ role cues for module/source-set containers, source/test roots, resources, and packages. Actual root markings take precedence over standard JVM layout fallbacks.

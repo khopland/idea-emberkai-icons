@@ -6,8 +6,8 @@ https://github.com/miguelsolorio/vscode-symbols
 Copyright (c) 2020-22 Miguel Solorio
 The original MIT license is included in licenses/vscode-symbols-LICENSE.txt.
 
-Custom Maven, Spring, Helm, and project-folder artwork is part of Emberkai Icons and covered by the project MIT license.
-Project-folder variants build on the Symbols folder outline.
+Custom artwork in emberkai/icons/ is part of Emberkai Icons and covered by the project MIT license.
+Folder variants and migration artwork build on the Symbols folder outline and database icon.
 
 Originally based on Symbols Icons for JetBrains:
 https://github.com/joansgarcia/jetbrains-symbols

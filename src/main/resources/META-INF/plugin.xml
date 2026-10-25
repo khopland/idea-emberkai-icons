@@ -8,8 +8,10 @@
         <p>Java and Kotlin files retain their type icons and modifier badges.</p>
         <p>Gradle Kotlin build scripts and version catalogs use Gradle icons.
         Spring Boot configuration and Helm charts have context-aware icons.</p>
+        <p>Includes database migrations, OpenAPI contracts, Kubernetes and Kustomize,
+        developer-tool configuration, and test assets.</p>
         <p>Symbols-style project folders retain source/test colors, resource and
-        package markers, and blue module/source-set badges.</p>
+        package markers, and blue module/source-set badges, including Kotlin Multiplatform.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>

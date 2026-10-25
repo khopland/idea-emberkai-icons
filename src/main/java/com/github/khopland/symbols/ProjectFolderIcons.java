@@ -7,9 +7,8 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.SourceFolder;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.jps.model.java.JavaResourceRootProperties;
-import org.jetbrains.jps.model.java.JavaResourceRootType;
 import org.jetbrains.jps.model.java.JavaSourceRootProperties;
-import org.jetbrains.jps.model.java.JavaSourceRootType;
+import org.jetbrains.jps.model.module.JpsModuleSourceRoot;
 
 /** Applies IntelliJ's root and package roles to Symbols-style folder artwork. */
 final class ProjectFolderIcons {
@@ -36,17 +35,28 @@ final class ProjectFolderIcons {
         VirtualFile sourceRoot = index.getSourceRootForFile(directory);
         if (sourceRoot != null) {
             SourceFolder source = sourceFolder(directory, sourceRoot, index);
-            if (source == null || isGenerated(source)) return Role.NATIVE;
-            boolean root = directory.equals(sourceRoot);
-            var type = source.getRootType();
-            if (type.equals(JavaSourceRootType.SOURCE)) return root ? Role.SOURCE : Role.PACKAGE;
-            if (type.equals(JavaSourceRootType.TEST_SOURCE)) return root ? Role.TEST_SOURCE : Role.TEST_PACKAGE;
-            if (type.equals(JavaResourceRootType.RESOURCE)) return root ? Role.RESOURCES : null;
-            if (type.equals(JavaResourceRootType.TEST_RESOURCE)) return root ? Role.TEST_RESOURCES : null;
-            // Other language plugins retain ownership of their own root types.
-            return Role.NATIVE;
+            return source == null ? Role.NATIVE : sourceRole(source.getJpsElement(), directory.equals(sourceRoot));
         }
         return directory.equals(index.getContentRootForFile(directory)) ? Role.CONTENT_ROOT : null;
+    }
+
+    static Role sourceRole(JpsModuleSourceRoot source, boolean root) {
+        // Java and Kotlin's JVM/Multiplatform root types share these public
+        // property contracts, so no Kotlin-plugin dependency is necessary.
+        var properties = source.getProperties();
+        boolean test = source.getRootType().isForTests();
+        if (properties instanceof JavaSourceRootProperties java) {
+            if (java.isForGeneratedSources()) return Role.NATIVE;
+            if (root) return test ? Role.TEST_SOURCE : Role.SOURCE;
+            return test ? Role.TEST_PACKAGE : Role.PACKAGE;
+        }
+        if (properties instanceof JavaResourceRootProperties resources) {
+            if (resources.isForGeneratedSources()) return Role.NATIVE;
+            if (!root) return null;
+            return test ? Role.TEST_RESOURCES : Role.RESOURCES;
+        }
+        // Other language plugins retain ownership of their own root types.
+        return Role.NATIVE;
     }
 
     private static SourceFolder sourceFolder(VirtualFile directory, VirtualFile root, ProjectFileIndex index) {
@@ -60,9 +70,4 @@ final class ProjectFolderIcons {
         return null;
     }
 
-    private static boolean isGenerated(SourceFolder source) {
-        var properties = source.getJpsElement().getProperties();
-        return properties instanceof JavaSourceRootProperties java && java.isForGeneratedSources()
-                || properties instanceof JavaResourceRootProperties resources && resources.isForGeneratedSources();
-    }
 }

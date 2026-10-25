@@ -11,7 +11,9 @@ import java.util.Locale;
 final class IconResolver {
     private final IconMappings mappings = new IconMappings();
     private final ProjectFolderIcons projectFolders = new ProjectFolderIcons();
-    private final List<ContextIconRule> contextRules = List.of(new HelmIconRule(), new SpringBootIconRule());
+    private final SourceSetFolders sourceSets = new SourceSetFolders();
+    private final List<ContextIconRule> contextRules = List.of(new HelmIconRule(), new MigrationIconRule(),
+            new ApiSpecificationIconRule(), new KubernetesIconRule(), new SpringBootIconRule());
 
     Icon resolve(VirtualFile file, Project project) {
         String name = file.getName().toLowerCase(Locale.ROOT);
@@ -23,6 +25,7 @@ final class IconResolver {
 
         ProjectFolderIcons.Role role = projectFolders.role(directory, project);
         if (role == ProjectFolderIcons.Role.NATIVE) return null;
+        if (role == null) role = sourceSets.role(directory);
         if (role != null) return mappings.get(role.iconKey);
 
         Icon icon = mappings.contextual(directory, "folder.", name);

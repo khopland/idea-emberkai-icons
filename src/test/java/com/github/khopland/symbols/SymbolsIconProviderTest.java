@@ -3,13 +3,10 @@ package com.github.khopland.symbols;
 import com.intellij.ide.FileIconProvider;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.openapi.util.Iconable;
 import com.intellij.psi.PsiManager;
 import com.intellij.testFramework.PsiTestUtil;
-import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import org.jetbrains.jps.model.java.JavaResourceRootType;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 
@@ -18,21 +15,7 @@ import java.io.IOException;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public final class SymbolsIconProviderTest extends BasePlatformTestCase {
-    private final SymbolsIconProvider provider = new SymbolsIconProvider();
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        // Model a checkout root. Individual tests mark real source/resource roots
-        // explicitly instead of treating every fixture folder as Java source.
-        ModuleRootModificationUtil.updateModel(getModule(), model -> {
-            for (var entry : model.getContentEntries()) {
-                for (var source : entry.getSourceFolders()) entry.removeSourceFolder(source);
-            }
-        });
-    }
-
+public final class SymbolsIconProviderTest extends IconProviderTestCase {
     public void testExactFileNameTakesPriority() {
         assertFileIcon("tsconfig.json", "files/tsconfig.svg");
     }
@@ -429,67 +412,4 @@ public final class SymbolsIconProviderTest extends BasePlatformTestCase {
         }
     }
 
-    private void assertFileIcon(String name, String path) {
-        var file = myFixture.configureByText(name, "data");
-        assertIcon(path, provider.getIcon(file, 0));
-        assertIcon(path, provider.getIcon(file.getVirtualFile(), 0, getProject()));
-    }
-
-    private void assertPathIcon(String name, String path) {
-        var file = myFixture.addFileToProject(name, "data");
-        assertIcon(path, provider.getIcon(file, 0));
-        assertIcon(path, provider.getIcon(file.getVirtualFile(), 0, getProject()));
-    }
-
-    private void assertCustomPathIcon(String name, String icon) {
-        var file = myFixture.addFileToProject(name, "data");
-        assertResourceIcon("emberkai/icons/" + icon, provider.getIcon(file, 0));
-        assertResourceIcon("emberkai/icons/" + icon, provider.getIcon(file.getVirtualFile(), 0, getProject()));
-    }
-
-    private void assertCustomFolderIcon(String name, String icon) throws IOException {
-        var file = myFixture.getTempDirFixture().findOrCreateDir(name);
-        var directory = PsiManager.getInstance(getProject()).findDirectory(file);
-        assertNotNull(directory);
-        assertResourceIcon("emberkai/icons/" + icon, provider.getIcon(directory, 0));
-        assertResourceIcon("emberkai/icons/" + icon, provider.getIcon(file, 0, getProject()));
-    }
-
-    private void assertFolderIcon(String name, String path) throws IOException {
-        var virtualFile = myFixture.getTempDirFixture().findOrCreateDir(name);
-        var directory = PsiManager.getInstance(getProject()).findDirectory(virtualFile);
-        assertNotNull(directory);
-        assertIcon(path, provider.getIcon(directory, 0));
-        assertIcon(path, provider.getIcon(virtualFile, 0, getProject()));
-    }
-
-    private void assertNativeFolder(String name) throws IOException {
-        var file = myFixture.getTempDirFixture().findOrCreateDir(name);
-        var directory = PsiManager.getInstance(getProject()).findDirectory(file);
-        assertNotNull(directory);
-        for (int flags : new int[]{0, Iconable.ICON_FLAG_READ_STATUS}) {
-            assertNull(name, provider.getIcon(directory, flags));
-            assertNull(name, provider.getIcon(file, flags, getProject()));
-        }
-    }
-
-    private void assertIcon(String path, Icon actual) {
-        assertResourceIcon("symbols/icons/" + path, actual);
-    }
-
-    private void assertResourceIcon(String path, Icon actual) {
-        assertNotNull(actual);
-        assertSame(IconLoader.getIcon("/" + path, SymbolsIconProvider.class), actual);
-    }
-
-    private void assertNativeIcons(String name, String content) {
-        var file = myFixture.configureByText(name, content);
-        var element = file.findElementAt(Math.max(0, content.indexOf("class")));
-        assertNotNull(element);
-        for (int flags : new int[]{0, Iconable.ICON_FLAG_VISIBILITY, Iconable.ICON_FLAG_READ_STATUS}) {
-            assertNull(name, provider.getIcon(file, flags));
-            assertNull(name, provider.getIcon(element, flags));
-            assertNull(name, provider.getIcon(file.getVirtualFile(), flags, getProject()));
-        }
-    }
 }
