@@ -10,6 +10,7 @@ internal class IconResolver {
     private val mappings = IconMappings()
     private val projectFolders = ProjectFolderIcons()
     private val sourceSets = SourceSetFolders()
+    private val liquibase = LiquibaseIconRule()
     private val contextRules = listOf(
         HelmIconRule(), MigrationIconRule(), ApiSpecificationIconRule(),
         KubernetesIconRule(), SpringBootIconRule(),
@@ -40,6 +41,7 @@ internal class IconResolver {
 
     private fun fileIcon(file: VirtualFile, name: String, project: Project?): Icon? {
         if (NativeIconPolicy.usesFileIcon(file, name)) return null
+        liquibase.fileIconKey(file, name, project)?.let { return mappings.get(it) }
 
         var icon = mappings.contextual(file, "file.", name)
         if (icon == null) icon = mappings.get("file.$name")
