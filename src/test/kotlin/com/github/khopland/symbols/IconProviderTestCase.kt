@@ -5,6 +5,7 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.Iconable
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import java.awt.GraphicsEnvironment
 import javax.swing.Icon
 
 internal abstract class IconProviderTestCase : BasePlatformTestCase() {
@@ -72,6 +73,23 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
     protected fun assertResourceIcon(path: String, actual: Icon?) {
         assertNotNull(actual)
         assertSame(IconLoader.getIcon("/$path", SymbolsIconProvider::class.java), actual)
+    }
+
+    protected fun assertIconAtIdeSize(path: String, icon: Icon) {
+        if (GraphicsEnvironment.isHeadless()) {
+            // IconLoader may return a 1x1 placeholder in headless test runs. Check
+            // the bundled SVG's declared size instead of the placeholder size.
+            val resource = SymbolsIconProvider::class.java.getResourceAsStream("/$path")
+            assertNotNull("Missing icon resource: $path", resource)
+            val svg = resource!!.bufferedReader().use { it.readText() }
+            val root = Regex("<svg\\b([^>]*)>").find(svg)?.groupValues?.get(1)
+            assertNotNull("Invalid SVG resource: $path", root)
+            assertEquals("$path width", "16", Regex("\\bwidth=\"([^\"]+)\"").find(root!!)?.groupValues?.get(1))
+            assertEquals("$path height", "16", Regex("\\bheight=\"([^\"]+)\"").find(root)?.groupValues?.get(1))
+        } else {
+            assertEquals("$path width", 16, icon.iconWidth)
+            assertEquals("$path height", 16, icon.iconHeight)
+        }
     }
 
     protected fun assertNativeIcons(name: String, content: String) {

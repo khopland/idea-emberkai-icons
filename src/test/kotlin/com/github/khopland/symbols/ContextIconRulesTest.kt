@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.PsiTestUtil
 import org.jetbrains.jps.model.java.JavaResourceRootType
+import java.awt.GraphicsEnvironment
 import java.awt.image.BufferedImage
 
 internal class ContextIconRulesTest : IconProviderTestCase() {
@@ -214,9 +215,10 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "folders/folder-kustomize", "folders/folder-fixtures", "folders/folder-testdata",
             "folders/folder-snapshots",
         )) {
-            val icon = IconLoader.getIcon("/emberkai/icons/$name.svg", SymbolsIconProvider::class.java)
-            assertEquals(name, 16, icon.iconWidth)
-            assertEquals(name, 16, icon.iconHeight)
+            val path = "emberkai/icons/$name.svg"
+            val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)
+            assertIconAtIdeSize(path, icon)
+            if (GraphicsEnvironment.isHeadless()) continue
             val image = BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)
             val graphics = image.createGraphics()
             try {

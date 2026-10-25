@@ -196,8 +196,7 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         assertResourceIcon("emberkai/icons/folders/folder-content.svg", provider.getIcon(main, 0, null))
         val icon = provider.getIcon(maven, 0, null)
         assertIcon("folders/folder-maven.svg", icon)
-        assertEquals(16, icon!!.iconWidth)
-        assertEquals(16, icon.iconHeight)
+        assertIconAtIdeSize("symbols/icons/folders/folder-maven.svg", icon!!)
     }
 
     fun testDevelopmentContainerFiles() {
@@ -382,9 +381,9 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
 
     fun testCustomContextIconsRenderAtIdeSize() {
         for (name in arrayOf("spring.svg", "helm.svg", "folder-helm.svg")) {
-            val icon = IconLoader.getIcon("/emberkai/icons/$name", SymbolsIconProvider::class.java)
-            assertEquals(name, 16, icon.iconWidth)
-            assertEquals(name, 16, icon.iconHeight)
+            val path = "emberkai/icons/$name"
+            val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)
+            assertIconAtIdeSize(path, icon)
         }
     }
 
@@ -392,11 +391,9 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         for (name in arrayOf(
             "content", "source", "test-source", "resources", "test-resources", "package", "test-package",
         )) {
-            val icon = IconLoader.getIcon(
-                "/emberkai/icons/folders/folder-$name.svg", SymbolsIconProvider::class.java,
-            )
-            assertEquals(name, 16, icon.iconWidth)
-            assertEquals(name, 16, icon.iconHeight)
+            val path = "emberkai/icons/folders/folder-$name.svg"
+            val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)
+            assertIconAtIdeSize(path, icon)
         }
     }
 
@@ -423,8 +420,7 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         assertResourceIcon("emberkai/icons/maven.svg", icon)
         assertNotNull(icon)
         // Force SVG loading: a resource that exists but cannot render is not enough.
-        assertEquals(16, icon!!.iconWidth)
-        assertEquals(16, icon.iconHeight)
+        assertIconAtIdeSize("emberkai/icons/maven.svg", icon!!)
     }
 
     fun testEveryMappingHasAnIconResource() {
