@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Let framework providers (including live test status icons) take priority. -->
+        <iconProvider implementation="com.github.khopland.symbols.JavaSymbolsIconProvider" order="last"/>
+    </extensions>
+</idea-plugin>
