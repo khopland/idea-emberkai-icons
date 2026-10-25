@@ -5,8 +5,7 @@
     <description><![CDATA[
         <p>Emberkai Icons brings the Symbols file and folder icon set to JetBrains IDEs,
         as a companion to the Emberkai theme.</p>
-        <p>Custom Java and Kotlin type icons combine the Symbols style with IntelliJ's
-        modifier badges and a Kotlin corner badge.</p>
+        <p>Java and Kotlin declarations keep their native IntelliJ type icons and badges.</p>
         <p>Gradle Kotlin build scripts and version catalogs use Gradle icons.
         Spring Boot configuration and Helm charts have context-aware icons.</p>
         <p>Includes CI pipelines, Ansible, infrastructure as code, database migrations,
@@ -18,11 +17,7 @@
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
-    <depends optional="true" config-file="emberkai-java.xml">com.intellij.java</depends>
-    <depends optional="true" config-file="emberkai-kotlin.xml">org.jetbrains.kotlin</depends>
-    <extensions defaultExtensionNs="org.jetbrains.kotlin">
-        <supportsKotlinPluginMode supportsK1="false" supportsK2="true"/>
-    </extensions>
+    <depends optional="true">com.intellij.java</depends>
     <extensions defaultExtensionNs="com.intellij">
         <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>

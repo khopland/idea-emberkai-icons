@@ -1,6 +1,0 @@
-<idea-plugin>
-    <extensions defaultExtensionNs="com.intellij">
-        <!-- Must precede the bundled Kotlin provider; it only replaces Kotlin type artwork. -->
-        <iconProvider implementation="com.github.khopland.symbols.KotlinSymbolsIconProvider" order="first"/>
-    </extensions>
-</idea-plugin>

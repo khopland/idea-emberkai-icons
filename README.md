@@ -5,13 +5,11 @@
   <img src="src/main/resources/META-INF/pluginIcon.svg" alt="Emberkai Icons: four colorful symbols including an ember" width="80" height="80">
 </picture>
 
-File and folder icons for JetBrains IDEs, named to complement the Emberkai theme. Built on the Symbols icon set, with custom Java and Kotlin type icons and native IntelliJ badges.
+File and folder icons for JetBrains IDEs, named to complement the Emberkai theme. Built on the Symbols icon set, with native IntelliJ type icons for Java and Kotlin.
 
-Java sources (`.java`) and compiled classes (`.class`) use IntelliJ-style circular icons for classes, interfaces, enums, records, annotations, exceptions, and anonymous classes. Abstract types use broken circles; exceptions use a lightning bolt, and generic Java sources use a circled J. Light and dark variants combine IntelliJ's familiar symbols with the brighter Symbols palette.
+Java and Kotlin declarations, source files, and compiled Java classes keep their native IntelliJ icons and modifier badges. Gradle Kotlin build scripts (`*.gradle.kts`) use Gradle icons; other files and folders use Symbols icons.
 
-Kotlin types use the same circle family with a purple Kotlin corner badge. Classes, abstract classes, interfaces, enum classes, annotation classes, objects, and Kotlin scripts get distinct artwork; data classes use the ordinary class icon. Kotlin still supplies visibility, expect, and other modifier badges. Multi-declaration files, enum entries, and members keep their native icons, and Gradle Kotlin DSL files (`*.gradle.kts`) use the Gradle icon.
-
-IntelliJ still supplies visibility, static/final, runnable/test markers, read status, and registered icon layers. Nested types keep their own icons. Specialized framework providers, including live test status, take priority; methods, fields, type parameters, and package/module descriptors retain their native presentation. Java support loads only when the IDE's Java plugin is available, and Kotlin support loads only when the Kotlin plugin is available. Other files and folders use Symbols icons.
+IntelliJ supplies visibility, static/final, runnable/test markers, read status, and registered icon layers. Nested types keep their own icons. Specialized framework providers, including live test status, take priority; methods, fields, type parameters, and package/module descriptors retain their native presentation. Java source-root integration loads only when the IDE's Java plugin is available; Kotlin's native icons come from the Kotlin plugin. Other files and folders use Symbols icons.
 
 Includes GitHub Actions workflows and repository templates, AI assistant instructions, Azure Pipelines, Bitbucket Pipelines, Dev Containers, Renovate, and Maven icons from Symbols for `pom.xml`, `.pom`, wrapper files, and `.mvn/` configuration. Azure and Bitbucket CI YAML is recognized by its conventional filename; unrelated YAML files keep their usual icons. Azure Pipelines and Bitbucket folders use matching artwork.
 
@@ -47,9 +45,9 @@ Requires Java 21. No icon generator or submodules are needed.
 
 The ZIP is written to `build/distributions/emberkai-icons-<version>.zip`. Run `./gradlew runIde` to try the plugin in a sandbox.
 
-`SymbolsIconProvider` registers the PSI and virtual-file entry points. `IconResolver` defines matching precedence; `IconMappings` loads resources and matches names, extensions, and parent paths. `ProjectFolderIcons` translates IntelliJ root roles into themed folder icons, and `SourceSetFolders` handles layouts before import. `NativeIconPolicy` preserves native file icons and specialized folders. `JavaSymbolsIconProvider` and `KotlinSymbolsIconProvider` supply custom Java and Kotlin type icons while reusing the language plugins' badge and visibility layers. Each tool has a focused `ContextIconRule`; `FileContentCache` shares bounded, modification-aware inspection, and `StructuredFileKind` reads YAML/JSON metadata without constructing tagged objects.
+`SymbolsIconProvider` registers the PSI and virtual-file entry points. `IconResolver` defines matching precedence; `IconMappings` loads resources and matches names, extensions, and parent paths. `ProjectFolderIcons` translates IntelliJ root roles into themed folder icons, and `SourceSetFolders` handles layouts before import. `NativeIconPolicy` preserves native Java/Kotlin icons and specialized folders. Each tool has a focused `ContextIconRule`; `FileContentCache` shares bounded, modification-aware inspection, and `StructuredFileKind` reads YAML/JSON metadata without constructing tagged objects.
 
-Upstream files stay in `src/main/resources/symbols/`. All local configuration and artwork live in `src/main/resources/emberkai/`, except the custom Java and Kotlin SVGs in `src/main/resources/icons/java/` and `src/main/resources/icons/kotlin/`:
+Upstream files stay in `src/main/resources/symbols/`. All local configuration and artwork live in `src/main/resources/emberkai/`:
 
 - `icons.properties` contains additional mappings, using absolute classpath paths such as `/symbols/icons/files/github.svg` or `/emberkai/icons/maven.svg`.
 - `native.properties` lists native file extensions, tool-script exceptions, folder names, and native folder trees.
@@ -74,7 +72,7 @@ Requires Bash 3.2+, Git, jq 1.6+, and standard Unix tools, available on GitHub A
 ./scripts/update-icons.sh --ref 2c95b15b0a8ef95ac62855e3784a6024ee6e5d2e --check
 ```
 
-`--check` writes nothing and exits with status 1 when an update is needed (errors also return a nonzero status). The script works from any directory, requires no credentials, and runs without prompts. It validates the downloaded files before replacing the bundled SVGs and mappings, sizes icons to 16×16 while preserving their view boxes, copies the upstream license, and records the source commit in `NOTICE` and the mapping header. Custom Java and Kotlin icons are preserved. Updating preserves everything under `src/main/resources/emberkai/`, `src/main/resources/icons/java/`, and `src/main/resources/icons/kotlin/`, but replaces local edits to the generated files under `symbols/`; review and commit the resulting diff, then run the build checks above.
+`--check` writes nothing and exits with status 1 when an update is needed (errors also return a nonzero status). The script works from any directory, requires no credentials, and runs without prompts. It validates the downloaded files before replacing the bundled SVGs and mappings, sizes icons to 16×16 while preserving their view boxes, copies the upstream license, and records the source commit in `NOTICE` and the mapping header. Updating preserves everything under `src/main/resources/emberkai/`, but replaces local edits to the generated files under `symbols/`; review and commit the resulting diff, then run the build checks above.
 
 For CI, run the same command before the Gradle build. The manual **Update icons** GitHub Actions workflow accepts an upstream ref, runs the updater and build checks, and uploads the refreshed sources and plugin ZIP as artifacts. Download the sources into the repository root to review and commit them.
 
