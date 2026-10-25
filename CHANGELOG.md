@@ -4,7 +4,8 @@
 
 - Moved local mappings, native-icon preferences, and custom artwork into a separate `emberkai/` resource folder.
 - Split icon resolution into focused classes for mappings, native-icon policy, and extensible Helm/Spring context rules.
-- Kept IntelliJ folder icons for IDE metadata, JVM layouts, source/test/resource and library trees, content roots, and exclusions; `.mvn` now uses the Maven feather folder.
+- Combined Symbols folder outlines with IntelliJ role cues for module/source-set containers, source/test roots, resources, and packages. Actual root markings take precedence over standard JVM layout fallbacks.
+- Preserved native icons for IDE metadata, libraries, exclusions, generated roots, and unsupported language roots; `.mvn` uses the Maven feather folder.
 - Added Gradle Kotlin DSL and version-catalog icons, plus Gradle convention-build folders, while keeping native Kotlin declaration icons.
 - Added custom Spring Boot and Helm artwork with build/chart context detection and cached build-file checks.
 - Added an Emberkai plugin logo with light and dark variants, pairing geometric symbols with the theme's ember mark.

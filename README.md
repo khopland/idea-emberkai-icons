@@ -11,7 +11,7 @@ Java sources (`.java`), compiled classes (`.class`), Kotlin sources (`.kt`), and
 
 Includes GitHub Actions workflows and metadata, Dev Containers, Renovate, and a custom Maven feather for `pom.xml` and Maven wrapper files. Workflow YAML is recognized inside `.github/workflows/`; unrelated YAML files keep their usual icons.
 
-Folder icons combine IntelliJ's project semantics with Symbols artwork. `.idea/`, `src/`, `main/`, `test/`, `java/`, `kotlin/`, `resources/`, and generated-source folders use the IDE's icons. IntelliJ also controls actual source, test, resource, library, content-root, and excluded trees, including package icons and generated-root badges. `.mvn/` uses the Maven feather folder; other tool folders such as `.github/`, `.devcontainer/`, and Gradle folders use Symbols icons outside native project trees. Root markings from project settings take precedence over filename rules.
+Folder icons use the Symbols shape with IntelliJ-style role cues: blue corner squares for source-set/module containers, blue source folders, green test-source folders, yellow resource lines, and package cubes. Java and Kotlin roots share the same source-folder style. IntelliJ's root model selects the role, including for custom directory names; standard `src/main/` and `src/test/` layouts also work before import. Actual root markings take precedence over layout guesses. `.idea/`, library, excluded, generated, and unsupported language roots retain their specialized native icons. `.mvn/` uses the Maven feather folder, and other tool folders keep their Symbols artwork.
 
 - Gradle icons cover Kotlin DSL scripts, `*.versions.toml` catalogs, and the `buildSrc/` and `build-logic/` folders. Plain `build.kts` remains an ordinary Kotlin script.
 - Spring icons identify `application.yml`, `application.yaml`, `application.properties`, and profile variants when an ancestor Maven/Gradle build file or `gradle/*.versions.toml` declares `org.springframework.boot`. Small build files are checked using cached contents and modification stamps, including open editor changes; no dependency resolution or build commands are run.
@@ -34,7 +34,7 @@ Requires Java 21. No icon generator or submodules are needed.
 
 The ZIP is written to `build/distributions/emberkai-icons-<version>.zip`. Run `./gradlew runIde` to try the plugin in a sandbox.
 
-`SymbolsIconProvider` registers the PSI and virtual-file entry points. `IconResolver` defines matching precedence; `IconMappings` loads resources and matches names, extensions, and parent paths. `NativeIconPolicy` preserves IntelliJ icons, while `HelmIconRule` and `SpringBootIconRule` handle their own context detection.
+`SymbolsIconProvider` registers the PSI and virtual-file entry points. `IconResolver` defines matching precedence; `IconMappings` loads resources and matches names, extensions, and parent paths. `ProjectFolderIcons` translates IntelliJ root roles into themed folder icons. `NativeIconPolicy` preserves native file icons and specialized folders, while `HelmIconRule` and `SpringBootIconRule` handle their own context detection.
 
 Upstream files stay in `src/main/resources/symbols/`. All local configuration and artwork live in `src/main/resources/emberkai/`:
 
@@ -42,7 +42,7 @@ Upstream files stay in `src/main/resources/symbols/`. All local configuration an
 - `native.properties` lists native file extensions, tool-script exceptions, folder names, and native folder trees.
 - `icons/` contains custom SVG artwork.
 
-Local mappings take precedence over upstream mappings. A key such as `extension..github/workflows/yml` matches YAML files directly inside `.github/workflows/`, wherever the checkout is located. For a given filename or extension, the longest matching parent suffix wins. IntelliJ's source-root and native-type policies take precedence over custom artwork.
+Local mappings take precedence over upstream mappings. A key such as `extension..github/workflows/yml` matches YAML files directly inside `.github/workflows/`, wherever the checkout is located. For a given filename or extension, the longest matching parent suffix wins. `folder.role.*` keys choose artwork for IntelliJ root/package roles. Project root roles and native-type policies take precedence over generic filename rules.
 
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. Add ordinary filename or extension mappings directly to the configuration without changing Java code.
 
@@ -67,4 +67,4 @@ For CI, run the same command before the Gradle build. The manual **Update icons*
 
 ## Credits and license
 
-MIT licensed. Original icons are from [vscode-symbols](https://github.com/miguelsolorio/vscode-symbols) by Miguel Solorio; their original MIT notice is in [licenses](licenses/vscode-symbols-LICENSE.txt). Custom Maven, Spring, and Helm artwork is part of Emberkai Icons and covered by the project MIT license. This project started from [Symbols Icons](https://github.com/joansgarcia/jetbrains-symbols).
+MIT licensed. Original icons are from [vscode-symbols](https://github.com/miguelsolorio/vscode-symbols) by Miguel Solorio; their original MIT notice is in [licenses](licenses/vscode-symbols-LICENSE.txt). Custom Maven, Spring, Helm, and project-folder artwork is part of Emberkai Icons and covered by the project MIT license. Project-folder variants build on the Symbols folder outline. This project started from [Symbols Icons](https://github.com/joansgarcia/jetbrains-symbols).

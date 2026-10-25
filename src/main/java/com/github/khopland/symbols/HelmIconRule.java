@@ -17,16 +17,16 @@ final class HelmIconRule implements ContextIconRule {
         if (name.equals("chart.yaml")) return "context.helm";
         if (!isMetadata(name) && !isTemplate(name)) return null;
 
-        String relative = file.getName();
+        StringBuilder relative = new StringBuilder(file.getName());
         for (VirtualFile dir = file.getParent(); dir != null; dir = dir.getParent()) {
             if (hasChart(dir)) {
-                relative = relative.toLowerCase(Locale.ROOT);
-                boolean metadata = relative.equals(name) && isMetadata(name);
-                boolean template = relative.startsWith("templates/") && isTemplate(name);
-                boolean crd = relative.startsWith("crds/") && isYaml(name);
+                relative = new StringBuilder(relative.toString().toLowerCase(Locale.ROOT));
+                boolean metadata = relative.toString().equals(name) && isMetadata(name);
+                boolean template = relative.toString().startsWith("templates/") && isTemplate(name);
+                boolean crd = relative.toString().startsWith("crds/") && isYaml(name);
                 return metadata || template || crd ? "context.helm" : null;
             }
-            relative = dir.getName() + "/" + relative;
+            relative.insert(0, dir.getName() + "/");
             if (project != null && dir.getPath().equals(project.getBasePath())) break;
         }
         return null;

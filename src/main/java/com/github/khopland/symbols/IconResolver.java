@@ -10,6 +10,7 @@ import java.util.Locale;
 /** Defines icon precedence; add new tool detectors to contextRules in priority order. */
 final class IconResolver {
     private final IconMappings mappings = new IconMappings();
+    private final ProjectFolderIcons projectFolders = new ProjectFolderIcons();
     private final List<ContextIconRule> contextRules = List.of(new HelmIconRule(), new SpringBootIconRule());
 
     Icon resolve(VirtualFile file, Project project) {
@@ -19,6 +20,10 @@ final class IconResolver {
 
     private Icon folderIcon(VirtualFile directory, String name, Project project) {
         if (NativeIconPolicy.usesFolderIcon(directory, name, project)) return null;
+
+        ProjectFolderIcons.Role role = projectFolders.role(directory, project);
+        if (role == ProjectFolderIcons.Role.NATIVE) return null;
+        if (role != null) return mappings.get(role.iconKey);
 
         Icon icon = mappings.contextual(directory, "folder.", name);
         for (ContextIconRule rule : contextRules) {

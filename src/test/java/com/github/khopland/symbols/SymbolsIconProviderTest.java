@@ -116,13 +116,24 @@ public final class SymbolsIconProviderTest extends BasePlatformTestCase {
         assertFolderIcon(".mvn", "folders/folder-maven.svg");
     }
 
-    public void testIdeAndJvmLayoutFoldersUseNativeIcons() throws IOException {
+    public void testIdeAndGeneratedFoldersKeepNativeIcons() throws IOException {
         for (String path : new String[]{".idea", ".idea/runConfigurations", ".idea/inspectionProfiles",
-                "src", "src/main", "src/test", "src/main/java", "src/main/kotlin",
-                "src/main/resources", "src/test/resources", "tests", "generated",
-                "generated-sources", "generated-test-sources"}) {
+                "generated", "generated-sources", "generated-test-sources"}) {
             assertNativeFolder(path);
         }
+    }
+
+    public void testConventionalJvmLayoutUsesThemedRolesBeforeImport() throws IOException {
+        assertFolderIcon("src", "folders/folder.svg");
+        assertCustomFolderIcon("src/main", "folders/folder-content.svg");
+        assertCustomFolderIcon("src/test", "folders/folder-content.svg");
+        assertCustomFolderIcon("src/main/java", "folders/folder-source.svg");
+        assertCustomFolderIcon("src/main/kotlin", "folders/folder-source.svg");
+        assertCustomFolderIcon("src/test/java", "folders/folder-test-source.svg");
+        assertCustomFolderIcon("src/test/kotlin", "folders/folder-test-source.svg");
+        assertCustomFolderIcon("src/main/resources", "folders/folder-resources.svg");
+        assertCustomFolderIcon("src/test/resources", "folders/folder-test-resources.svg");
+        assertFolderIcon("other/main", "folders/folder.svg");
     }
 
     public void testSourceAndPackageFoldersFollowRootModelChanges() throws IOException {
@@ -132,26 +143,59 @@ public final class SymbolsIconProviderTest extends BasePlatformTestCase {
         assertIcon("folders/folder-assets.svg", provider.getIcon(directory, 0));
         PsiTestUtil.addSourceRoot(getModule(), source);
         assertEquals(source, ProjectFileIndex.getInstance(getProject()).getSourceRootForFile(source));
-        assertNativeFolder("module/assets");
-        assertNativeFolder("module/assets/com/example");
-        // Even names with Symbols artwork must defer inside actual source trees.
-        assertNativeFolder("module/assets/config");
+        assertCustomFolderIcon("module/assets", "folders/folder-source.svg");
+        assertCustomFolderIcon("module/assets/com/example", "folders/folder-package.svg");
+        // Actual package roles take precedence over generic folder-name mappings.
+        assertCustomFolderIcon("module/assets/config", "folders/folder-package.svg");
         PsiTestUtil.removeSourceRoot(getModule(), source);
         assertIcon("folders/folder-assets.svg", provider.getIcon(directory, 0));
     }
 
-    public void testTestAndResourceRootsUseNativeIcons() throws IOException {
+    public void testTestAndResourceRootsUseThemedRoles() throws IOException {
         var testRoot = myFixture.getTempDirFixture().findOrCreateDir("module/test-code");
         var resources = myFixture.getTempDirFixture().findOrCreateDir("module/data-files");
         var testResources = myFixture.getTempDirFixture().findOrCreateDir("module/test-data-files");
         PsiTestUtil.addSourceRoot(getModule(), testRoot, JavaSourceRootType.TEST_SOURCE);
         PsiTestUtil.addSourceRoot(getModule(), resources, JavaResourceRootType.RESOURCE);
         PsiTestUtil.addSourceRoot(getModule(), testResources, JavaResourceRootType.TEST_RESOURCE);
-        assertNativeFolder("module/test-code");
-        assertNativeFolder("module/test-code/com/example");
-        assertNativeFolder("module/data-files");
-        assertNativeFolder("module/data-files/assets");
-        assertNativeFolder("module/test-data-files");
+        assertCustomFolderIcon("module/test-code", "folders/folder-test-source.svg");
+        assertCustomFolderIcon("module/test-code/com/example", "folders/folder-test-package.svg");
+        assertCustomFolderIcon("module/data-files", "folders/folder-resources.svg");
+        assertFolderIcon("module/data-files/assets", "folders/folder-assets.svg");
+        assertCustomFolderIcon("module/test-data-files", "folders/folder-test-resources.svg");
+    }
+
+    public void testRootModelOverridesConventionalPathColors() throws IOException {
+        var source = myFixture.getTempDirFixture().findOrCreateDir("src/test/java");
+        assertCustomFolderIcon("src/test/java", "folders/folder-test-source.svg");
+        PsiTestUtil.addSourceRoot(getModule(), source, JavaSourceRootType.SOURCE);
+        assertCustomFolderIcon("src/test/java", "folders/folder-source.svg");
+        PsiTestUtil.removeSourceRoot(getModule(), source);
+        PsiTestUtil.addSourceRoot(getModule(), source, JavaSourceRootType.TEST_SOURCE);
+        assertCustomFolderIcon("src/test/java", "folders/folder-test-source.svg");
+        assertCustomFolderIcon("src/test/java/com/example", "folders/folder-test-package.svg");
+    }
+
+    public void testModuleContentRootUsesThemedSquareBadge() throws IOException {
+        var content = myFixture.getTempDirFixture().findOrCreateDir("module-root");
+        PsiTestUtil.addContentRoot(getModule(), content);
+        assertEquals(content, ProjectFileIndex.getInstance(getProject()).getContentRootForFile(content));
+        assertCustomFolderIcon("module-root", "folders/folder-content.svg");
+    }
+
+    public void testGeneratedRootsRetainSpecializedNativeBadges() throws IOException {
+        var source = myFixture.getTempDirFixture().findOrCreateDir("module/codegen-output");
+        var sourceProperties = JavaSourceRootType.SOURCE.createDefaultProperties();
+        sourceProperties.setForGeneratedSources(true);
+        PsiTestUtil.addSourceRoot(getModule(), source, JavaSourceRootType.SOURCE, sourceProperties);
+        assertNativeFolder("module/codegen-output");
+        assertNativeFolder("module/codegen-output/com/example");
+
+        var resources = myFixture.getTempDirFixture().findOrCreateDir("module/resource-output");
+        var resourceProperties = JavaResourceRootType.RESOURCE.createDefaultProperties();
+        resourceProperties.setForGeneratedSources(true);
+        PsiTestUtil.addSourceRoot(getModule(), resources, JavaResourceRootType.RESOURCE, resourceProperties);
+        assertNativeFolder("module/resource-output");
     }
 
     public void testExcludedFoldersUseNativeIcons() throws IOException {
@@ -167,7 +211,7 @@ public final class SymbolsIconProviderTest extends BasePlatformTestCase {
         var main = myFixture.getTempDirFixture().findOrCreateDir("src/main");
         var maven = myFixture.getTempDirFixture().findOrCreateDir(".mvn");
         assertNull(provider.getIcon(idea, 0, null));
-        assertNull(provider.getIcon(main, 0, null));
+        assertResourceIcon("emberkai/icons/folders/folder-content.svg", provider.getIcon(main, 0, null));
         Icon icon = provider.getIcon(maven, 0, null);
         assertIcon("folders/folder-maven.svg", icon);
         assertEquals(16, icon.getIconWidth());
@@ -334,6 +378,15 @@ public final class SymbolsIconProviderTest extends BasePlatformTestCase {
     public void testCustomContextIconsRenderAtIdeSize() {
         for (String name : new String[]{"spring.svg", "helm.svg", "folder-helm.svg"}) {
             Icon icon = IconLoader.getIcon("/emberkai/icons/" + name, SymbolsIconProvider.class);
+            assertEquals(name, 16, icon.getIconWidth());
+            assertEquals(name, 16, icon.getIconHeight());
+        }
+    }
+
+    public void testThemedFolderIconsRenderAtIdeSize() {
+        for (String name : new String[]{"content", "source", "test-source", "resources", "test-resources",
+                "package", "test-package"}) {
+            Icon icon = IconLoader.getIcon("/emberkai/icons/folders/folder-" + name + ".svg", SymbolsIconProvider.class);
             assertEquals(name, 16, icon.getIconWidth());
             assertEquals(name, 16, icon.getIconHeight());
         }

@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/** Keeps IntelliJ's type icons, root markings, package icons, and badges. */
+/** Keeps native type icons and protects folders owned by other IDE features. */
 final class NativeIconPolicy {
     private static final ResourceBundle CONFIG = ResourceBundle.getBundle(
             "emberkai.native", Locale.ROOT, SymbolsIconProvider.class.getClassLoader());
@@ -37,10 +37,9 @@ final class NativeIconPolicy {
         }
         if (project == null || project.isDisposed()) return false;
         if (directory.getPath().equals(project.getBasePath())) return true;
-        // Root-model queries work during indexing and honor changes to root markings.
+        // Source/package roles are themed separately by ProjectFolderIcons.
         ProjectFileIndex index = ProjectFileIndex.getInstance(project);
-        return index.isInSourceContent(directory) || index.isInLibrary(directory)
-                || index.isExcluded(directory) || directory.equals(index.getContentRootForFile(directory));
+        return index.isInLibrary(directory) || index.isExcluded(directory);
     }
 
     private static Set<String> names(String key) {
