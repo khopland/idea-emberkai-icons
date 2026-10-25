@@ -170,6 +170,95 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "chart/templates/service.yaml", "apiVersion: v1\nkind: Service", "emberkai/icons/helm.svg",
         )
         assertContentIcon("chart/templates/openapi.yaml", "openapi: 3.1.0", "emberkai/icons/helm.svg")
+        assertContentIcon(
+            "chart/templates/flux.yaml",
+            "apiVersion: kustomize.toolkit.fluxcd.io/v1\nkind: Kustomization\nmetadata: {}",
+            "emberkai/icons/helm.svg",
+        )
+    }
+
+    fun testCiConfigurationsAndFolders() {
+        assertCustomPathIcon("azure-pipelines.yml", "ci/azurepipelines.svg")
+        assertCustomPathIcon("ci/azure-pipelines-pr.yaml", "ci/azurepipelines.svg")
+        assertCustomPathIcon("bitbucket-pipelines.yaml", "ci/bitbucket.svg")
+        assertPathIcon("pipeline.yml", "files/yaml.svg")
+        assertPathIcon(".circleci/config.yml", "files/yaml.svg")
+        assertPathIcon(".buildkite/pipeline.yaml", "files/yaml.svg")
+        assertPathIcon("config/.drone.yml", "files/yaml.svg")
+        assertPathIcon("nested/config.yaml", "files/yaml.svg")
+
+        val folders = mapOf(
+            ".azure-pipelines" to "folder-azurepipelines", "azure-pipelines" to "folder-azurepipelines",
+            ".bitbucket" to "folder-bitbucket", "bitbucket" to "folder-bitbucket",
+        )
+        for ((name, icon) in folders) {
+            assertCustomFolderIcon("ci/$name", "folders/$icon.svg")
+        }
+        for (name in arrayOf(".circleci", ".buildkite", ".drone", "drone")) {
+            assertFolderIcon("ci/$name", "folders/folder.svg")
+        }
+    }
+
+    fun testAnsibleSubdirectoriesRequireAnAnsibleRoot() {
+        assertFolderIcon("roles", "folders/folder.svg")
+        assertFolderIcon("playbooks", "folders/folder.svg")
+    }
+
+    fun testAnsibleConfigurationsPlaybooksAndFolders() {
+        assertCustomPathIcon("ansible.cfg", "ansible.svg")
+        assertContentIcon(
+            "site.yml", "---\n- hosts: all\n  tasks:\n    - name: ping\n      ping:", "emberkai/icons/ansible.svg",
+        )
+        assertContentIcon(
+            "deploy/deploy.yaml", "- hosts: web\n  roles:\n    - common", "emberkai/icons/ansible.svg",
+        )
+        assertCustomPathIcon("ansible/inventory/hosts.ini", "ansible.svg")
+        assertContentIcon("settings.yaml", "name: example", "symbols/icons/files/yaml.svg")
+
+        assertCustomFolderIcon("ansible", "folders/folder-ansible.svg")
+        for (name in arrayOf("playbooks", "roles", "inventory", "inventories")) {
+            assertCustomFolderIcon("ansible/$name", "folders/folder-ansible.svg")
+        }
+    }
+
+    fun testInfrastructureConfigurationsAndTemplates() {
+        for (name in arrayOf("azure.yaml", "samconfig.toml", "cdk.json", "cdk/cdk.context.json")) {
+            assertCustomPathIcon(name, "infrastructure.svg")
+        }
+        assertContentIcon(
+            "template.yaml",
+            "AWSTemplateFormatVersion: '2010-09-09'\nResources:\n  Bucket:\n    Type: AWS::S3::Bucket",
+            "emberkai/icons/infrastructure.svg",
+        )
+        assertContentIcon(
+            "stack.json", "{\"Resources\":{\"Queue\":{\"Type\":\"AWS::SQS::Queue\"}}}",
+            "emberkai/icons/infrastructure.svg",
+        )
+        assertContentIcon("settings.yaml", "name: example", "symbols/icons/files/yaml.svg")
+    }
+
+    fun testGitOpsResourcesBootstrapFilesAndFolders() {
+        for (kind in arrayOf("Application", "ApplicationSet", "AppProject")) {
+            assertContentIcon(
+                "apps/$kind.yaml", "apiVersion: argoproj.io/v1alpha1\nkind: $kind\nmetadata: {}",
+                "emberkai/icons/gitops/argocd.svg",
+            )
+        }
+        assertCustomPathIcon("argocd/argocd-cm.yaml", "gitops/argocd.svg")
+        assertContentIcon(
+            "source.yaml",
+            "apiVersion: source.toolkit.fluxcd.io/v1\nkind: GitRepository\nmetadata: {}",
+            "emberkai/icons/gitops/flux.svg",
+        )
+        assertCustomPathIcon("flux-system/gotk-components.yaml", "gitops/flux.svg")
+        assertCustomPathIcon("flux-system/gotk-sync.yaml", "gitops/flux.svg")
+        assertPathIcon("gotk-components.yaml", "files/yaml.svg")
+
+        for (name in arrayOf("argocd", "argocd-apps")) {
+            assertCustomFolderIcon("gitops/$name", "folders/folder-argocd.svg")
+        }
+        assertCustomFolderIcon("flux-system", "folders/folder-flux.svg")
+        assertFolderIcon("empty/flux-system", "folders/folder.svg")
     }
 
     fun testDeveloperToolConfigurations() {
@@ -209,9 +298,13 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
 
     fun testNewArtworkRendersAtIdeSize() {
         for (name in arrayOf(
-            "migration", "openapi", "kubernetes", "kustomize", "sdkman", "pre-commit", "just",
-            "mise", "snapshot", "openapi_dark", "folders/folder-migration", "folders/folder-api",
-            "folders/folder-api_dark", "folders/folder-kubernetes",
+            "ansible", "infrastructure", "migration", "openapi", "kubernetes", "kustomize",
+            "ci/azurepipelines", "ci/bitbucket",
+            "gitops/argocd", "gitops/flux",
+            "sdkman", "pre-commit", "just", "mise", "snapshot", "openapi_dark",
+            "folders/folder-ansible", "folders/folder-argocd", "folders/folder-azurepipelines",
+            "folders/folder-bitbucket", "folders/folder-flux", "folders/folder-migration",
+            "folders/folder-api", "folders/folder-api_dark", "folders/folder-kubernetes",
             "folders/folder-kustomize", "folders/folder-fixtures", "folders/folder-testdata",
             "folders/folder-snapshots",
         )) {

@@ -15,7 +15,7 @@ import java.util.regex.Pattern
 
 /** Reads only top-level scalar metadata from YAML/JSON; never constructs tagged objects. */
 internal enum class StructuredFileKind {
-    NONE, OPEN_API, KUBERNETES, KUSTOMIZE;
+    NONE, OPEN_API, KUBERNETES, KUSTOMIZE, FLUX, ARGOCD;
 
     companion object {
         private val CACHE: Key<FileContentCache.Inspection<StructuredFileKind>> =
@@ -24,6 +24,7 @@ internal enum class StructuredFileKind {
         private val OPEN_API_VERSION = Pattern.compile("3\\.\\d+(?:\\.\\d+)?(?:[-+][A-Za-z0-9.-]+)?")
         private val API_VERSION = Pattern.compile("(?:[A-Za-z0-9][A-Za-z0-9.-]*/)?v\\d+(?:(?:alpha|beta)\\d+)?")
         private val KIND = Pattern.compile("[A-Za-z][A-Za-z0-9]*")
+        private val ARGOCD_KINDS = setOf("Application", "ApplicationSet", "AppProject")
 
         fun of(file: VirtualFile): StructuredFileKind {
             val extension = file.extension
@@ -56,6 +57,8 @@ internal enum class StructuredFileKind {
                     if (OPEN_API_VERSION.matcher(openApi).matches() || swagger == "2.0") return OPEN_API
                     val apiVersion = fields["apiVersion"] ?: ""
                     val kind = fields["kind"] ?: ""
+                    if (apiVersion.startsWith("argoproj.io/") && kind in ARGOCD_KINDS) return ARGOCD
+                    if (apiVersion.substringBefore('/').endsWith(".toolkit.fluxcd.io")) return FLUX
                     if (API_VERSION.matcher(apiVersion).matches() && KIND.matcher(kind).matches()) {
                         return if (kind == "Kustomization" && apiVersion.startsWith("kustomize.config.k8s.io/")) {
                             KUSTOMIZE

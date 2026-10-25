@@ -53,7 +53,7 @@ internal class IconMappings {
     fun extension(name: String): Icon? {
         var current = name
         while (true) {
-            val icon = get("extension." + current)
+            val icon = get("extension.$current")
             if (icon != null) return icon
             val dot = current.indexOf('.')
             if (dot < 0) return null

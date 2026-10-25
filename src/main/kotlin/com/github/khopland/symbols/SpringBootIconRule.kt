@@ -34,7 +34,7 @@ internal class SpringBootIconRule : ContextIconRule {
         }
 
     private companion object {
-        val CONFIG_FILE: Pattern = Pattern.compile("application(?:-.+)?\\.(?:yaml|yml|properties)")
+        val CONFIG_FILE: Pattern = Pattern.compile("(?:application|bootstrap)(?:-.+)?\\.(?:yaml|yml|properties)")
         val BUILD_FILES = arrayOf(
             "pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle", "settings.gradle.kts",
         )

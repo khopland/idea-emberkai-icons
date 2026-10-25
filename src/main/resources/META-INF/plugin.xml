@@ -9,7 +9,8 @@
         modifier badges and a Kotlin corner badge.</p>
         <p>Gradle Kotlin build scripts and version catalogs use Gradle icons.
         Spring Boot configuration and Helm charts have context-aware icons.</p>
-        <p>Includes database migrations, OpenAPI contracts, Kubernetes and Kustomize,
+        <p>Includes CI pipelines, Ansible, infrastructure as code, database migrations,
+        OpenAPI contracts, Kubernetes, Kustomize, Flux, and Argo CD,
         developer-tool configuration, and test assets.</p>
         <p>Symbols-style project folders retain source/test colors, resource and
         package markers, and blue module/source-set badges, including Kotlin Multiplatform.</p>

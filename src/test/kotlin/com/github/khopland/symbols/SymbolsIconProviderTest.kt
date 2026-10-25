@@ -397,15 +397,15 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         }
     }
 
-    fun testMavenFilesUseCustomIcon() {
+    fun testMavenFilesUseSymbolsIcon() {
         for (path in arrayOf(
             "pom.xml", "nested/pom.xml", "POM.XML", "mvnw", "mvnw.cmd",
             "artifact.pom", ".mvn/maven.config", ".mvn/jvm.config", ".mvn/extensions.xml",
             ".mvn/wrapper/maven-wrapper.properties",
         )) {
             val file = myFixture.addFileToProject(path, "data")
-            assertResourceIcon("emberkai/icons/maven.svg", provider.getIcon(file, 0))
-            assertResourceIcon("emberkai/icons/maven.svg", provider.getIcon(file.virtualFile, 0, project))
+            assertResourceIcon("symbols/icons/files/maven.svg", provider.getIcon(file, 0))
+            assertResourceIcon("symbols/icons/files/maven.svg", provider.getIcon(file.virtualFile, 0, project))
         }
         assertPathIcon("config/extensions.xml", "files/xml.svg")
     }
@@ -417,10 +417,10 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
             .orElseThrow()
         val file = myFixture.addFileToProject("pom.xml", "<project/>").virtualFile
         val icon = registered.getIcon(file, 0, null)
-        assertResourceIcon("emberkai/icons/maven.svg", icon)
+        assertResourceIcon("symbols/icons/files/maven.svg", icon)
         assertNotNull(icon)
         // Force SVG loading: a resource that exists but cannot render is not enough.
-        assertIconAtIdeSize("emberkai/icons/maven.svg", icon!!)
+        assertIconAtIdeSize("symbols/icons/files/maven.svg", icon!!)
     }
 
     fun testEveryMappingHasAnIconResource() {
