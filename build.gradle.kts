@@ -22,7 +22,11 @@ dependencies {
     testRuntimeOnly("org.opentest4j:opentest4j:1.3.0")
     intellijPlatform {
         intellijIdea(providers.gradleProperty("platformVersion"))
+        bundledPlugin("com.intellij.java")
+        bundledPlugin("org.jetbrains.kotlin")
         testFramework(TestFrameworkType.Platform)
+        testFramework(TestFrameworkType.Plugin.Java)
+        testBundledPlugin("org.jetbrains.kotlin")
     }
 }
 

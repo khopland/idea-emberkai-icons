@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 import java.util.ResourceBundle
 
-/** Keeps native type icons and protects folders owned by other IDE features. */
+/** Keeps native file icons and protects folders owned by other IDE features. */
 internal object NativeIconPolicy {
     private val CONFIG = ResourceBundle.getBundle(
         "emberkai.native", Locale.ROOT, SymbolsIconProvider::class.java.classLoader,
