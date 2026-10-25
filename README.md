@@ -1,53 +1,28 @@
 # Symbols Icons (Native JVM)
 
-![Build](https://github.com/khopland/jetbrains-symbols/actions/workflows/build.yml/badge.svg)
+Symbols file and folder icons for JetBrains IDEs, with native IntelliJ icons for Java and Kotlin.
 
-A fork of [Symbols Icons](https://github.com/joansgarcia/jetbrains-symbols) that keeps IntelliJ's informative Java and Kotlin icons.
+Java sources (`.java`), compiled classes (`.class`), Kotlin sources (`.kt`), and Kotlin scripts (`.kts`) keep the IDE's type icons and modifier badges. Other files and folders use Symbols icons.
 
-<!-- Plugin description -->
-<p>A minimal file and folder icon theme for JetBrains IDEs that preserves native Java and Kotlin icons.</p>
-<p>Java sources (<code>.java</code>), compiled classes (<code>.class</code>), Kotlin sources (<code>.kt</code>), and Kotlin scripts (<code>.kts</code>) use the IDE's language icons, including class/interface/enum distinctions and modifier badges. Other files and folders use Symbols icons.</p>
-<p>Forked from <a href="https://github.com/joansgarcia/jetbrains-symbols">Symbols Icons</a>.</p>
-<p>Based on <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a> by Miguel Solorio.</p>
-<!-- Plugin description end -->
+## Install
 
-## Symbols theme preview
+1. Download the ZIP from [Releases](https://github.com/khopland/jetbrains-symbols/releases/latest).
+2. Disable the original Symbols Icons plugin if installed.
+3. Open **Settings > Plugins > ⚙️ > Install Plugin from Disk...** and select the ZIP.
+4. Restart if prompted.
 
-The upstream preview below shows the general theme. This fork uses native icons for Java and Kotlin files.
+## Build
 
-<p align="center">
-	<img width="1046" height="889" alt="image" src="https://github.com/user-attachments/assets/dff41558-c06d-4f6e-a0e0-a463af9fb924" />
-</p>
+Requires Java 21. No icon generator or submodules are needed.
 
-## Installation
-
-1. Download the plugin ZIP from [the latest release](https://github.com/khopland/jetbrains-symbols/releases/latest).
-2. Disable or uninstall the original **Symbols Icons** plugin if it is installed; both themes would otherwise compete for icons.
-3. In the IDE, open **Settings > Plugins > ⚙️ > Install Plugin from Disk...** and select the ZIP without extracting it.
-4. Restart the IDE if prompted.
-
-The plugin is named **Symbols Icons (Native JVM)** and has its own plugin ID, so Marketplace updates to the original plugin do not replace this fork.
-
-## How native icons are preserved
-
-The icon provider returns `null` for Java and Kotlin files and their declarations, allowing the IDE's own language providers to choose the icon and apply badges. It does not copy or hardcode IntelliJ icons, so they follow the installed IDE version and theme. Native Java/Kotlin icons require the corresponding language support in your IDE.
-
-## Development
-
-```zsh
-deno task build
-./gradlew --no-daemon test
-./gradlew --no-daemon buildPlugin
+```sh
+./gradlew test verifyPluginStructure buildPlugin
 ```
 
-## Release
+The ZIP is written to `build/distributions/`. Run `./gradlew runIde` to try the plugin in a sandbox.
 
-```zsh
-deno task build
-./gradlew --no-daemon test verifyPluginStructure buildPlugin
-```
+The plugin is one Java class. Icon mappings are in `src/main/resources/symbols/icons.properties`; SVGs are in `src/main/resources/symbols/icons/`. Edit these files directly to change icons.
 
-The installable ZIP is written to `build/distributions/`. Publishing a GitHub release also builds, tests, and attaches the ZIP automatically. This fork does not publish to JetBrains Marketplace.
+## Credits and license
 
----
-Based on the [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template).
+MIT licensed. Icons are from [vscode-symbols](https://github.com/miguelsolorio/vscode-symbols) by Miguel Solorio; their original MIT notice is in [licenses](licenses/vscode-symbols-LICENSE.txt). This project started from [Symbols Icons](https://github.com/joansgarcia/jetbrains-symbols).

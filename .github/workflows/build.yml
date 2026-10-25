@@ -18,18 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: recursive
       - uses: actions/setup-java@v5
         with:
           distribution: zulu
           java-version: 21
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.x
       - uses: gradle/actions/setup-gradle@v6
-      - name: Generate icons
-        run: deno task build
       - name: Test, verify structure, and build
         run: ./gradlew --no-daemon test verifyPluginStructure buildPlugin
       - name: Upload installable plugin

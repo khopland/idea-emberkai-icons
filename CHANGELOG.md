@@ -1,8 +1,16 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# symbols Changelog
+# Changelog
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-10-25
+
+- Standalone repository with one Java icon provider and a plain icon mapping file.
+- Removed Deno, generated Kotlin code, the icon submodule, and unused template tooling.
+- Icons are checked in and can be edited directly.
+- Preserved native Java/Kotlin icons and the existing Symbols mappings.
+- Included the project MIT license and the original icon license.
 
 ## [0.2.0-native-jvm.1] - 2026-10-25
 
@@ -45,7 +53,8 @@ For stable releases, please refer to [CHANGELOG.md](https://github.com/joangarci
 - Normalized generated SVG dimensions for JetBrains tree rendering.
 - CI release guards to fail when generated icon assets are out of sync.
 
-[Unreleased]: https://github.com/khopland/jetbrains-symbols/compare/0.2.0-native-jvm.1...HEAD
+[Unreleased]: https://github.com/khopland/jetbrains-symbols/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/khopland/jetbrains-symbols/compare/0.2.0-native-jvm.1...0.3.0
 [0.2.0-native-jvm.1]: https://github.com/khopland/jetbrains-symbols/releases/tag/0.2.0-native-jvm.1
 [0.2.0]: https://github.com/joangarciaa-dev/jetbrains-symbols/compare/0.1.2...0.2.0
 [0.1.2]: https://github.com/joangarciaa-dev/jetbrains-symbols/compare/0.1.1...0.1.2

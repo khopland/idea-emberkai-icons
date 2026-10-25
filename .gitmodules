@@ -1,3 +1,0 @@
-[submodule "_submodules/vscode-symbols"]
-	path = _submodules/vscode-symbols
-	url = https://github.com/miguelsolorio/vscode-symbols.git

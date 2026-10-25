@@ -1,11 +1,5 @@
 .DS_Store
-.gradle
-.idea
-.intellijPlatform
-.kotlin
-.qodana
-build
-
-# Auto-generated
-src/main/resources/symbols/icons/
-src/main/kotlin/com/github/sebastiandotdev/symbols/Icons.kt
+.gradle/
+.idea/
+.intellijPlatform/
+build/
