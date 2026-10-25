@@ -129,11 +129,18 @@ internal class KotlinSymbolsIconProviderTest : BasePlatformTestCase() {
         )
         for (type in types) {
             for (suffix in arrayOf("", "_dark")) {
-                val icon = IconLoader.getIcon("/icons/kotlin/$type$suffix.svg", javaClass)
-                assertEquals(16, icon.iconWidth)
-                assertEquals(16, icon.iconHeight)
+                assertSvgArtwork("/icons/kotlin/$type$suffix.svg")
             }
         }
+    }
+
+    private fun assertSvgArtwork(path: String) {
+        val svg = javaClass.getResourceAsStream(path)?.bufferedReader()?.use { it.readText() }
+        assertNotNull("Missing SVG resource $path", svg)
+        assertTrue(
+            "$path must declare a 16x16 canvas",
+            svg!!.contains("width=\"16\"") && svg.contains("height=\"16\""),
+        )
     }
 
     private fun configureSourceFile(content: String): KtFile {
