@@ -12,5 +12,4 @@ internal enum class IconRuleCategory(val displayName: String) {
     KUBERNETES("Kubernetes and Kustomize"),
     SPRING_BOOT("Spring Boot"),
     SPRING_MODULITH("Spring Modulith package locks"),
-    ARCHITECTURE("JVM architecture folders"),
 }

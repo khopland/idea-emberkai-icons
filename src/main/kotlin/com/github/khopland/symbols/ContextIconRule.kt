@@ -10,6 +10,4 @@ internal interface ContextIconRule {
     fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? = null
 
     fun folderIconKey(directory: VirtualFile): String? = null
-
-    fun folderIconKey(directory: VirtualFile, project: Project?): String? = folderIconKey(directory)
 }

@@ -22,7 +22,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var kubernetes: Boolean = true
         var springBoot: Boolean = true
         var springModulith: Boolean = true
-        var architecture: Boolean = false
     }
 
     @Volatile
@@ -60,7 +59,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         IconRuleCategory.KUBERNETES -> currentState.kubernetes
         IconRuleCategory.SPRING_BOOT -> currentState.springBoot
         IconRuleCategory.SPRING_MODULITH -> currentState.springModulith
-        IconRuleCategory.ARCHITECTURE -> currentState.architecture
     }
 
     internal fun setEnabled(category: IconRuleCategory, enabled: Boolean) {
@@ -76,7 +74,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
                 IconRuleCategory.KUBERNETES -> state.kubernetes = enabled
                 IconRuleCategory.SPRING_BOOT -> state.springBoot = enabled
                 IconRuleCategory.SPRING_MODULITH -> state.springModulith = enabled
-                IconRuleCategory.ARCHITECTURE -> state.architecture = enabled
             }
         }
     }
@@ -102,7 +99,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         copy.kubernetes = kubernetes
         copy.springBoot = springBoot
         copy.springModulith = springModulith
-        copy.architecture = architecture
     }
 
     companion object {
