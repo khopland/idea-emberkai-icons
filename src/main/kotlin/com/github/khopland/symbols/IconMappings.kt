@@ -32,7 +32,7 @@ internal class IconMappings {
             }
             else -> return null
         }
-        val icon = IconLoader.findIcon(path, SymbolsIconProvider::class.java) ?: return null
+        val icon = IconLoader.getIcon(path, SymbolsIconProvider::class.java)
         return MappedIcon(key, source, path, icon)
     }
 
