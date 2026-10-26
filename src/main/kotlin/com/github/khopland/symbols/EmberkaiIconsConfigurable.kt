@@ -103,9 +103,7 @@ class EmberkaiIconsConfigurable : Configurable {
 
         reset()
         updatePreview()
-        return JScrollPane(root).apply {
-            border = BorderFactory.createEmptyBorder()
-        }
+        return root
     }
 
     override fun isModified(): Boolean {
