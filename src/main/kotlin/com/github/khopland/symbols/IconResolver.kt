@@ -11,6 +11,7 @@ internal class IconResolver {
     private val projectFolders = ProjectFolderIcons()
     private val sourceSets = SourceSetFolders()
     private val serviceFolders = ServiceFolderIcons(mappings)
+    private val architectureRule = JvmArchitectureFolderIconRule()
     private val contextRules = listOf(
         CiConfigIconRule(),
         LiquibaseIconRule(),
@@ -22,6 +23,7 @@ internal class IconResolver {
         ApiSpecificationIconRule(),
         KubernetesIconRule(),
         SpringBootIconRule(),
+        architectureRule,
     )
 
     /** Keep the long-standing API for callers that only need the selected icon. */
@@ -69,6 +71,11 @@ internal class IconResolver {
                 precedence = IconPrecedence.PROJECT_ROLE,
                 detail = "The project root model leaves this folder to its native language or generated-source icon.",
             )
+        }
+        if (projectRole == ProjectFolderIcons.Role.PACKAGE ||
+            projectRole == ProjectFolderIcons.Role.TEST_PACKAGE
+        ) {
+            architectureResolution(directory, project)?.let { return it }
         }
         if (projectRole != null && projectRole != ProjectFolderIcons.Role.CONTENT_ROOT) {
             val mapping = mappings.resolve(projectRole.iconKey)
@@ -122,7 +129,7 @@ internal class IconResolver {
         val settings = EmberkaiIconsSettings.getInstance()
         for (rule in contextRules) {
             if (!settings.isEnabled(rule.category)) continue
-            val key = rule.folderIconKey(directory) ?: continue
+            val key = rule.folderIconKey(directory, project) ?: continue
             val mapping = mappings.resolve(key) ?: continue
             return mapping.toResolution(
                 precedence = IconPrecedence.CONTEXT_RULE,
@@ -206,6 +213,16 @@ internal class IconResolver {
         precedence = precedence,
         detail = detail,
     )
+
+    private fun architectureResolution(directory: VirtualFile, project: Project?): IconResolution? {
+        if (!EmberkaiIconsSettings.getInstance().isEnabled(architectureRule.category)) return null
+        val mapping = mappings.resolve(architectureRule.folderIconKey(directory, project)) ?: return null
+        return mapping.toResolution(
+            precedence = IconPrecedence.CONTEXT_RULE,
+            contextRule = architectureRule.category.displayName,
+            detail = "The ${architectureRule.category.displayName} rule matched a package folder in a Java or Kotlin source root.",
+        )
+    }
 
     private fun ProjectFolderIcons.Role.displayName(): String =
         name.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { it.uppercase(Locale.ROOT) }
