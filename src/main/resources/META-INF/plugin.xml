@@ -7,7 +7,9 @@
         as a companion to the Emberkai theme.</p>
         <p>Java and Kotlin declarations keep their native IntelliJ type icons and badges.</p>
         <p>Gradle Kotlin build scripts and version catalogs use Gradle icons.
-        Spring Boot configuration and Helm charts have context-aware icons.</p>
+        Spring Boot configuration and Helm charts have context-aware icons, and Spring XML
+        configuration uses Emberkai artwork. Spring Modulith package locks are painted onto
+        Emberkai folders when that plugin is installed.</p>
         <p>Includes CI pipelines, Ansible, infrastructure as code, database migrations,
         OpenAPI contracts, Kubernetes, Kustomize, Flux, and Argo CD,
         developer-tool configuration, and test assets.</p>
@@ -17,6 +19,7 @@
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"

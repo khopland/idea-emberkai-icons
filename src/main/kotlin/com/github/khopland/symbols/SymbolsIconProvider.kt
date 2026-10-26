@@ -3,6 +3,7 @@ package com.github.khopland.symbols
 import com.intellij.ide.FileIconProvider
 import com.intellij.ide.IconProvider
 import com.intellij.openapi.project.DumbAware
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -18,9 +19,21 @@ class SymbolsIconProvider : IconProvider(), FileIconProvider, DumbAware {
         val file = PsiUtilCore.getVirtualFile(element) ?: return null
         // Gradle scripts get file icons; declarations still use IDE type icons.
         if (element !is PsiFileSystemItem && NativeIconPolicy.isSource(file)) return null
+        if (springCategoryEnabled() && !DumbService.isDumb(element.project)) {
+            SpringDomIconSupport.iconFor(element)?.let { return it }
+        }
         return resolver.resolve(file, element.project)
     }
 
-    override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? =
-        resolver.resolve(file, project)
+    override fun getIcon(file: VirtualFile, flags: Int, project: Project?): Icon? {
+        if (project != null && !project.isDisposed &&
+            springCategoryEnabled() && !DumbService.isDumb(project)
+        ) {
+            SpringDomIconSupport.iconFor(file, project)?.let { return it }
+        }
+        return resolver.resolve(file, project)
+    }
+
+    private fun springCategoryEnabled(): Boolean =
+        EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.SPRING_BOOT)
 }

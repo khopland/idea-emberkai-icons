@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Combined Spring XML configuration with Emberkai's Spring icon and layered Spring Modulith package locks onto Emberkai folder artwork, with a dedicated Spring Modulith setting.
 - Added Ruby, Dart/Flutter, Swift, Rust, Nix, Buf, Lefthook, Terraform, and OpenTofu file icon mappings, plus Terraform and Terragrunt folder artwork.
 - Added dark-theme variants for custom SVGs with low-contrast neutral outlines or details, and documented the theme policy.
 
