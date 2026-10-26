@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+- Added Ruby, Dart/Flutter, Swift, Rust, Nix, Buf, Lefthook, Terraform, and OpenTofu file icon mappings, plus Terraform and Terragrunt folder artwork.
+- Added dark-theme variants for custom SVGs with low-contrast neutral outlines or details, and documented the theme policy.
+
 ## [0.2.0] - 2026-10-25
 
 - Expanded icon coverage for CI and GitOps tools, Ansible and infrastructure configuration, Spring Boot and Helm, database migrations, API contracts, Kubernetes/Kustomize, Gradle, and common developer tooling.

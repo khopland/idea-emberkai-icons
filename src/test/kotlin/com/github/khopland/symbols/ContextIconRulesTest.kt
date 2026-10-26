@@ -302,11 +302,18 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "ci/azurepipelines", "ci/bitbucket",
             "gitops/argocd", "gitops/flux",
             "sdkman", "pre-commit", "just", "mise", "snapshot", "openapi_dark",
+            "sdkman_dark", "infrastructure_dark", "folder-helm_dark",
             "folders/folder-ansible", "folders/folder-argocd", "folders/folder-azurepipelines",
             "folders/folder-bitbucket", "folders/folder-flux", "folders/folder-migration",
             "folders/folder-api", "folders/folder-api_dark", "folders/folder-kubernetes",
             "folders/folder-kustomize", "folders/folder-fixtures", "folders/folder-testdata",
             "folders/folder-snapshots",
+            "folders/folder-ansible_dark", "folders/folder-argocd_dark",
+            "folders/folder-azurepipelines_dark", "folders/folder-bitbucket_dark", "folders/folder-content_dark",
+            "folders/folder-fixtures_dark", "folders/folder-flux_dark", "folders/folder-kubernetes_dark",
+            "folders/folder-kustomize_dark", "folders/folder-migration_dark", "folders/folder-package_dark",
+            "folders/folder-resources_dark", "folders/folder-snapshots_dark", "folders/folder-test-package_dark",
+            "folders/folder-testdata_dark", "folders/folder-terraform", "folders/folder-terraform_dark",
         )) {
             val path = "emberkai/icons/$name.svg"
             val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)

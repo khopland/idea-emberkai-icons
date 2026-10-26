@@ -96,6 +96,48 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         assertFolderIcon(".mvn", "folders/folder-maven.svg")
     }
 
+    fun testAdditionalEcosystemManifests() {
+        for (name in arrayOf("Gemfile", "Gemfile.lock", "Rakefile")) {
+            assertPathIcon(name, "files/ruby.svg")
+        }
+        for (name in arrayOf("pubspec.yaml", "pubspec.lock", "analysis_options.yaml")) {
+            assertPathIcon(name, "files/dart.svg")
+        }
+        for (name in arrayOf("Package.swift", "Package.resolved", "Package.default.resolved")) {
+            assertPathIcon(name, "files/swift.svg")
+        }
+        for (name in arrayOf(
+            "Cargo.toml", "Cargo.lock", "rust-toolchain", "rust-toolchain.toml", "rustfmt.toml", "clippy.toml",
+        )) {
+            assertPathIcon(name, "files/rust.svg")
+        }
+
+        assertPathIcon("flake.lock", "files/nix.svg")
+        assertPathIcon("flake.nix", "files/nix.svg")
+        assertPathIcon("shell.nix", "files/nix.svg")
+        for (name in arrayOf("buf.yaml", "buf.gen.yaml", "buf.work.yaml")) {
+            assertPathIcon(name, "files/proto.svg")
+        }
+        assertCustomFolderIcon("proto", "folders/folder-api.svg")
+        assertCustomFolderIcon("protobuf", "folders/folder-api.svg")
+        assertPathIcon("lefthook.yml", "files/git.svg")
+        assertPathIcon("Jenkinsfile", "files/jenkins.svg")
+    }
+
+    fun testTerraformAndOpenTofuMappings() {
+        assertCustomPathIcon("terragrunt.hcl", "infrastructure.svg")
+        assertFileIcon(".terraform-version", "files/terraform.svg")
+        assertFileIcon(".terraform.lock.hcl", "files/terraform.svg")
+        assertFileIcon("terraform.rc", "files/terraform.svg")
+        assertFileIcon("main.tofu", "files/terraform.svg")
+        assertCustomFolderIcon("terraform", "folders/folder-terraform.svg")
+        assertCustomFolderIcon("terragrunt", "folders/folder-terraform.svg")
+
+        val unrelatedHcl = myFixture.addFileToProject("other.hcl", "configuration")
+        assertNull(provider.getIcon(unrelatedHcl, 0))
+        assertNull(provider.getIcon(unrelatedHcl.virtualFile, 0, project))
+    }
+
     fun testIdeAndGeneratedFoldersKeepNativeIcons() {
         for (path in arrayOf(
             ".idea", ".idea/runConfigurations", ".idea/inspectionProfiles",
