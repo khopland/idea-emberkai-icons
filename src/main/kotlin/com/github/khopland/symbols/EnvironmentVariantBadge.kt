@@ -79,8 +79,8 @@ private enum class BadgeShape {
 
 /** Paints a small color-and-shape badge while preserving the resolver's base icon. */
 internal class EnvironmentVariantBadgeIcon(
-    private val baseIcon: Icon,
-    private val variant: EnvironmentVariant,
+    internal val baseIcon: Icon,
+    internal val variant: EnvironmentVariant,
 ) : Icon {
     override fun getIconWidth(): Int = baseIcon.iconWidth
 
