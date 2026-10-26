@@ -12,6 +12,10 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     class State {
         var preserveNativeJavaKotlinIcons: Boolean = true
         var colorServiceFolders: Boolean = true
+        var serviceFolderPalette: String = FolderIconPalette.EMBERKAI.name
+        var highContrastFolderIcons: Boolean = false
+        var monochromeFolderIcons: Boolean = false
+        var reducedFolderColor: Boolean = false
         var ci: Boolean = true
         var migrations: Boolean = true
         var helm: Boolean = true
@@ -47,6 +51,30 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         get() = currentState.colorServiceFolders
         set(value) {
             updateState { it.colorServiceFolders = value }
+        }
+
+    internal var serviceFolderPalette: FolderIconPalette
+        get() = FolderIconPalette.fromId(currentState.serviceFolderPalette)
+        set(value) {
+            updateState { it.serviceFolderPalette = value.name }
+        }
+
+    var highContrastFolderIcons: Boolean
+        get() = currentState.highContrastFolderIcons
+        set(value) {
+            updateState { it.highContrastFolderIcons = value }
+        }
+
+    var monochromeFolderIcons: Boolean
+        get() = currentState.monochromeFolderIcons
+        set(value) {
+            updateState { it.monochromeFolderIcons = value }
+        }
+
+    var reducedFolderColor: Boolean
+        get() = currentState.reducedFolderColor
+        set(value) {
+            updateState { it.reducedFolderColor = value }
         }
 
     internal fun isEnabled(category: IconRuleCategory): Boolean = when (category) {
@@ -92,6 +120,10 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     private fun State.copyState(): State = State().also { copy ->
         copy.preserveNativeJavaKotlinIcons = preserveNativeJavaKotlinIcons
         copy.colorServiceFolders = colorServiceFolders
+        copy.serviceFolderPalette = serviceFolderPalette
+        copy.highContrastFolderIcons = highContrastFolderIcons
+        copy.monochromeFolderIcons = monochromeFolderIcons
+        copy.reducedFolderColor = reducedFolderColor
         copy.ci = ci
         copy.migrations = migrations
         copy.helm = helm
