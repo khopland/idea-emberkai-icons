@@ -29,4 +29,12 @@
         <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
     </extensions>
+    <actions>
+        <action id="com.github.khopland.symbols.ExplainIcon"
+                class="com.github.khopland.symbols.ExplainIconAction"
+                text="Explain This Icon"
+                description="Show which Emberkai rule or mapping selected this icon">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
