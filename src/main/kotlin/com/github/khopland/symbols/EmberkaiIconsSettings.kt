@@ -27,6 +27,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var springBoot: Boolean = true
         var springModulith: Boolean = true
         var architecture: Boolean = false
+        var environmentVariants: Boolean = true
     }
 
     @Volatile
@@ -89,6 +90,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         IconRuleCategory.SPRING_BOOT -> currentState.springBoot
         IconRuleCategory.SPRING_MODULITH -> currentState.springModulith
         IconRuleCategory.ARCHITECTURE -> currentState.architecture
+        IconRuleCategory.ENVIRONMENT_VARIANTS -> currentState.environmentVariants
     }
 
     internal fun setEnabled(category: IconRuleCategory, enabled: Boolean) {
@@ -105,6 +107,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
                 IconRuleCategory.SPRING_BOOT -> state.springBoot = enabled
                 IconRuleCategory.SPRING_MODULITH -> state.springModulith = enabled
                 IconRuleCategory.ARCHITECTURE -> state.architecture = enabled
+                IconRuleCategory.ENVIRONMENT_VARIANTS -> state.environmentVariants = enabled
             }
         }
     }
@@ -135,6 +138,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         copy.springBoot = springBoot
         copy.springModulith = springModulith
         copy.architecture = architecture
+        copy.environmentVariants = environmentVariants
     }
 
     companion object {

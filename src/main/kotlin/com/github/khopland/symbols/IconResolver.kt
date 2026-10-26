@@ -51,7 +51,17 @@ internal class IconResolver {
         }
 
         val name = file.name.lowercase(Locale.ROOT)
-        return if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
+        val resolution = if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
+        if (file.isDirectory || resolution.icon == null ||
+            !EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)
+        ) {
+            return resolution
+        }
+        val variant = EnvironmentVariant.fromFile(file) ?: return resolution
+        return resolution.copy(
+            icon = EnvironmentVariantBadgeIcon(resolution.icon, variant),
+            detail = "${resolution.detail} A ${variant.displayName} environment badge marks this configuration variant.",
+        )
     }
 
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution {
