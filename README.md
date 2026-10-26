@@ -17,6 +17,8 @@ Open **Settings > Appearance & Behavior > Emberkai Icons** to choose whether Jav
 
 In the Project view, right-click a file or folder and choose **Explain This Icon** to see its light/dark preview, winning mapping key and source, matching context rule, and whether native icon policy or a project role took precedence. Copy the mapping key or open the artwork from the inspector.
 
+Run **Tools > Audit Project Icon Coverage** or right-click a directory in the Project view and choose **Audit Icon Coverage**. The cancellable audit uses the same resolver as the icon provider, groups generic and unmapped files by extension and parent folder, and lets you open a finding, copy a suggested `icons.properties` mapping, or open a prefilled missing-icon report.
+
 The **JVM architecture folders** context category is opt-in. When enabled, Java and Kotlin source packages named `controller`, `service`, `repository`, `domain`, `dto`, `mapper`, `config`, `security`, `client`, `exception`, or `util` get distinct folder icons. `config` and `client` folders are shown only when a few immediate Java/Kotlin files indicate configuration or client code; checks are bounded and cached, including unsaved edits.
 
 Folder icons use the Symbols shape with IntelliJ-style role cues: blue corner squares for source-set/module containers, blue source folders, green test-source folders, yellow resource lines, and package cubes. Java and Kotlin roots share the same source-folder style. IntelliJ's root model selects the role, including for custom directory names and Kotlin Multiplatform root types. Before import, `src/main/`, `src/test/`, and Multiplatform source sets such as `commonMain`, `commonTest`, `iosMain`, `jvmTest`, and `wasmJsMain` use the same cues for their `java/`, `kotlin/`, and `resources/` folders. Actual root markings take precedence over layout guesses. `.idea/`, library, excluded, generated, and unsupported language roots retain their specialized native icons. `.mvn/` uses the Symbols Maven folder icon, and other tool folders keep their Symbols artwork.
@@ -67,7 +69,7 @@ Local mappings take precedence over upstream mappings. A key such as `extension.
 
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
 
-To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons. The audit does not evaluate content-aware rules, so treat its output as a review list.
+To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons, but it does not evaluate content-aware rules. Use **Tools > Audit Project Icon Coverage** in the IDE to audit the icons selected by the real resolver.
 
 ## Update upstream icons
 

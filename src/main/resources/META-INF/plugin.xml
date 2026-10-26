@@ -36,5 +36,17 @@
                 description="Show which Emberkai rule or mapping selected this icon">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
+        <action id="com.github.khopland.symbols.AuditProjectIconCoverage"
+                class="com.github.khopland.symbols.AuditProjectIconCoverageAction"
+                text="Audit Project Icon Coverage"
+                description="Find files that use generic or unmapped icons">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="com.github.khopland.symbols.AuditDirectoryIconCoverage"
+                class="com.github.khopland.symbols.AuditDirectoryIconCoverageAction"
+                text="Audit Icon Coverage"
+                description="Find generic or unmapped icons under this directory">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
