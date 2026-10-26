@@ -30,6 +30,26 @@
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
     </extensions>
     <actions>
+        <group id="com.github.khopland.symbols.EmberkaiQuickToggles"
+               text="Emberkai Icons"
+               popup="true">
+            <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
+                    class="com.github.khopland.symbols.ToggleServiceFolderColorsAction"
+                    text="Color service folders"/>
+            <action id="com.github.khopland.symbols.ToggleHighContrastFolders"
+                    class="com.github.khopland.symbols.ToggleHighContrastFoldersAction"
+                    text="High-contrast folder markers"/>
+            <action id="com.github.khopland.symbols.ToggleMonochromeFolders"
+                    class="com.github.khopland.symbols.ToggleMonochromeFoldersAction"
+                    text="Monochrome service folders"/>
+            <action id="com.github.khopland.symbols.ToggleReducedFolderColor"
+                    class="com.github.khopland.symbols.ToggleReducedFolderColorAction"
+                    text="Reduce service-folder color"/>
+            <action id="com.github.khopland.symbols.ToggleArchitectureFolders"
+                    class="com.github.khopland.symbols.ToggleArchitectureFoldersAction"
+                    text="JVM architecture folders"/>
+            <add-to-group group-id="ViewMenu" anchor="last"/>
+        </group>
         <action id="com.github.khopland.symbols.ExplainIcon"
                 class="com.github.khopland.symbols.ExplainIconAction"
                 text="Explain This Icon"
