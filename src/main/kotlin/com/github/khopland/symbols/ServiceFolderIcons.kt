@@ -8,7 +8,10 @@ import javax.swing.Icon
 
 /** Caches service-root detection and its palette entry on the directory VFS object. */
 internal class ServiceFolderIcons(private val mappings: IconMappings) {
-    fun icon(directory: VirtualFile, project: Project?): Icon? {
+    fun icon(directory: VirtualFile, project: Project?): Icon? =
+        iconKey(directory, project)?.let(mappings::get)
+
+    fun iconKey(directory: VirtualFile, project: Project?): String? {
         if (project == null || project.isDisposed) return null
         val projectBasePath = ProjectPathUtil.basePath(project) ?: return null
         val path = directory.path
@@ -24,23 +27,23 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
             cached.markerMask == markerMask &&
             cached.parentModificationStamp == parentModificationStamp
         ) {
-            return cached.icon
+            return cached.iconKey
         }
 
-        val icon = if (isServiceRoot(directory, project, markerMask)) {
+        val iconKey = if (isServiceRoot(directory, project, markerMask)) {
             val colorKey = parent?.let {
                 colorKey(path, it, project, projectBasePath, parentModificationStamp)
             }
-            colorKey?.let(mappings::get)
+            colorKey
         } else {
             parent?.let { releaseColor(path, it, projectBasePath, parentModificationStamp) }
             null
         }
         directory.putUserData(
             DIRECTORY_CACHE,
-            CachedFolderIcon(path, projectBasePath, modificationStamp, markerMask, parentModificationStamp, icon),
+            CachedFolderIcon(path, projectBasePath, modificationStamp, markerMask, parentModificationStamp, iconKey),
         )
-        return icon
+        return iconKey
     }
 
     private fun isServiceRoot(directory: VirtualFile, project: Project, markerMask: Int): Boolean {
@@ -130,7 +133,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
         val modificationStamp: Long,
         val markerMask: Int,
         val parentModificationStamp: Long,
-        val icon: Icon?,
+        val iconKey: String?,
     )
 
     private data class PaletteAssignments(
