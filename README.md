@@ -63,6 +63,8 @@ Local mappings take precedence over upstream mappings. A key such as `extension.
 
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
 
+To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons. The audit does not evaluate content-aware rules, so treat its output as a review list.
+
 ## Update upstream icons
 
 Run the Bash script to fetch the latest icons and associations from [vscode-symbols](https://github.com/miguelsolorio/vscode-symbols):
