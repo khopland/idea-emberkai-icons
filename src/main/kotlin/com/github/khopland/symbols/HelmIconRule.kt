@@ -7,6 +7,8 @@ import java.util.regex.Pattern
 
 /** Recognizes chart metadata, templates, and folders using a Chart.yaml marker. */
 internal class HelmIconRule : ContextIconRule {
+    override val category = IconRuleCategory.HELM
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (name == "chart.yaml") return "context.helm"
         if (!isMetadata(name) && !isTemplate(name)) return null
@@ -22,7 +24,7 @@ internal class HelmIconRule : ContextIconRule {
                 return if (metadata || template || crd) "context.helm" else null
             }
             relative = dir.name + "/" + relative
-            if (project != null && dir.path == project.basePath) break
+            if (project != null && ProjectPathUtil.isProjectBase(dir, project)) break
             dir = dir.parent
         }
         return null

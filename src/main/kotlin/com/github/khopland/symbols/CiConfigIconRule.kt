@@ -6,6 +6,8 @@ import java.util.Locale
 
 /** Recognizes CI configuration only by each provider's conventional path or filename. */
 internal class CiConfigIconRule : ContextIconRule {
+    override val category = IconRuleCategory.CI
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         val extension = file.extension?.lowercase(Locale.ROOT) ?: return null
         if (extension !in YAML_EXTENSIONS) return null

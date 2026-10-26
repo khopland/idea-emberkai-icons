@@ -22,7 +22,8 @@ internal object NativeIconPolicy {
     }
 
     fun usesFileIcon(file: VirtualFile, name: String): Boolean =
-        isSource(file) && TOOL_SCRIPT_SUFFIXES.none { name.endsWith(it) }
+        EmberkaiIconsSettings.getInstance().preserveNativeJavaKotlinIcons &&
+            isSource(file) && TOOL_SCRIPT_SUFFIXES.none { name.endsWith(it) }
 
     fun usesFolderIcon(directory: VirtualFile, name: String, project: Project?): Boolean {
         if (name in FOLDER_NAMES) return true
@@ -32,7 +33,7 @@ internal object NativeIconPolicy {
             parent = parent.parent
         }
         if (project == null || project.isDisposed) return false
-        if (directory.path == project.basePath) return true
+        if (ProjectPathUtil.isProjectBase(directory, project)) return true
         // Source/package roles are themed separately by ProjectFolderIcons.
         val index = ProjectFileIndex.getInstance(project)
         return index.isInLibrary(directory) || index.isExcluded(directory)

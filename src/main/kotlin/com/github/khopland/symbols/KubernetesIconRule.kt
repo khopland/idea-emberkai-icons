@@ -6,6 +6,8 @@ import java.util.Locale
 
 /** Recognizes Kubernetes objects from root metadata and Kustomize trees from their marker file. */
 internal class KubernetesIconRule : ContextIconRule {
+    override val category = IconRuleCategory.KUBERNETES
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (name == "kustomization.yaml" || name == "kustomization.yml" || name == "kustomization") {
             return "context.kustomize"

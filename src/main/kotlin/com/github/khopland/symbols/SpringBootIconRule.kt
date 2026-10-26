@@ -7,6 +7,8 @@ import java.util.regex.Pattern
 
 /** Detects Spring Boot configuration using cached declarations in nearby build files. */
 internal class SpringBootIconRule : ContextIconRule {
+    override val category = IconRuleCategory.SPRING_BOOT
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? =
         if (CONFIG_FILE.matcher(name).matches() && isSpringBootProject(file, project)) "context.spring" else null
 
@@ -22,7 +24,7 @@ internal class SpringBootIconRule : ContextIconRule {
                     if (catalog.name.endsWith(".versions.toml") && hasSpringBootDeclaration(catalog)) return true
                 }
             }
-            if (project != null && dir.path == project.basePath) break
+            if (project != null && ProjectPathUtil.isProjectBase(dir, project)) break
             dir = dir.parent
         }
         return false

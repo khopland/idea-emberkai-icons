@@ -8,6 +8,8 @@ import java.util.regex.Pattern
 
 /** Identifies Ansible playbooks by structure and inventory files by their location. */
 internal class AnsibleIconRule : ContextIconRule {
+    override val category = IconRuleCategory.ANSIBLE
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (name == "ansible.cfg") return "context.ansible"
         if (isInInventory(file)) return "context.ansible"

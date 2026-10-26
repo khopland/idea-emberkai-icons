@@ -18,6 +18,11 @@
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <extensions defaultExtensionNs="com.intellij">
+        <applicationConfigurable
+            parentId="appearance"
+            instance="com.github.khopland.symbols.EmberkaiIconsConfigurable"
+            id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
+            displayName="Emberkai Icons"/>
         <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
     </extensions>

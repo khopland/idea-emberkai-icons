@@ -6,6 +6,8 @@ import java.util.Locale
 
 /** Recognizes Flux and Argo CD resources, bootstrap files, and configuration directories. */
 internal class GitOpsIconRule : ContextIconRule {
+    override val category = IconRuleCategory.GITOPS
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (isArgoConfig(name)) return "context.argocd"
         when (StructuredFileKind.of(file)) {
@@ -32,7 +34,7 @@ internal class GitOpsIconRule : ContextIconRule {
         var current = directory
         while (current != null) {
             if (current.name.equals("flux-system", ignoreCase = true)) return true
-            if (project != null && current.path == project.basePath) return false
+            if (project != null && ProjectPathUtil.isProjectBase(current, project)) return false
             current = current.parent
         }
         return false

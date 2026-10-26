@@ -5,6 +5,8 @@ import com.intellij.openapi.vfs.VirtualFile
 
 /** Handles API contracts with arbitrary filenames when their root metadata identifies them. */
 internal class ApiSpecificationIconRule : ContextIconRule {
+    override val category = IconRuleCategory.API_SPECIFICATION
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? =
         if (name in SPEC_NAMES || StructuredFileKind.of(file) == StructuredFileKind.OPEN_API) {
             "context.openapi"

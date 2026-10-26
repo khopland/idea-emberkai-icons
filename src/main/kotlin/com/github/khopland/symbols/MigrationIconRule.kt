@@ -7,6 +7,8 @@ import java.util.regex.Pattern
 
 /** Recognizes Flyway's versioned/repeatable SQL names, including custom locations. */
 internal class MigrationIconRule : ContextIconRule {
+    override val category = IconRuleCategory.MIGRATION
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? =
         if (SQL_MIGRATION.matcher(name).matches()) "context.migration" else null
 

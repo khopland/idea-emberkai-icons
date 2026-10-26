@@ -8,6 +8,8 @@ import java.util.regex.Pattern
 
 /** Recognizes AWS SAM and CloudFormation files by filename or AWS template markers. */
 internal class InfrastructureIconRule : ContextIconRule {
+    override val category = IconRuleCategory.INFRASTRUCTURE
+
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (name == "azure.yaml") return "context.infrastructure"
         if (name == "samconfig.toml" || name == "cdk.json" || name == "cdk.context.json") {
