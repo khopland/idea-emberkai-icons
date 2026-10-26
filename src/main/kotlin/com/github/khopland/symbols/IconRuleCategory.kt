@@ -11,4 +11,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     API_SPECIFICATION("OpenAPI and Swagger"),
     KUBERNETES("Kubernetes and Kustomize"),
     SPRING_BOOT("Spring Boot"),
+    SPRING_MODULITH("Spring Modulith package locks"),
 }

@@ -1,0 +1,8 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Runs after Spring Modulith's decorator so the chosen package lock can be reused. -->
+        <projectViewNodeDecorator
+            implementation="com.github.khopland.symbols.SpringModulithFolderDecorator"
+            order="last"/>
+    </extensions>
+</idea-plugin>
