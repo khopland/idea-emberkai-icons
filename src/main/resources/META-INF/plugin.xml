@@ -14,7 +14,9 @@
         OpenAPI contracts, Kubernetes, Kustomize, Flux, and Argo CD,
         developer-tool configuration, and test assets.</p>
         <p>Symbols-style project folders retain source/test colors, resource and
-        package markers, and blue module/source-set badges, including Kotlin Multiplatform.</p>
+        package markers, and blue module/source-set badges, including Kotlin Multiplatform.
+        Opt-in module-aware accents give every IntelliJ module a stable color that service roots,
+        source roots, packages, and their descendants share.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
@@ -36,6 +38,9 @@
             <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
                     class="com.github.khopland.symbols.ToggleServiceFolderColorsAction"
                     text="Color service folders"/>
+            <action id="com.github.khopland.symbols.ToggleModuleAwareColors"
+                    class="com.github.khopland.symbols.ToggleModuleAwareColorsAction"
+                    text="Module-aware accent colors"/>
             <action id="com.github.khopland.symbols.ToggleHighContrastFolders"
                     class="com.github.khopland.symbols.ToggleHighContrastFoldersAction"
                     text="High-contrast folder markers"/>
@@ -55,6 +60,18 @@
                 text="Explain This Icon"
                 description="Show which Emberkai rule or mapping selected this icon">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+        <action id="com.github.khopland.symbols.AssignModuleAccentColor"
+                class="com.github.khopland.symbols.AssignModuleAccentAction"
+                text="Assign Module Accent Color…"
+                description="Pin a folder accent color for the module that owns this directory">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+        <action id="com.github.khopland.symbols.ResetAllModuleAccentColors"
+                class="com.github.khopland.symbols.ResetAllModuleAccentColorsAction"
+                text="Reset All Module Accent Colors"
+                description="Return every module to its automatic accent color">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AuditProjectIconCoverage"
                 class="com.github.khopland.symbols.AuditProjectIconCoverageAction"

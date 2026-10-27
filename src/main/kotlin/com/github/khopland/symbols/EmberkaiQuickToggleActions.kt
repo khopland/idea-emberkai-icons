@@ -25,6 +25,11 @@ class ToggleServiceFolderColorsAction : EmberkaiSettingsToggle("Color service fo
     override fun update(state: Boolean) { settings.colorServiceFolders = state }
 }
 
+class ToggleModuleAwareColorsAction : EmberkaiSettingsToggle("Module-aware accent colors") {
+    override fun selected(): Boolean = settings.moduleAwareColors
+    override fun update(state: Boolean) { settings.moduleAwareColors = state }
+}
+
 class ToggleHighContrastFoldersAction : EmberkaiSettingsToggle("High-contrast folder markers") {
     override fun selected(): Boolean = settings.highContrastFolderIcons
     override fun update(state: Boolean) { settings.highContrastFolderIcons = state }

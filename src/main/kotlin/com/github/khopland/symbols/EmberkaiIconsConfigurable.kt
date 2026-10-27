@@ -25,6 +25,7 @@ class EmberkaiIconsConfigurable : Configurable {
     private var previewPanel: JPanel? = null
     private var preserveNativeIcons: JCheckBox? = null
     private var colorServiceFolders: JCheckBox? = null
+    private var moduleAwareColors: JCheckBox? = null
     private var folderPalette: JComboBox<FolderIconPalette>? = null
     private var highContrast: JCheckBox? = null
     private var monochrome: JCheckBox? = null
@@ -44,8 +45,14 @@ class EmberkaiIconsConfigurable : Configurable {
         colorServiceFolders = checkBox("Color service folders by build or package manifest").also {
             it.addActionListener { updatePreview() }
         }
+        moduleAwareColors = checkBox("Use module-aware accent colors and folder badges").also { checkbox ->
+            checkbox.toolTipText =
+                "Assign a stable color to every IntelliJ module and carry it into source roots and packages."
+            checkbox.addActionListener { updatePreview() }
+        }
         root.add(preserveNativeIcons)
         root.add(colorServiceFolders)
+        root.add(moduleAwareColors)
 
         root.add(sectionTitle("Folder accessibility"))
         folderPalette = JComboBox(DefaultComboBoxModel(FolderIconPalette.entries.toTypedArray())).apply {
@@ -110,6 +117,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val settings = EmberkaiIconsSettings.getInstance()
         return preserveNativeIcons?.isSelected != settings.preserveNativeJavaKotlinIcons ||
             colorServiceFolders?.isSelected != settings.colorServiceFolders ||
+            moduleAwareColors?.isSelected != settings.moduleAwareColors ||
             selectedPalette() != settings.serviceFolderPalette ||
             highContrast?.isSelected != settings.highContrastFolderIcons ||
             monochrome?.isSelected != settings.monochromeFolderIcons ||
@@ -124,6 +132,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val changed = isModified()
         preserveNativeIcons?.let { settings.preserveNativeJavaKotlinIcons = it.isSelected }
         colorServiceFolders?.let { settings.colorServiceFolders = it.isSelected }
+        moduleAwareColors?.let { settings.moduleAwareColors = it.isSelected }
         selectedPalette()?.let { settings.serviceFolderPalette = it }
         highContrast?.let { settings.highContrastFolderIcons = it.isSelected }
         monochrome?.let { settings.monochromeFolderIcons = it.isSelected }
@@ -138,6 +147,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val settings = EmberkaiIconsSettings.getInstance()
         preserveNativeIcons?.isSelected = settings.preserveNativeJavaKotlinIcons
         colorServiceFolders?.isSelected = settings.colorServiceFolders
+        moduleAwareColors?.isSelected = settings.moduleAwareColors
         folderPalette?.selectedItem = settings.serviceFolderPalette
         highContrast?.isSelected = settings.highContrastFolderIcons
         monochrome?.isSelected = settings.monochromeFolderIcons
@@ -152,6 +162,7 @@ class EmberkaiIconsConfigurable : Configurable {
         previewPanel = null
         preserveNativeIcons = null
         colorServiceFolders = null
+        moduleAwareColors = null
         folderPalette = null
         highContrast = null
         monochrome = null
@@ -169,11 +180,19 @@ class EmberkaiIconsConfigurable : Configurable {
             highContrast = highContrast?.isSelected == true,
             monochrome = monochrome?.isSelected == true,
             reducedFolderColor = reducedFolderColor?.isSelected == true,
+            moduleAware = moduleAwareColors?.isSelected == true,
         )
         val nodes = DefaultMutableTreeNode(PreviewItem("sample-project", mappings.get("folder")))
         val src = DefaultMutableTreeNode(PreviewItem("src", mappings.get("folder")))
         val main = DefaultMutableTreeNode(PreviewItem("main", mappings.get("folder.role.source")))
-        val packageNode = DefaultMutableTreeNode(PreviewItem("com.example", mappings.get("folder.role.package")))
+        val packageIcon = mappings.get("folder.role.package")?.let {
+            if (settings.moduleAware) {
+                ModuleAccentIcon(it, ModuleAccentColor.defaultFor("preview-module", settings.palette))
+            } else {
+                it
+            }
+        }
+        val packageNode = DefaultMutableTreeNode(PreviewItem("com.example", packageIcon))
         val javaIcon = if (preserveNativeIcons?.isSelected != false) AllIcons.FileTypes.Java else mappings.get("extension.java")
         packageNode.add(DefaultMutableTreeNode(PreviewItem("Application.java", javaIcon)))
         main.add(packageNode)
@@ -224,8 +243,14 @@ class EmberkaiIconsConfigurable : Configurable {
     }
 
     private fun previewServiceIconKey(settings: PreviewSettings): String {
-        return ServiceFolderIconStyle.keyForIndex(
-            index = 0,
+        val color = if (settings.moduleAware) {
+            ModuleAccentColor.defaultFor("preview-service", settings.palette)
+        } else {
+            ModuleAccentColor.fromId(ServiceFolderIconStyle.colorNames(settings.palette).first())
+                ?: ModuleAccentColor.BLUE
+        }
+        return ServiceFolderIconStyle.styleKey(
+            baseKey = color.iconKey,
             paletteChoice = settings.palette,
             highContrast = settings.highContrast,
             monochrome = settings.monochrome,
@@ -256,5 +281,6 @@ class EmberkaiIconsConfigurable : Configurable {
         val highContrast: Boolean,
         val monochrome: Boolean,
         val reducedFolderColor: Boolean,
+        val moduleAware: Boolean,
     )
 }
