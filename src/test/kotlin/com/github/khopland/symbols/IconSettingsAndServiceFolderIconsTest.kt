@@ -197,9 +197,15 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         }
         val file: PsiFile = myFixture.addFileToProject(path, content)
 
-        settings.setEnabled(category, false)
-        assertResourceIcon(fallbackIcon, provider.getIcon(file, 0))
-        settings.setEnabled(category, true)
-        assertResourceIcon(enabledIcon, provider.getIcon(file, 0))
+        val badgesWereEnabled = settings.isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)
+        settings.setEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS, false)
+        try {
+            settings.setEnabled(category, false)
+            assertResourceIcon(fallbackIcon, provider.getIcon(file, 0))
+            settings.setEnabled(category, true)
+            assertResourceIcon(enabledIcon, provider.getIcon(file, 0))
+        } finally {
+            settings.setEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS, badgesWereEnabled)
+        }
     }
 }

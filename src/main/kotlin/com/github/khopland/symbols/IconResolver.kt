@@ -2,6 +2,7 @@ package com.github.khopland.symbols
 
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 
@@ -51,7 +52,18 @@ internal class IconResolver {
         }
 
         val name = file.name.lowercase(Locale.ROOT)
-        return if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
+        val resolution = if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
+        if (file.isDirectory || resolution.precedence == IconPrecedence.NATIVE_POLICY ||
+            !EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)
+        ) {
+            return resolution
+        }
+        val variant = EnvironmentVariant.fromFile(file) ?: return resolution
+        val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
+        return resolution.copy(
+            icon = EnvironmentVariantBadgeIcon(baseIcon, variant),
+            detail = "${resolution.detail} A ${variant.displayName} environment badge marks this configuration variant.",
+        )
     }
 
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution {
