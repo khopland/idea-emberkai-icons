@@ -12,6 +12,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     class State {
         var preserveNativeJavaKotlinIcons: Boolean = true
         var colorServiceFolders: Boolean = true
+        var moduleAwareColors: Boolean = false
         var serviceFolderPalette: String = FolderIconPalette.EMBERKAI.name
         var highContrastFolderIcons: Boolean = false
         var monochromeFolderIcons: Boolean = false
@@ -52,6 +53,12 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         get() = currentState.colorServiceFolders
         set(value) {
             updateState { it.colorServiceFolders = value }
+        }
+
+    var moduleAwareColors: Boolean
+        get() = currentState.moduleAwareColors
+        set(value) {
+            updateState { it.moduleAwareColors = value }
         }
 
     internal var serviceFolderPalette: FolderIconPalette
@@ -123,6 +130,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     private fun State.copyState(): State = State().also { copy ->
         copy.preserveNativeJavaKotlinIcons = preserveNativeJavaKotlinIcons
         copy.colorServiceFolders = colorServiceFolders
+        copy.moduleAwareColors = moduleAwareColors
         copy.serviceFolderPalette = serviceFolderPalette
         copy.highContrastFolderIcons = highContrastFolderIcons
         copy.monochromeFolderIcons = monochromeFolderIcons

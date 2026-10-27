@@ -66,7 +66,10 @@ internal class IconResolver {
         )
     }
 
-    private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution {
+    private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution =
+        applyModuleAccent(baseFolderIcon(directory, name, project), directory, project)
+
+    private fun baseFolderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution {
         if (NativeIconPolicy.usesFolderIcon(directory, name, project)) {
             return IconResolution(
                 icon = null,
@@ -168,6 +171,35 @@ internal class IconResolver {
             icon = null,
             precedence = IconPrecedence.IDE_DEFAULT,
             detail = "No Emberkai folder mapping matched.",
+        )
+    }
+
+    /**
+     * Module accents ride on top of the selected Emberkai folder artwork. Service roots already use a
+     * full palette color, so they are left alone; content roots are skipped to keep the project root
+     * quiet. Everything below a module (source roots, packages, and other folders) gets the small dot.
+     */
+    private fun applyModuleAccent(
+        resolution: IconResolution,
+        directory: VirtualFile,
+        project: Project?,
+    ): IconResolution {
+        val icon = resolution.icon ?: return resolution
+        if (project == null || project.isDisposed) return resolution
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.moduleAwareColors) return resolution
+        val mappingKey = resolution.mappingKey
+        if (mappingKey == null ||
+            mappingKey == "folder.role.content-root" ||
+            mappingKey.startsWith("folder.service.")
+        ) {
+            return resolution
+        }
+        val accent = ModuleAccentStore.getInstance(project)
+            .accentFor(directory, settings.serviceFolderPalette) ?: return resolution
+        return resolution.copy(
+            icon = ModuleAccentIcon(icon, accent.color),
+            detail = "${resolution.detail} The module accent follows ${accent.moduleName}.",
         )
     }
 

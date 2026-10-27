@@ -19,6 +19,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
         val markerMask = serviceMarkerMask(directory)
         val settings = EmberkaiIconsSettings.getInstance()
         val appearance = settings.folderIconAppearanceKey
+        val moduleAccentKey = moduleAccentKey(directory, project, settings)
         val parent = directory.parent
         val parentModificationStamp = parent?.modificationStamp ?: NO_PARENT_STAMP
         val cached = directory.getUserData(DIRECTORY_CACHE)
@@ -28,23 +29,29 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
             cached.modificationStamp == modificationStamp &&
             cached.markerMask == markerMask &&
             cached.parentModificationStamp == parentModificationStamp &&
+            cached.moduleAccentKey == moduleAccentKey &&
             cached.appearance == appearance
         ) {
             return cached.iconKey
         }
 
         val iconKey = if (isServiceRoot(directory, project, markerMask)) {
-            val colorKey = parent?.let {
+            val colorKey = moduleAccentKey ?: parent?.let {
                 colorKey(path, it, project, projectBasePath, parentModificationStamp, settings.serviceFolderPalette)
             }
             colorKey?.let { ServiceFolderIconStyle.apply(it, settings) }
         } else {
-            parent?.let { releaseColor(path, it, projectBasePath, parentModificationStamp) }
+            if (moduleAccentKey == null) {
+                parent?.let { releaseColor(path, it, projectBasePath, parentModificationStamp) }
+            }
             null
         }
         directory.putUserData(
             DIRECTORY_CACHE,
-            CachedFolderIcon(path, projectBasePath, modificationStamp, markerMask, parentModificationStamp, appearance, iconKey),
+            CachedFolderIcon(
+                path, projectBasePath, modificationStamp, markerMask, parentModificationStamp,
+                moduleAccentKey, appearance, iconKey,
+            ),
         )
         return iconKey
     }
@@ -60,6 +67,18 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
     /** Directory modification stamps are commonly constant, so track the few relevant children directly. */
     private fun serviceMarkerMask(directory: VirtualFile): Int = BUILD_MARKERS.indices.fold(0) { mask, index ->
         if (directory.findChild(BUILD_MARKERS[index])?.isDirectory == false) mask or (1 shl index) else mask
+    }
+
+    private fun moduleAccentKey(
+        directory: VirtualFile,
+        project: Project,
+        settings: EmberkaiIconsSettings,
+    ): String? {
+        if (!settings.moduleAwareColors) return null
+        return ModuleAccentStore.getInstance(project)
+            .accentFor(directory, settings.serviceFolderPalette)
+            ?.color
+            ?.iconKey
     }
 
     private fun colorKey(
@@ -146,6 +165,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
         val modificationStamp: Long,
         val markerMask: Int,
         val parentModificationStamp: Long,
+        val moduleAccentKey: String?,
         val appearance: String,
         val iconKey: String?,
     )
@@ -195,26 +215,13 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
 
 /** Shared style mapping for detected roots and the settings preview. */
 internal object ServiceFolderIconStyle {
-    private val colorNames = listOf("blue", "green", "orange", "pink", "purple", "red", "sky", "yellow")
+    private val emberkaiColorNames = listOf("blue", "green", "orange", "pink", "purple", "red", "sky", "yellow")
     private val accessibleColorNames = listOf("blue", "orange", "yellow", "purple", "green", "red", "sky", "pink")
 
-    fun keyForIndex(
-        index: Int,
-        paletteChoice: FolderIconPalette,
-        highContrast: Boolean,
-        monochrome: Boolean,
-        reducedFolderColor: Boolean,
-    ): String {
-        val palette = if (paletteChoice == FolderIconPalette.ACCESSIBLE) {
-            accessibleColorNames
-        } else {
-            colorNames
-        }
-        val color = palette[Math.floorMod(index, palette.size)]
-        return apply("folder.service.$color", paletteChoice, highContrast, monochrome, reducedFolderColor)
-    }
+    fun colorNames(paletteChoice: FolderIconPalette): List<String> =
+        if (paletteChoice == FolderIconPalette.ACCESSIBLE) accessibleColorNames else emberkaiColorNames
 
-    fun apply(baseKey: String, settings: EmberkaiIconsSettings): String = apply(
+    fun apply(baseKey: String, settings: EmberkaiIconsSettings): String = styleKey(
         baseKey,
         settings.serviceFolderPalette,
         settings.highContrastFolderIcons,
@@ -222,7 +229,7 @@ internal object ServiceFolderIconStyle {
         settings.reducedFolderColor,
     )
 
-    private fun apply(
+    fun styleKey(
         baseKey: String,
         paletteChoice: FolderIconPalette,
         highContrast: Boolean,
@@ -241,4 +248,5 @@ internal object ServiceFolderIconStyle {
 }
 
 internal val EmberkaiIconsSettings.folderIconAppearanceKey: String
-    get() = "${serviceFolderPalette.name}:$highContrastFolderIcons:$monochromeFolderIcons:$reducedFolderColor"
+    get() = "${serviceFolderPalette.name}:$highContrastFolderIcons:$monochromeFolderIcons:" +
+        "$reducedFolderColor:$moduleAwareColors"
