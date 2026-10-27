@@ -299,7 +299,12 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
             "// Build plugins\nplugins { id(\"org.springframework.boot\") version \"4.0.0\" }",
         )
         assertCustomPathIcon("service/src/main/resources/application.yml", "spring.svg")
-        assertCustomPathIcon("service/src/main/resources/application-production.yaml", "spring.svg")
+        val production = myFixture.addFileToProject("service/src/main/resources/application-production.yaml", "server: {}")
+        assertEnvironmentBadge("emberkai/icons/spring.svg", EnvironmentVariant.PRODUCTION, provider.getIcon(production, 0))
+        assertEnvironmentBadge(
+            "emberkai/icons/spring.svg", EnvironmentVariant.PRODUCTION,
+            provider.getIcon(production.virtualFile, 0, project),
+        )
         assertCustomPathIcon("service/src/test/resources/application-test.properties", "spring.svg")
         assertPathIcon("service/config/other.yml", "files/yaml.svg")
         assertPathIcon("other/application.yml", "files/yaml.svg")
@@ -383,12 +388,20 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         assertResourceIcon("emberkai/icons/helm.svg", provider.getIcon(chart, 0))
         assertResourceIcon("emberkai/icons/helm.svg", provider.getIcon(chart.virtualFile, 0, project))
         for (path in arrayOf(
-            "Chart.lock", "values.yaml", "values-prod.yml",
+            "Chart.lock", "values.yaml",
             "values.schema.json", "templates/deployment.yaml", "templates/nested/service.yml",
             "templates/_helpers.tpl", "templates/NOTES.txt", "crds/resource.yaml",
         )) {
             assertCustomPathIcon("deploy/store/$path", "helm.svg")
         }
+        val productionValues = myFixture.addFileToProject("deploy/store/values-prod.yml", "replicas: 2")
+        assertEnvironmentBadge(
+            "emberkai/icons/helm.svg", EnvironmentVariant.PRODUCTION, provider.getIcon(productionValues, 0),
+        )
+        assertEnvironmentBadge(
+            "emberkai/icons/helm.svg", EnvironmentVariant.PRODUCTION,
+            provider.getIcon(productionValues.virtualFile, 0, project),
+        )
         assertPathIcon("deploy/store/docs/values.yaml", "files/yaml.svg")
         assertPathIcon("deploy/store/templates/README.md", "files/readme.svg")
         assertPathIcon("deploy/store/config/config.yml", "files/yaml.svg")

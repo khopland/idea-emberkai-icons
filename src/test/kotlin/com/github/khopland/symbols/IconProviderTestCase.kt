@@ -75,6 +75,17 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
         assertSame(IconLoader.getIcon("/$path", SymbolsIconProvider::class.java), actual)
     }
 
+    protected fun assertEnvironmentBadge(
+        baseIconPath: String,
+        expectedVariant: EnvironmentVariant,
+        actual: Icon?,
+    ) {
+        val badge = actual as? EnvironmentVariantBadgeIcon
+        assertNotNull("Expected an ${expectedVariant.displayName} environment badge", badge)
+        assertEquals(expectedVariant, badge!!.variant)
+        assertResourceIcon(baseIconPath, badge.baseIcon)
+    }
+
     protected fun assertIconAtIdeSize(path: String, icon: Icon) {
         if (GraphicsEnvironment.isHeadless()) {
             // IconLoader may return a 1x1 placeholder in headless test runs. Check
