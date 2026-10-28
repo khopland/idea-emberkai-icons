@@ -53,11 +53,12 @@ internal class IconResolver {
 
         val name = file.name.lowercase(Locale.ROOT)
         val resolution = if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
-        if (file.isDirectory || resolution.precedence == IconPrecedence.NATIVE_POLICY ||
-            !EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)
-        ) {
-            return resolution
-        }
+        if (file.isDirectory || resolution.precedence == IconPrecedence.NATIVE_POLICY) return resolution
+        return applySecretBadge(applyEnvironmentBadge(resolution, file), file, project)
+    }
+
+    private fun applyEnvironmentBadge(resolution: IconResolution, file: VirtualFile): IconResolution {
+        if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)) return resolution
         val variant = EnvironmentVariant.fromFile(file) ?: return resolution
         val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
         return resolution.copy(
@@ -75,6 +76,27 @@ internal class IconResolver {
         if (file.isDirectory) return null
         val name = file.name.lowercase(Locale.ROOT)
         return contextRules.firstOrNull { it.recognizesFile(file, name, project) }?.category
+    }
+
+    /** Warns about likely credentials that VCS would pick up; the name check runs before any VCS lookup. */
+    private fun applySecretBadge(resolution: IconResolution, file: VirtualFile, project: Project?): IconResolution {
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.isEnabled(IconRuleCategory.UNIGNORED_SECRETS) || !SecretFileNames.isCandidate(file)) {
+            return resolution
+        }
+        if (project == null || project.isDisposed || project.isDefault) return resolution
+        val exposure = SecretFileExposure.getInstance(project) ?: return resolution
+        if (!exposure.isExposed(file)) return resolution
+        val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
+        return resolution.copy(
+            icon = UnignoredSecretBadgeIcon(
+                baseIcon,
+                highContrast = settings.highContrastFolderIcons || settings.monochromeFolderIcons,
+            ),
+            detail = "${resolution.detail} A red warning badge marks a file that usually holds credentials " +
+                "or private keys and is inside a VCS root without being ignored, so it could be committed. " +
+                "Ignore it in VCS (for example in .gitignore) to clear the badge.",
+        )
     }
 
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution =

@@ -14,4 +14,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     SPRING_MODULITH("Spring Modulith package locks"),
     ARCHITECTURE("JVM architecture folders"),
     ENVIRONMENT_VARIANTS("Environment variant badges"),
+    UNIGNORED_SECRETS("Unignored secret warning badges"),
 }
