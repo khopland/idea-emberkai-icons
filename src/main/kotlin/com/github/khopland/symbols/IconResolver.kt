@@ -44,7 +44,7 @@ internal class IconResolver {
                     mappingKey = mapping?.key,
                     mappingSource = mapping?.source,
                     resourcePath = mapping?.resourcePath,
-                    contextRule = "Spring XML DOM description",
+                    contextRule = SPRING_XML_RULE,
                     precedence = IconPrecedence.CONTEXT_RULE,
                     detail = "The Spring XML DOM description selected the Spring icon.",
                 )
@@ -62,6 +62,7 @@ internal class IconResolver {
         val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
         return resolution.copy(
             icon = EnvironmentVariantBadgeIcon(baseIcon, variant),
+            environmentVariant = variant,
             detail = "${resolution.detail} A ${variant.displayName} environment badge marks this configuration variant.",
         )
     }
@@ -209,6 +210,7 @@ internal class IconResolver {
             .accentFor(directory, settings.serviceFolderPalette) ?: return resolution
         return resolution.copy(
             icon = ModuleAccentIcon(icon, accent.color),
+            moduleAccent = accent,
             detail = "${resolution.detail} The module accent follows ${accent.moduleName}.",
         )
     }
@@ -280,4 +282,8 @@ internal class IconResolver {
 
     private fun ProjectFolderIcons.Role.displayName(): String =
         name.lowercase(Locale.ROOT).replace('_', ' ').replaceFirstChar { it.uppercase(Locale.ROOT) }
+
+    companion object {
+        const val SPRING_XML_RULE = "Spring XML DOM description"
+    }
 }

@@ -26,6 +26,7 @@ class EmberkaiIconsConfigurable : Configurable {
     private var preserveNativeIcons: JCheckBox? = null
     private var colorServiceFolders: JCheckBox? = null
     private var moduleAwareColors: JCheckBox? = null
+    private var semanticTooltips: JCheckBox? = null
     private var folderPalette: JComboBox<FolderIconPalette>? = null
     private var highContrast: JCheckBox? = null
     private var monochrome: JCheckBox? = null
@@ -50,9 +51,14 @@ class EmberkaiIconsConfigurable : Configurable {
                 "Assign a stable color to every IntelliJ module and carry it into source roots and packages."
             checkbox.addActionListener { updatePreview() }
         }
+        semanticTooltips = checkBox("Describe recognized files and folders in Project view tooltips").also { checkbox ->
+            checkbox.toolTipText =
+                "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. Screen readers announce it as the node description."
+        }
         root.add(preserveNativeIcons)
         root.add(colorServiceFolders)
         root.add(moduleAwareColors)
+        root.add(semanticTooltips)
 
         root.add(sectionTitle("Folder accessibility"))
         folderPalette = JComboBox(DefaultComboBoxModel(FolderIconPalette.entries.toTypedArray())).apply {
@@ -118,6 +124,7 @@ class EmberkaiIconsConfigurable : Configurable {
         return preserveNativeIcons?.isSelected != settings.preserveNativeJavaKotlinIcons ||
             colorServiceFolders?.isSelected != settings.colorServiceFolders ||
             moduleAwareColors?.isSelected != settings.moduleAwareColors ||
+            semanticTooltips?.isSelected != settings.semanticTooltips ||
             selectedPalette() != settings.serviceFolderPalette ||
             highContrast?.isSelected != settings.highContrastFolderIcons ||
             monochrome?.isSelected != settings.monochromeFolderIcons ||
@@ -133,6 +140,7 @@ class EmberkaiIconsConfigurable : Configurable {
         preserveNativeIcons?.let { settings.preserveNativeJavaKotlinIcons = it.isSelected }
         colorServiceFolders?.let { settings.colorServiceFolders = it.isSelected }
         moduleAwareColors?.let { settings.moduleAwareColors = it.isSelected }
+        semanticTooltips?.let { settings.semanticTooltips = it.isSelected }
         selectedPalette()?.let { settings.serviceFolderPalette = it }
         highContrast?.let { settings.highContrastFolderIcons = it.isSelected }
         monochrome?.let { settings.monochromeFolderIcons = it.isSelected }
@@ -148,6 +156,7 @@ class EmberkaiIconsConfigurable : Configurable {
         preserveNativeIcons?.isSelected = settings.preserveNativeJavaKotlinIcons
         colorServiceFolders?.isSelected = settings.colorServiceFolders
         moduleAwareColors?.isSelected = settings.moduleAwareColors
+        semanticTooltips?.isSelected = settings.semanticTooltips
         folderPalette?.selectedItem = settings.serviceFolderPalette
         highContrast?.isSelected = settings.highContrastFolderIcons
         monochrome?.isSelected = settings.monochromeFolderIcons
@@ -163,6 +172,7 @@ class EmberkaiIconsConfigurable : Configurable {
         preserveNativeIcons = null
         colorServiceFolders = null
         moduleAwareColors = null
+        semanticTooltips = null
         folderPalette = null
         highContrast = null
         monochrome = null
