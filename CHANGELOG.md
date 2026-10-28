@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added Kubernetes kind badges for Deployments, StatefulSets, DaemonSets, Services, Ingresses, ConfigMaps, Secrets, Jobs, CronJobs, CustomResourceDefinitions, PersistentVolumeClaims, and Namespaces, plus a bundle badge for multi-document files that mix kinds.
+
 ## [0.3.0] - 2026-10-28
 
 - Added a **Settings > Appearance & Behavior > Emberkai Icons** page with a live project-tree preview: toggle native Java/Kotlin icons, service-folder colors and palette, and each context-aware icon category independently.

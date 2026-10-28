@@ -4,7 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 
-/** Recognizes Kubernetes objects from root metadata and Kustomize trees from their marker file. */
+/** Recognizes Kubernetes objects and resource kinds from root metadata, and Kustomize trees from their marker. */
 internal class KubernetesIconRule : ContextIconRule {
     override val category = IconRuleCategory.KUBERNETES
 
@@ -13,7 +13,8 @@ internal class KubernetesIconRule : ContextIconRule {
             return "context.kustomize"
         }
         return when (StructuredFileKind.of(file)) {
-            StructuredFileKind.KUBERNETES -> "context.kubernetes"
+            StructuredFileKind.KUBERNETES -> StructuredFileKind.kubernetesResource(file)
+                ?.let { "context.kubernetes.$it" } ?: "context.kubernetes"
             StructuredFileKind.KUSTOMIZE -> "context.kustomize"
             else -> null
         }

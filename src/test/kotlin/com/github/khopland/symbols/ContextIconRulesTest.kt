@@ -58,11 +58,11 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
     fun testKubernetesMetadataInYamlAndJson() {
         assertContentIcon(
             "deployment.yaml", "apiVersion: apps/v1\nkind: Deployment\nmetadata: {}",
-            "emberkai/icons/kubernetes.svg",
+            "emberkai/icons/kubernetes/deployment.svg",
         )
         assertContentIcon(
             "service.json", "{\"apiVersion\":\"v1\",\"kind\":\"Service\"}",
-            "emberkai/icons/kubernetes.svg",
+            "emberkai/icons/kubernetes/service.svg",
         )
         assertContentIcon(
             "custom.yml", "apiVersion: example.com/v1alpha1\nkind: Widget",
@@ -70,7 +70,67 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
         )
         assertContentIcon(
             "bundle.yaml", "# metadata first\n---\n{}\n---\nkind: ConfigMap\napiVersion: v1",
+            "emberkai/icons/kubernetes/configmap.svg",
+        )
+    }
+
+    fun testKubernetesResourceKinds() {
+        val resources = arrayOf(
+            "apps/v1" to "StatefulSet", "apps/v1" to "DaemonSet", "networking.k8s.io/v1" to "Ingress",
+            "v1" to "Secret", "batch/v1" to "Job", "batch/v1" to "CronJob",
+            "apiextensions.k8s.io/v1" to "CustomResourceDefinition", "v1" to "PersistentVolumeClaim",
+            "v1" to "Namespace",
+        )
+        for ((apiVersion, kind) in resources) {
+            assertContentIcon(
+                "kinds/$kind.yaml", "apiVersion: $apiVersion\nkind: $kind",
+                "emberkai/icons/kubernetes/${kind.lowercase()}.svg",
+            )
+        }
+        val explanation = IconResolver().resolveWithDetails(
+            myFixture.addFileToProject("explain.yaml", "apiVersion: v1\nkind: Secret").virtualFile, project,
+        )
+        assertEquals("context.kubernetes.secret", explanation.mappingKey)
+        assertEquals(IconRuleCategory.KUBERNETES.displayName, explanation.contextRule)
+        assertContentIcon(
+            "knative.yaml", "apiVersion: serving.knative.dev/v1\nkind: Service",
             "emberkai/icons/kubernetes.svg",
+        )
+    }
+
+    fun testMultiDocumentKubernetesKinds() {
+        assertContentIcon(
+            "same.yaml", "apiVersion: v1\nkind: Secret\n---\napiVersion: v1\nkind: Secret",
+            "emberkai/icons/kubernetes/secret.svg",
+        )
+        assertContentIcon(
+            "mixed.yaml",
+            "apiVersion: apps/v1\nkind: Deployment\n---\nnotes: {}\n---\napiVersion: v1\nkind: Service",
+            "emberkai/icons/kubernetes/bundle.svg",
+        )
+        assertContentIcon(
+            "custom-mixed.yaml",
+            "apiVersion: example.com/v1\nkind: Widget\n---\napiVersion: example.com/v1\nkind: Gadget",
+            "emberkai/icons/kubernetes/bundle.svg",
+        )
+        assertContentIcon(
+            "custom-same.yaml",
+            "apiVersion: example.com/v1\nkind: Widget\n---\napiVersion: example.com/v1\nkind: Widget",
+            "emberkai/icons/kubernetes.svg",
+        )
+        assertContentIcon(
+            "trailing.yaml", "apiVersion: v1\nkind: Secret\n---\nkind: [",
+            "emberkai/icons/kubernetes.svg",
+        )
+        assertContentIcon(
+            "with-flux.yaml",
+            "apiVersion: v1\nkind: Namespace\n---\napiVersion: source.toolkit.fluxcd.io/v1\nkind: GitRepository",
+            "emberkai/icons/kubernetes/bundle.svg",
+        )
+        assertContentIcon(
+            "flux-first.yaml",
+            "apiVersion: source.toolkit.fluxcd.io/v1\nkind: GitRepository\n---\napiVersion: v1\nkind: Namespace",
+            "emberkai/icons/gitops/flux.svg",
         )
     }
 
@@ -146,6 +206,8 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
         WriteCommandAction.runWriteCommandAction(project) {
             document!!.setText("apiVersion: v1\nkind: Service")
         }
+        assertFileResource(file, "emberkai/icons/kubernetes/service.svg")
+        WriteCommandAction.runWriteCommandAction(project) { document!!.setText("apiVersion: v1\nkind: Widget") }
         assertFileResource(file, "emberkai/icons/kubernetes.svg")
         WriteCommandAction.runWriteCommandAction(project) { document!!.setText("kind: [") }
         assertFileResource(file, "symbols/icons/files/yaml.svg")
@@ -299,6 +361,10 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
     fun testNewArtworkRendersAtIdeSize() {
         for (name in arrayOf(
             "ansible", "infrastructure", "migration", "openapi", "kubernetes", "kustomize",
+            "kubernetes/deployment", "kubernetes/statefulset", "kubernetes/daemonset", "kubernetes/service",
+            "kubernetes/ingress", "kubernetes/configmap", "kubernetes/secret", "kubernetes/job",
+            "kubernetes/cronjob", "kubernetes/customresourcedefinition", "kubernetes/persistentvolumeclaim",
+            "kubernetes/namespace", "kubernetes/bundle",
             "ci/azurepipelines", "ci/bitbucket",
             "gitops/argocd", "gitops/flux",
             "sdkman", "pre-commit", "just", "mise", "snapshot", "openapi_dark",
