@@ -4,7 +4,6 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -125,6 +124,6 @@ private class AccentSwatch(private val color: Color) : Icon {
 }
 
 private fun moduleFor(project: Project, file: VirtualFile): Module? =
-    ReadAction.computeBlocking<Module?, RuntimeException> {
+    computeReadAction<Module?> {
         ProjectFileIndex.getInstance(project).getModuleForFile(file)
     }

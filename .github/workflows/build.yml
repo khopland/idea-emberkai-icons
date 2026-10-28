@@ -38,3 +38,27 @@ jobs:
           name: test-reports
           path: build/reports/tests/
           if-no-files-found: ignore
+
+  verify:
+    name: Verify IDE compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          large-packages: false
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Run plugin verifier
+        run: ./gradlew --no-daemon verifyPlugin
+      - name: Upload verifier reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: plugin-verifier-reports
+          path: build/reports/pluginVerifier/
+          if-no-files-found: ignore

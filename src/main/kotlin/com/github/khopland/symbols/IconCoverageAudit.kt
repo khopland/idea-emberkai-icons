@@ -1,6 +1,5 @@
 package com.github.khopland.symbols
 
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
@@ -98,7 +97,7 @@ internal object IconCoverageAudit {
         val visitedDirectories = hashSetOf<String>()
         val groups = linkedMapOf<GroupKey, MutableGroup>()
         val scanRoots = if (wholeProject) {
-            ReadAction.computeBlocking<List<VirtualFile>, RuntimeException> {
+            computeReadAction<List<VirtualFile>> {
                 buildList {
                     add(root)
                     ModuleManager.getInstance(project).modules.forEach { module ->
@@ -139,7 +138,7 @@ internal object IconCoverageAudit {
                     indicator.text2 = "$scannedFiles files scanned · $totalFindings candidates"
                 }
 
-                val resolution = ReadAction.computeBlocking<IconResolution, RuntimeException> {
+                val resolution = computeReadAction<IconResolution> {
                     resolver.resolveWithDetails(child, project)
                 }
                 val kind = findingKind(resolution) ?: continue
@@ -191,7 +190,7 @@ internal object IconCoverageAudit {
     }
 
     private fun isProjectContent(fileIndex: ProjectFileIndex, file: VirtualFile): Boolean =
-        ReadAction.computeBlocking<Boolean, RuntimeException> {
+        computeReadAction<Boolean> {
             fileIndex.isInContent(file) && !fileIndex.isExcluded(file) && !fileIndex.isInLibrary(file)
         }
 

@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.github.khopland.symbols</id>
     <name>Emberkai Icons</name>
-    <vendor url="https://github.com/khopland/idea-symbols">khopland</vendor>
+    <vendor url="https://github.com/khopland/idea-emberkai-icons">khopland</vendor>
     <description><![CDATA[
         <p>Emberkai Icons brings the Symbols file and folder icon set to JetBrains IDEs,
         as a companion to the Emberkai theme.</p>
@@ -16,7 +16,17 @@
         <p>Symbols-style project folders retain source/test colors, resource and
         package markers, and blue module/source-set badges, including Kotlin Multiplatform.
         Opt-in module-aware accents give every IntelliJ module a stable color that service roots,
-        source roots, packages, and their descendants share.</p>
+        source roots, packages, and their descendants share. Opt-in JVM architecture folders give
+        controller, service, repository, domain, and similar packages distinct icons.</p>
+        <p>Production, staging, test, and local variants of Spring profiles, Docker Compose files,
+        Helm values, and <code>.env</code> files get shape-and-color environment badges.</p>
+        <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
+        with a live preview, including accessibility modes: a colorblind-friendly palette,
+        high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
+        <b>View | Emberkai Icons</b>.</p>
+        <p>Right-click any file or folder and choose <b>Explain This Icon</b> to see which rule or
+        mapping selected it, or run <b>Tools | Audit Project Icon Coverage</b> to find files that
+        still use generic icons.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
@@ -37,22 +47,28 @@
                popup="true">
             <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
                     class="com.github.khopland.symbols.ToggleServiceFolderColorsAction"
-                    text="Color service folders"/>
+                    text="Color service folders"
+                    description="Color folders that contain a Gradle, Maven, or Node package manifest"/>
             <action id="com.github.khopland.symbols.ToggleModuleAwareColors"
                     class="com.github.khopland.symbols.ToggleModuleAwareColorsAction"
-                    text="Module-aware accent colors"/>
+                    text="Module-aware accent colors"
+                    description="Give every IntelliJ module a stable folder accent color"/>
             <action id="com.github.khopland.symbols.ToggleHighContrastFolders"
                     class="com.github.khopland.symbols.ToggleHighContrastFoldersAction"
-                    text="High-contrast folder markers"/>
+                    text="High-contrast folder markers"
+                    description="Use shape-coded high-contrast folder markers"/>
             <action id="com.github.khopland.symbols.ToggleMonochromeFolders"
                     class="com.github.khopland.symbols.ToggleMonochromeFoldersAction"
-                    text="Monochrome service folders"/>
+                    text="Monochrome service folders"
+                    description="Draw service folders without color"/>
             <action id="com.github.khopland.symbols.ToggleReducedFolderColor"
                     class="com.github.khopland.symbols.ToggleReducedFolderColorAction"
-                    text="Reduce service-folder color"/>
+                    text="Reduce service-folder color"
+                    description="Use softer service-folder colors"/>
             <action id="com.github.khopland.symbols.ToggleArchitectureFolders"
                     class="com.github.khopland.symbols.ToggleArchitectureFoldersAction"
-                    text="JVM architecture folders"/>
+                    text="JVM architecture folders"
+                    description="Show distinct icons for controller, service, repository, and similar packages"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"
