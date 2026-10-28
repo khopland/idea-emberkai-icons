@@ -68,7 +68,7 @@ private class ExplainIconDialog(
 
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
-        preferredSize = Dimension(520, 360)
+        preferredSize = Dimension(520, 390)
         add(JLabel("<html><b>${escape(file.name)}</b><br>${escape(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
@@ -137,6 +137,7 @@ private class ExplainIconDialog(
         } else {
             "Did not take precedence"
         }
+        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         addRow("Resolution", "${resolution.precedence.displayName}: ${resolution.detail}")
         addRow("Mapping key", mapping)
         addRow("Mapping source", source)

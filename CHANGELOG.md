@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added semantic Project view tooltips that describe what Emberkai recognized, such as a Kubernetes manifest, Flyway migration, environment variant, or module accent. Screen readers announce the same text, and a setting turns them off.
+
 ## [0.3.0] - 2026-10-28
 
 - Added a **Settings > Appearance & Behavior > Emberkai Icons** page with a live project-tree preview: toggle native Java/Kotlin icons, service-folder colors and palette, and each context-aware icon category independently.

@@ -17,6 +17,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var highContrastFolderIcons: Boolean = false
         var monochromeFolderIcons: Boolean = false
         var reducedFolderColor: Boolean = false
+        var semanticTooltips: Boolean = true
         var ci: Boolean = true
         var migrations: Boolean = true
         var helm: Boolean = true
@@ -85,6 +86,12 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             updateState { it.reducedFolderColor = value }
         }
 
+    var semanticTooltips: Boolean
+        get() = currentState.semanticTooltips
+        set(value) {
+            updateState { it.semanticTooltips = value }
+        }
+
     internal fun isEnabled(category: IconRuleCategory): Boolean = when (category) {
         IconRuleCategory.CI -> currentState.ci
         IconRuleCategory.MIGRATION -> currentState.migrations
@@ -135,6 +142,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         copy.highContrastFolderIcons = highContrastFolderIcons
         copy.monochromeFolderIcons = monochromeFolderIcons
         copy.reducedFolderColor = reducedFolderColor
+        copy.semanticTooltips = semanticTooltips
         copy.ci = ci
         copy.migrations = migrations
         copy.helm = helm

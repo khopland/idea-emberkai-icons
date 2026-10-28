@@ -25,8 +25,9 @@
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
         <b>View | Emberkai Icons</b>.</p>
         <p>Right-click any file or folder and choose <b>Explain This Icon</b> to see which rule or
-        mapping selected it, or run <b>Tools | Audit Project Icon Coverage</b> to find files that
-        still use generic icons.</p>
+        mapping selected it. Project view tooltips describe recognized tool files, project roles,
+        environment variants, and module accents. Run <b>Tools | Audit Project Icon Coverage</b>
+        to find files that still use generic icons.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
@@ -40,6 +41,7 @@
             displayName="Emberkai Icons"/>
         <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.symbols.SemanticTooltipDecorator"/>
     </extensions>
     <actions>
         <group id="com.github.khopland.symbols.EmberkaiQuickToggles"

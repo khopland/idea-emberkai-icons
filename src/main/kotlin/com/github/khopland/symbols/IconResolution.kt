@@ -10,6 +10,8 @@ internal data class IconResolution(
     val resourcePath: String? = null,
     val contextRule: String? = null,
     val projectRole: String? = null,
+    val environmentVariant: EnvironmentVariant? = null,
+    val moduleAccent: ModuleAccent? = null,
     val precedence: IconPrecedence,
     val detail: String,
 )
