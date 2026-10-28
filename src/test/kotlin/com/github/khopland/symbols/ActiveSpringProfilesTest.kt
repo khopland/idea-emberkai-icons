@@ -99,12 +99,21 @@ internal class ActiveSpringProfilesTest : IconProviderTestCase() {
         assertNotLive(plain)
         val explanation = IconResolver().resolveWithDetails(kafka.virtualFile, project).detail
         assertTrue(explanation, explanation.contains("active profile in run configuration 'Service'"))
+        val resolution = IconResolver().resolveWithDetails(kafka.virtualFile, project)
+        assertEquals(
+            "Spring Boot configuration · active in 'Service'",
+            IconDescriptions.describe(kafka.virtualFile, resolution),
+        )
 
         select("Local", programArguments = "--spring.profiles.active=local")
         assertNotLive(kafka)
         val localIcon = provider.getIcon(local, 0) as? ActiveSpringProfileIcon
         assertNotNull("The local profile is live in the new selection", localIcon)
         assertEnvironmentBadge("emberkai/icons/spring.svg", EnvironmentVariant.LOCAL, localIcon!!.baseIcon)
+        assertEquals(
+            "Spring Boot configuration · local · active in 'Local'",
+            IconDescriptions.describe(local.virtualFile, IconResolver().resolveWithDetails(local.virtualFile, project)),
+        )
     }
 
     fun testMarkerCanBeDisabledAndUnreadableSelectionsClearIt() {

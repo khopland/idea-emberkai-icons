@@ -13,6 +13,8 @@ internal data class IconResolution(
     val environmentVariant: EnvironmentVariant? = null,
     val moduleAccent: ModuleAccent? = null,
     val secretExposed: Boolean = false,
+    /** Run configuration that activates this Spring profile file, when the live marker is shown. */
+    val activeProfileConfiguration: String? = null,
     val precedence: IconPrecedence,
     val detail: String,
 )

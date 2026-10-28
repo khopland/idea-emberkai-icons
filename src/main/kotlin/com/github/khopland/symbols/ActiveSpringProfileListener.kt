@@ -23,7 +23,7 @@ internal class ActiveSpringProfileListener(private val project: Project) : RunMa
 
     override fun runConfigurationRemoved(settings: RunnerAndConfigurationSettings) = update()
 
-    private fun update(runManager: RunManager = RunManager.getInstance(project)) {
+    private fun update(runManager: RunManager = project.getService(RunManager::class.java)) {
         if (project.isDisposed) return
         val snapshot = runManager.selectedConfiguration?.let(ActiveSpringProfileReader::read)
         if (!ActiveSpringProfiles.getInstance(project).update(snapshot)) return

@@ -79,6 +79,7 @@ internal class IconResolver {
         val icon = resolution.icon ?: return resolution
         return resolution.copy(
             icon = ActiveSpringProfileIcon(icon, settings.highContrastFolderIcons, settings.monochromeFolderIcons),
+            activeProfileConfiguration = configuration,
             detail = "${resolution.detail} A live marker shows \"$profile\" is an active profile in run configuration '$configuration'.",
         )
     }
