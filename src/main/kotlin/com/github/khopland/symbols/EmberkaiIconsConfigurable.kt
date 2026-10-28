@@ -204,7 +204,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val helm = categoryBoxes[IconRuleCategory.HELM]?.isSelected != false
         nodes.add(DefaultMutableTreeNode(PreviewItem("Chart.yaml", mappings.get(if (helm) "context.helm" else "extension.yaml"))))
         val kubernetes = categoryBoxes[IconRuleCategory.KUBERNETES]?.isSelected != false
-        nodes.add(DefaultMutableTreeNode(PreviewItem("deployment.yaml", mappings.get(if (kubernetes) "context.kubernetes" else "extension.yaml"))))
+        nodes.add(DefaultMutableTreeNode(PreviewItem("deployment.yaml", mappings.get(if (kubernetes) "context.kubernetes.deployment" else "extension.yaml"))))
         val serviceIcon = if (colorServiceFolders?.isSelected != false) {
             mappings.get(previewServiceIconKey(settings))
         } else {
