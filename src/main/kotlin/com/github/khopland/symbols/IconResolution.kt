@@ -12,6 +12,7 @@ internal data class IconResolution(
     val projectRole: String? = null,
     val environmentVariant: EnvironmentVariant? = null,
     val moduleAccent: ModuleAccent? = null,
+    val secretExposed: Boolean = false,
     val precedence: IconPrecedence,
     val detail: String,
 )

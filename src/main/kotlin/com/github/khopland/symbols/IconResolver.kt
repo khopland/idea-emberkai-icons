@@ -93,6 +93,7 @@ internal class IconResolver {
                 baseIcon,
                 highContrast = settings.highContrastFolderIcons || settings.monochromeFolderIcons,
             ),
+            secretExposed = true,
             detail = "${resolution.detail} A red warning badge marks a file that usually holds credentials " +
                 "or private keys and is inside a VCS root without being ignored, so it could be committed. " +
                 "Ignore it in VCS (for example in .gitignore) to clear the badge.",
