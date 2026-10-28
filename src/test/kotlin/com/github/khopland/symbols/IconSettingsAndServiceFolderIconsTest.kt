@@ -50,8 +50,8 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         assertResourceIcon("symbols/icons/files/yaml.svg", provider.getIcon(file.virtualFile, 0, project))
 
         settings.setEnabled(IconRuleCategory.KUBERNETES, true)
-        assertResourceIcon("emberkai/icons/kubernetes.svg", provider.getIcon(file, 0))
-        assertResourceIcon("emberkai/icons/kubernetes.svg", provider.getIcon(file.virtualFile, 0, project))
+        assertResourceIcon("emberkai/icons/kubernetes/service.svg", provider.getIcon(file, 0))
+        assertResourceIcon("emberkai/icons/kubernetes/service.svg", provider.getIcon(file.virtualFile, 0, project))
     }
 
     fun testEveryContextCategoryCanBeDisabledWithoutDisablingFormatIcons() {
@@ -88,7 +88,7 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         )
         assertCategoryGate(
             IconRuleCategory.KUBERNETES, "deployment.yaml", "apiVersion: v1\nkind: Service",
-            "emberkai/icons/kubernetes.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/kubernetes/service.svg", "symbols/icons/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.SPRING_BOOT, "service/src/main/resources/application-local.yaml", "server: {}",
