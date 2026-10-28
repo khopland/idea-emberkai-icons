@@ -32,6 +32,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var environmentVariants: Boolean = true
         var unignoredSecrets: Boolean = true
         var activeSpringProfiles: Boolean = true
+        var stereotypeBadges: Boolean = true
     }
 
     @Volatile
@@ -109,6 +110,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         IconRuleCategory.ENVIRONMENT_VARIANTS -> currentState.environmentVariants
         IconRuleCategory.UNIGNORED_SECRETS -> currentState.unignoredSecrets
         IconRuleCategory.ACTIVE_SPRING_PROFILES -> currentState.activeSpringProfiles
+        IconRuleCategory.STEREOTYPE_BADGES -> currentState.stereotypeBadges
     }
 
     internal fun setEnabled(category: IconRuleCategory, enabled: Boolean) {
@@ -128,6 +130,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
                 IconRuleCategory.ENVIRONMENT_VARIANTS -> state.environmentVariants = enabled
                 IconRuleCategory.UNIGNORED_SECRETS -> state.unignoredSecrets = enabled
                 IconRuleCategory.ACTIVE_SPRING_PROFILES -> state.activeSpringProfiles = enabled
+                IconRuleCategory.STEREOTYPE_BADGES -> state.stereotypeBadges = enabled
             }
         }
     }
@@ -163,6 +166,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         copy.environmentVariants = environmentVariants
         copy.unignoredSecrets = unignoredSecrets
         copy.activeSpringProfiles = activeSpringProfiles
+        copy.stereotypeBadges = stereotypeBadges
     }
 
     companion object {

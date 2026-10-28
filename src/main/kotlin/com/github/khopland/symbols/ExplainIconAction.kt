@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.psi.PsiManager
 import java.awt.BorderLayout
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
@@ -48,7 +49,19 @@ internal class ExplainIconAction : AnAction("Explain This Icon"), DumbAware {
         val resolution = computeReadAction<IconResolution> {
             IconResolver().resolveWithDetails(file, project)
         }
-        ExplainIconDialog(project, file, resolution).show()
+        // Only Java and Kotlin classes carry stereotype badges; scripts and class files never do.
+        val stereotype = if (file.extension in STEREOTYPE_EXTENSIONS) {
+            computeReadAction<StereotypeRow> {
+                StereotypeRow(PsiManager.getInstance(project).findFile(file)?.let(ClassStereotypes::fileStereotype))
+            }
+        } else {
+            null
+        }
+        ExplainIconDialog(project, file, resolution, stereotype).show()
+    }
+
+    private companion object {
+        val STEREOTYPE_EXTENSIONS = setOf("java", "kt")
     }
 }
 
@@ -56,6 +69,7 @@ private class ExplainIconDialog(
     private val project: Project,
     private val file: VirtualFile,
     private val resolution: IconResolution,
+    private val stereotype: StereotypeRow?,
 ) : DialogWrapper(project) {
     private val status = JLabel(" ")
 
@@ -144,6 +158,7 @@ private class ExplainIconDialog(
         addRow("Context rule", contextRule)
         addRow("Native policy", nativePolicy)
         addRow("Project role", projectRole)
+        stereotype?.let { addRow("Stereotype badge", it.describe()) }
     }
 
     private fun JPanel.addRow(name: String, value: String) {
@@ -191,4 +206,17 @@ private class ExplainIconDialog(
         .replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
+}
+
+/** The class stereotype behind a source file's badge; present only for Java and Kotlin sources. */
+internal data class StereotypeRow(val match: StereotypeMatch?) {
+    fun describe(): String {
+        val match = match ?: return "None; the file's class has no recognized Spring or JPA annotation, or is a final Java class"
+        val state = if (EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) {
+            "shown on the native class icon"
+        } else {
+            "hidden because Spring stereotype badges are off"
+        }
+        return "${match.stereotype.displayName} from ${match.evidence}; $state"
+    }
 }

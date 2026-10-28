@@ -16,4 +16,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     ENVIRONMENT_VARIANTS("Environment variant badges"),
     UNIGNORED_SECRETS("Unignored secret warning badges"),
     ACTIVE_SPRING_PROFILES("Active Spring profile markers"),
+    STEREOTYPE_BADGES("Spring stereotype badges"),
 }
