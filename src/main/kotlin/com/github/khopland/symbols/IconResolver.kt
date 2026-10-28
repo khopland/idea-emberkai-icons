@@ -67,6 +67,16 @@ internal class IconResolver {
         )
     }
 
+    /**
+     * The first context rule that recognizes [file], in icon precedence order. Category toggles are
+     * ignored: they only choose artwork, while scopes describe what a file is.
+     */
+    fun recognizedCategory(file: VirtualFile, project: Project?): IconRuleCategory? {
+        if (file.isDirectory) return null
+        val name = file.name.lowercase(Locale.ROOT)
+        return contextRules.firstOrNull { it.recognizesFile(file, name, project) }?.category
+    }
+
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution =
         applyModuleAccent(baseFolderIcon(directory, name, project), directory, project)
 

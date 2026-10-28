@@ -28,6 +28,10 @@
         mapping selected it. Project view tooltips describe recognized tool files, project roles,
         environment variants, and module accents. Run <b>Tools | Audit Project Icon Coverage</b>
         to find files that still use generic icons.</p>
+        mapping selected it, or run <b>Tools | Audit Project Icon Coverage</b> to find files that
+        still use generic icons.</p>
+        <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
+        use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
@@ -42,6 +46,7 @@
         <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.SemanticTooltipDecorator"/>
+        <customScopesProvider implementation="com.github.khopland.symbols.EmberkaiScopesProvider"/>
     </extensions>
     <actions>
         <group id="com.github.khopland.symbols.EmberkaiQuickToggles"

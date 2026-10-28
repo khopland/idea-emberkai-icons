@@ -3,6 +3,8 @@
 ## [Unreleased]
 
 - Added semantic Project view tooltips that describe what Emberkai recognized, such as a Kubernetes manifest, Flyway migration, environment variant, or module accent. Screen readers announce the same text, and a setting turns them off.
+- Added **Emberkai:** scopes for database migrations, infrastructure, Kubernetes and GitOps, API contracts, CI pipelines, Spring configuration, and production config, usable in Find in Files, the Project view, inspections, and File Colors.
+- Added Kubernetes kind badges for Deployments, StatefulSets, DaemonSets, Services, Ingresses, ConfigMaps, Secrets, Jobs, CronJobs, CustomResourceDefinitions, PersistentVolumeClaims, and Namespaces, plus a bundle badge for multi-document files that mix kinds.
 
 ## [0.3.0] - 2026-10-28
 

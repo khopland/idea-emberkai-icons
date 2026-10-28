@@ -12,6 +12,9 @@ internal class MigrationIconRule : ContextIconRule {
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? =
         if (SQL_MIGRATION.matcher(name).matches()) "context.migration" else null
 
+    override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
+        name == "flyway.conf" || name == "flyway.toml" || fileIconKey(file, name, project) != null
+
     override fun folderIconKey(directory: VirtualFile): String? {
         val name = directory.name.lowercase(Locale.ROOT)
         return if (name == "migration" || name == "migrations") "context.migration-folder" else null
