@@ -1,0 +1,53 @@
+name: Draft release
+on:
+  push:
+    branches: [main]
+    paths:
+      - gradle.properties
+      - CHANGELOG.md
+      - .github/workflows/draft-release.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: draft-release
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    name: Create or update draft release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Draft release from changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          version="$(sed -n 's/^pluginVersion=//p' gradle.properties)"
+          tag="v$version"
+
+          awk -v header="## [$version]" '
+            /^## \[/ { if (found) exit; if (index($0, header) == 1) { found = 1; next } }
+            found && !/^\[[^]]*\]: / { print }
+          ' CHANGELOG.md | sed -e '/./,$!d' | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}' > notes.md
+          if [ ! -s notes.md ]; then
+            echo "::error::CHANGELOG.md has no entries under '## [$version]'"
+            exit 1
+          fi
+
+          if is_draft="$(gh release view "$tag" --json isDraft --jq .isDraft 2>/dev/null)"; then
+            if [ "$is_draft" != "true" ]; then
+              echo "Release $tag is already published; nothing to do."
+              exit 0
+            fi
+            gh release edit "$tag" --target "$GITHUB_SHA" --notes-file notes.md
+            echo "Updated draft release $tag."
+          else
+            prerelease=()
+            case "$version" in *-*) prerelease=(--prerelease) ;; esac
+            gh release create "$tag" --draft --target "$GITHUB_SHA" \
+              --title "Emberkai Icons $version" --notes-file notes.md "${prerelease[@]}"
+            echo "Created draft release $tag."
+          fi

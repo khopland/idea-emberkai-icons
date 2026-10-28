@@ -76,7 +76,8 @@ To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon
 ## Release
 
 1. Set `pluginVersion` in `gradle.properties` and move the `[Unreleased]` changelog entries under a new version heading. The Marketplace change notes are rendered from that section.
-2. Merge to `main`, then publish a GitHub release tagged `v<pluginVersion>`.
+2. Merge to `main`. The draft release workflow creates a draft GitHub release tagged `v<pluginVersion>` with that changelog section as its notes, and refreshes the draft while it is unpublished.
+3. Review the draft and publish it.
 
 The release workflow fails if the tag and `pluginVersion` differ. It attaches the ZIP to the GitHub release, then publishes to JetBrains Marketplace through the `marketplace` environment. Versions with a prerelease suffix, such as `1.2.0-beta.1`, go to the matching Marketplace channel. The workflow needs a `PUBLISH_TOKEN` secret (a Marketplace personal access token). Signing is optional and uses `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD`. The first upload of a new plugin must be made by hand on the Marketplace.
 
