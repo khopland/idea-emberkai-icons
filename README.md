@@ -44,7 +44,7 @@ Custom SVGs use matching `_dark.svg` variants when neutral slate outlines or ink
 
 ## Install
 
-1. Download the ZIP from [Releases](https://github.com/khopland/idea-symbols/releases/latest).
+1. Download the ZIP from [Releases](https://github.com/khopland/idea-emberkai-icons/releases/latest).
 2. Disable the original Symbols Icons plugin if installed.
 3. Open **Settings > Plugins > ⚙️ > Install Plugin from Disk...** and select the ZIP.
 4. Restart if prompted.
@@ -72,6 +72,13 @@ Local mappings take precedence over upstream mappings. A key such as `extension.
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
 
 To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons, but it does not evaluate content-aware rules. Use **Tools > Audit Project Icon Coverage** in the IDE to audit the icons selected by the real resolver.
+
+## Release
+
+1. Set `pluginVersion` in `gradle.properties` and move the `[Unreleased]` changelog entries under a new version heading. The Marketplace change notes are rendered from that section.
+2. Merge to `main`, then publish a GitHub release tagged `v<pluginVersion>`.
+
+The release workflow fails if the tag and `pluginVersion` differ. It attaches the ZIP to the GitHub release, then publishes to JetBrains Marketplace through the `marketplace` environment. Versions with a prerelease suffix, such as `1.2.0-beta.1`, go to the matching Marketplace channel. The workflow needs a `PUBLISH_TOKEN` secret (a Marketplace personal access token). Signing is optional and uses `CERTIFICATE_CHAIN`, `PRIVATE_KEY`, and `PRIVATE_KEY_PASSWORD`. The first upload of a new plugin must be made by hand on the Marketplace.
 
 ## Update upstream icons
 
