@@ -9,6 +9,10 @@ internal interface ContextIconRule {
 
     fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? = null
 
+    /** Scope membership; also covers canonical names whose artwork comes from static mappings. */
+    fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
+        fileIconKey(file, name, project) != null
+
     fun folderIconKey(directory: VirtualFile): String? = null
 
     fun folderIconKey(directory: VirtualFile, project: Project?): String? = folderIconKey(directory)

@@ -25,12 +25,18 @@ internal class InfrastructureIconRule : ContextIconRule {
         }
     }
 
+    override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
+        name in TERRAFORM_NAMES || TERRAFORM_EXTENSIONS.any { name.endsWith(it) } ||
+            fileIconKey(file, name, project) != null
+
     private fun isAwsTemplate(file: VirtualFile): Boolean = FileContentCache.inspect(
         file, AWS_TEMPLATE, false,
     ) { text -> AWS_MARKER.matcher(text).find() }
 
     private companion object {
         val TEMPLATE_EXTENSIONS = setOf("yaml", "yml", "json")
+        val TERRAFORM_NAMES = setOf(".terraform-version", ".terraform.lock.hcl", "terraform.rc", "terragrunt.hcl")
+        val TERRAFORM_EXTENSIONS = listOf(".tf", ".tf.json", ".tfvars", ".tofu")
         val AWS_MARKER = Pattern.compile("\\b(?:AWSTemplateFormatVersion|AWS::[A-Za-z0-9]+::[A-Za-z0-9]+)\\b")
         val AWS_TEMPLATE: Key<FileContentCache.Inspection<Boolean>> = Key.create("emberkai.awsTemplate")
     }

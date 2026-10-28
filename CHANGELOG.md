@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added **Emberkai:** scopes for database migrations, infrastructure, Kubernetes and GitOps, API contracts, CI pipelines, Spring configuration, and production config, usable in Find in Files, the Project view, inspections, and File Colors.
+
 ## [0.3.0] - 2026-10-28
 
 - Added a **Settings > Appearance & Behavior > Emberkai Icons** page with a live project-tree preview: toggle native Java/Kotlin icons, service-folder colors and palette, and each context-aware icon category independently.
