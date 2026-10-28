@@ -19,6 +19,16 @@ internal class CiConfigIconRule : ContextIconRule {
         }
     }
 
+    override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean {
+        if (name == "jenkinsfile" || name == ".gitlab-ci.yml" || name == ".gitlab-ci.yaml") return true
+        if (file.extension?.lowercase(Locale.ROOT) in YAML_EXTENSIONS &&
+            file.parent?.name == "workflows" && file.parent?.parent?.name == ".github"
+        ) {
+            return true
+        }
+        return fileIconKey(file, name, project) != null
+    }
+
     private companion object {
         val YAML_EXTENSIONS = setOf("yml", "yaml")
     }

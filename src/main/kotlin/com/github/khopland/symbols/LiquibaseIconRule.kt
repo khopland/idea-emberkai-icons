@@ -17,6 +17,9 @@ internal class LiquibaseIconRule : ContextIconRule {
         }
     }
 
+    override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
+        name == "liquibase.properties" || fileIconKey(file, name, project) != null
+
     private companion object {
         val CHANGELOG_EXTENSIONS = setOf("xml", "yaml", "yml", "json", "sql")
     }
