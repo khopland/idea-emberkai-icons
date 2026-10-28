@@ -31,8 +31,6 @@
         mapping selected it. Project view tooltips describe recognized tool files, project roles,
         environment variants, and module accents. Run <b>Tools | Audit Project Icon Coverage</b>
         to find files that still use generic icons.</p>
-        mapping selected it, or run <b>Tools | Audit Project Icon Coverage</b> to find files that
-        still use generic icons.</p>
         <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Icons by Miguel Solorio, from
