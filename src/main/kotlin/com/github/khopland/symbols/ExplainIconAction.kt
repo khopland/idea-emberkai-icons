@@ -14,7 +14,6 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.ui.DialogWrapper
 import java.awt.BorderLayout
 import java.awt.FlowLayout
@@ -46,7 +45,7 @@ internal class ExplainIconAction : AnAction("Explain This Icon"), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val file = event.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isValid } ?: return
-        val resolution = ReadAction.computeBlocking<IconResolution, RuntimeException> {
+        val resolution = computeReadAction<IconResolution> {
             IconResolver().resolveWithDetails(file, project)
         }
         ExplainIconDialog(project, file, resolution).show()
