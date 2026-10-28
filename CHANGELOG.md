@@ -9,6 +9,8 @@
 - Added unignored-secret warning badges: `.env` files, private keys, keystores, and similar credentials inside a VCS root that are not ignored get a red stop-sign badge, with a setting to turn it off.
 - Added a ring-and-dot live marker on Spring profile files activated by the selected run configuration, read from program arguments, VM options, `SPRING_PROFILES_ACTIVE`, Gradle `bootRun`, and the Spring Boot configuration's active profiles, with its own setting, an Explain This Icon note, and Project view tooltip text.
 - Added Spring stereotype badges: controllers, services, repositories, configuration classes, Spring Boot applications, and JPA/MongoDB entities keep their native Java and Kotlin class icons with a small shape-coded corner glyph, read from annotations without resolving references.
+- Added project-local icon overrides: files and folders can be remapped from `.idea/emberkai-icons.properties`, with artwork from bundled resources or `.idea/emberkai-icons/` (including `_dark` variants). Edits apply immediately, even before saving. **Explain This Icon** and the coverage audit can create and remove overrides, and **Tools > Browse Bundled Icons** searches every bundled mapping. Overridden files are described as a project icon override in tooltips.
+- Added settings filtering, export/import, and reset-to-defaults actions.
 
 ## [0.3.0] - 2026-10-28
 

@@ -1,16 +1,31 @@
 package com.github.khopland.symbols
 
 import com.intellij.icons.AllIcons
+import com.intellij.ide.DataManager
+import com.intellij.ide.impl.ProjectUtil
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileChooser.FileChooserFactory
+import com.intellij.openapi.fileChooser.FileSaverDescriptor
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.LayeredIcon
+import com.intellij.ui.components.JBTextField
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.FlowLayout
+import java.io.IOException
+import java.util.Locale
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.DefaultComboBoxModel
 import javax.swing.DefaultListCellRenderer
+import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JComboBox
 import javax.swing.JComponent
@@ -19,6 +34,8 @@ import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTree
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 
@@ -32,13 +49,29 @@ class EmberkaiIconsConfigurable : Configurable {
     private var highContrast: JCheckBox? = null
     private var monochrome: JCheckBox? = null
     private var reducedFolderColor: JCheckBox? = null
+    private var filterField: JBTextField? = null
+    private var statusLabel: JLabel? = null
     private val categoryBoxes = linkedMapOf<IconRuleCategory, JCheckBox>()
+    private val searchableRows = mutableListOf<SearchableRow>()
 
     override fun getDisplayName(): String = "Emberkai Icons"
 
     override fun createComponent(): JComponent {
         val root = JPanel()
         root.layout = BoxLayout(root, BoxLayout.Y_AXIS)
+
+        root.add(sectionTitle("Find settings"))
+        filterField = JBTextField().apply {
+            emptyText.text = "Filter settings…"
+            accessibleContext.accessibleName = "Filter settings"
+            document.addDocumentListener(object : DocumentListener {
+                override fun insertUpdate(event: DocumentEvent) = applyFilter()
+                override fun removeUpdate(event: DocumentEvent) = applyFilter()
+                override fun changedUpdate(event: DocumentEvent) = applyFilter()
+            })
+        }
+        root.add(filterField!!)
+        statusLabel = JLabel(" ").apply { alignmentX = Component.LEFT_ALIGNMENT }
 
         root.add(sectionTitle("Icon behavior"))
         preserveNativeIcons = checkBox("Keep IntelliJ's native Java and Kotlin file icons").also {
@@ -56,10 +89,10 @@ class EmberkaiIconsConfigurable : Configurable {
             checkbox.toolTipText =
                 "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. Screen readers announce it as the node description."
         }
-        root.add(preserveNativeIcons)
-        root.add(colorServiceFolders)
-        root.add(moduleAwareColors)
-        root.add(semanticTooltips)
+        addSearchable(root, preserveNativeIcons!!, "Keep IntelliJ's native Java and Kotlin file icons")
+        addSearchable(root, colorServiceFolders!!, "Color service folders by build or package manifest")
+        addSearchable(root, moduleAwareColors!!, "Use module-aware accent colors and folder badges")
+        addSearchable(root, semanticTooltips!!, "Describe recognized files and folders in Project view tooltips")
 
         root.add(sectionTitle("Folder accessibility"))
         folderPalette = JComboBox(DefaultComboBoxModel(FolderIconPalette.entries.toTypedArray())).apply {
@@ -74,7 +107,8 @@ class EmberkaiIconsConfigurable : Configurable {
             accessibleContext.accessibleDescription = "Choose the color order used for service-root folders."
             addActionListener { updatePreview() }
         }
-        root.add(labeledControl("Service-folder palette", folderPalette!!))
+        val paletteRow = labeledControl("Service-folder palette", folderPalette!!)
+        addSearchable(root, paletteRow, "Service-folder palette")
         highContrast = checkBox("Use high-contrast, shape-coded service-folder markers").also { checkbox ->
             checkbox.addActionListener { updatePreview() }
         }
@@ -84,9 +118,9 @@ class EmberkaiIconsConfigurable : Configurable {
         reducedFolderColor = checkBox("Reduce service-folder color").also { checkbox ->
             checkbox.addActionListener { updatePreview() }
         }
-        root.add(highContrast)
-        root.add(monochrome)
-        root.add(reducedFolderColor)
+        addSearchable(root, highContrast!!, "Use high-contrast, shape-coded service-folder markers")
+        addSearchable(root, monochrome!!, "Use monochrome service-folder icons")
+        addSearchable(root, reducedFolderColor!!, "Reduce service-folder color")
         root.add(Box.createVerticalStrut(8))
 
         root.add(sectionTitle("Live preview"))
@@ -111,8 +145,38 @@ class EmberkaiIconsConfigurable : Configurable {
             val checkbox = checkBox(category.displayName)
             categoryBoxes[category] = checkbox
             checkbox.addActionListener { updatePreview() }
-            root.add(checkbox)
+            addSearchable(root, checkbox, category.displayName)
         }
+
+        root.add(sectionTitle("Project icon overrides"))
+        root.add(JLabel(
+            "Overrides are stored in .idea/${ProjectIconOverrideStore.PROPERTIES_NAME} and can be shared with the project.",
+        ).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+        })
+        val overrideButtons = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+            add(JButton("Open override file").apply { addActionListener { openOverridesFile() } })
+            add(JButton("Browse bundled icons").apply { addActionListener { browseIcons() } })
+            add(JButton("Reload overrides").apply {
+                addActionListener {
+                    val project = activeProject()
+                    project?.let { ProjectIconOverrideStore.getInstance(it).reload() }
+                    statusLabel?.text = if (project == null) "Open a project to reload its icon overrides." else "Project icon overrides reloaded."
+                }
+            })
+        }
+        addSearchable(root, overrideButtons, "Project icon overrides")
+
+        root.add(sectionTitle("Settings file"))
+        val settingsButtons = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+            add(JButton("Export…").apply { addActionListener { exportSettings() } })
+            add(JButton("Import…").apply { addActionListener { importSettings() } })
+            add(JButton("Reset to defaults").apply { addActionListener { resetSettings() } })
+        }
+        addSearchable(root, settingsButtons, "Export import reset settings")
+        root.add(statusLabel!!)
         root.add(Box.createVerticalGlue())
 
         reset()
@@ -136,36 +200,43 @@ class EmberkaiIconsConfigurable : Configurable {
     }
 
     override fun apply() {
-        val settings = EmberkaiIconsSettings.getInstance()
         val changed = isModified()
-        preserveNativeIcons?.let { settings.preserveNativeJavaKotlinIcons = it.isSelected }
-        colorServiceFolders?.let { settings.colorServiceFolders = it.isSelected }
-        moduleAwareColors?.let { settings.moduleAwareColors = it.isSelected }
-        semanticTooltips?.let { settings.semanticTooltips = it.isSelected }
-        selectedPalette()?.let { settings.serviceFolderPalette = it }
-        highContrast?.let { settings.highContrastFolderIcons = it.isSelected }
-        monochrome?.let { settings.monochromeFolderIcons = it.isSelected }
-        reducedFolderColor?.let { settings.reducedFolderColor = it.isSelected }
-        for (category in IconRuleCategory.entries) {
-            categoryBoxes[category]?.let { settings.setEnabled(category, it.isSelected) }
-        }
+        EmberkaiIconsSettings.getInstance().loadState(formState())
         if (changed) RefreshProjectIconPresentations.refresh()
     }
 
     override fun reset() {
-        val settings = EmberkaiIconsSettings.getInstance()
-        preserveNativeIcons?.isSelected = settings.preserveNativeJavaKotlinIcons
-        colorServiceFolders?.isSelected = settings.colorServiceFolders
-        moduleAwareColors?.isSelected = settings.moduleAwareColors
-        semanticTooltips?.isSelected = settings.semanticTooltips
-        folderPalette?.selectedItem = settings.serviceFolderPalette
-        highContrast?.isSelected = settings.highContrastFolderIcons
-        monochrome?.isSelected = settings.monochromeFolderIcons
-        reducedFolderColor?.isSelected = settings.reducedFolderColor
+        loadForm(EmberkaiIconsSettings.getInstance().state)
+    }
+
+    /** Shows [state] in the form without applying it; Apply or Cancel decides. */
+    private fun loadForm(state: EmberkaiIconsSettings.State) {
+        preserveNativeIcons?.isSelected = state.preserveNativeJavaKotlinIcons
+        colorServiceFolders?.isSelected = state.colorServiceFolders
+        moduleAwareColors?.isSelected = state.moduleAwareColors
+        semanticTooltips?.isSelected = state.semanticTooltips
+        folderPalette?.selectedItem = FolderIconPalette.fromId(state.serviceFolderPalette)
+        highContrast?.isSelected = state.highContrastFolderIcons
+        monochrome?.isSelected = state.monochromeFolderIcons
+        reducedFolderColor?.isSelected = state.reducedFolderColor
         for (category in IconRuleCategory.entries) {
-            categoryBoxes[category]?.isSelected = settings.isEnabled(category)
+            categoryBoxes[category]?.isSelected = state.isEnabled(category)
         }
         updatePreview()
+    }
+
+    private fun formState(): EmberkaiIconsSettings.State = EmberkaiIconsSettings.getInstance().state.also { state ->
+        preserveNativeIcons?.let { state.preserveNativeJavaKotlinIcons = it.isSelected }
+        colorServiceFolders?.let { state.colorServiceFolders = it.isSelected }
+        moduleAwareColors?.let { state.moduleAwareColors = it.isSelected }
+        semanticTooltips?.let { state.semanticTooltips = it.isSelected }
+        selectedPalette()?.let { state.serviceFolderPalette = it.name }
+        highContrast?.let { state.highContrastFolderIcons = it.isSelected }
+        monochrome?.let { state.monochromeFolderIcons = it.isSelected }
+        reducedFolderColor?.let { state.reducedFolderColor = it.isSelected }
+        for (category in IconRuleCategory.entries) {
+            categoryBoxes[category]?.let { state.setEnabled(category, it.isSelected) }
+        }
     }
 
     override fun disposeUIResources() {
@@ -178,10 +249,94 @@ class EmberkaiIconsConfigurable : Configurable {
         highContrast = null
         monochrome = null
         reducedFolderColor = null
+        filterField = null
+        statusLabel = null
         categoryBoxes.clear()
+        searchableRows.clear()
     }
 
     private fun selectedPalette(): FolderIconPalette? = folderPalette?.selectedItem as? FolderIconPalette
+
+    private fun addSearchable(root: JPanel, component: JComponent, text: String) {
+        component.alignmentX = Component.LEFT_ALIGNMENT
+        searchableRows += SearchableRow(component, text)
+        root.add(component)
+    }
+
+    private fun applyFilter() {
+        val query = filterField?.text?.trim()?.lowercase(Locale.ROOT).orEmpty()
+        searchableRows.forEach { row ->
+            row.component.isVisible = query.isEmpty() || row.text.lowercase(Locale.ROOT).contains(query)
+        }
+        filterField?.parent?.revalidate()
+        filterField?.parent?.repaint()
+    }
+
+    private fun activeProject(): Project? {
+        val component = filterField
+        val fromContext = component?.let { CommonDataKeys.PROJECT.getData(DataManager.getInstance().getDataContext(it)) }
+        return (fromContext ?: ProjectUtil.getActiveProject())?.takeUnless { it.isDisposed || it.isDefault }
+    }
+
+    private fun openOverridesFile() {
+        val project = activeProject()
+        if (project == null) {
+            statusLabel?.text = "Open a project to edit its icon overrides."
+            return
+        }
+        val file = ProjectIconOverrideStore.getInstance(project).ensurePropertiesFile()
+        if (file == null) {
+            Messages.showErrorDialog(project, "Could not create the project overrides file.", "Emberkai Icons")
+            return
+        }
+        OpenFileDescriptor(project, file).navigate(true)
+        statusLabel?.text = "Opened .idea/${ProjectIconOverrideStore.PROPERTIES_NAME} in ${project.name}."
+    }
+
+    private fun browseIcons() {
+        val project = activeProject()
+        if (project == null) {
+            statusLabel?.text = "Open a project to browse bundled icons."
+            return
+        }
+        IconCatalogDialog(project, selectable = false).show()
+    }
+
+    private fun exportSettings() {
+        val parent = filterField ?: return
+        val descriptor = FileSaverDescriptor(
+            "Export Emberkai Icons Settings",
+            "Save the settings shown on this page",
+            "properties",
+        )
+        val target = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, parent)
+            .save(null as java.nio.file.Path?, "emberkai-icons.properties") ?: return
+        try {
+            EmberkaiIconsSettings.export(formState(), target.file.toPath())
+            statusLabel?.text = "Exported settings to ${target.file.name}."
+        } catch (exception: IOException) {
+            Messages.showErrorDialog(filterField, "Could not export settings: ${exception.message}", "Emberkai Icons")
+        }
+    }
+
+    private fun importSettings() {
+        val descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor("properties")
+            .withTitle("Import Emberkai Icons Settings")
+        val file = FileChooser.chooseFile(descriptor, filterField, activeProject(), null) ?: return
+        try {
+            loadForm(EmberkaiIconsSettings.import(file.toNioPath()))
+            statusLabel?.text = "Imported ${file.name}. Apply to keep these settings."
+        } catch (exception: IOException) {
+            Messages.showErrorDialog(filterField, "Could not import settings: ${exception.message}", "Emberkai Icons")
+        } catch (exception: IllegalArgumentException) {
+            Messages.showErrorDialog(filterField, "Could not import settings: ${exception.message}", "Emberkai Icons")
+        }
+    }
+
+    private fun resetSettings() {
+        loadForm(EmberkaiIconsSettings.State())
+        statusLabel?.text = "Defaults restored. Apply to keep them."
+    }
 
     private fun updatePreview() {
         val panel = previewPanel ?: return
@@ -290,6 +445,8 @@ class EmberkaiIconsConfigurable : Configurable {
         add(JLabel(label).apply { labelFor = component }, BorderLayout.WEST)
         add(component, BorderLayout.CENTER)
     }
+
+    private data class SearchableRow(val component: JComponent, val text: String)
 
     private data class PreviewItem(val label: String, val icon: javax.swing.Icon?)
 

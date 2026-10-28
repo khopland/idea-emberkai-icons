@@ -26,20 +26,24 @@ internal data class CoverageAuditFinding(
 ) {
     override fun toString(): String = relativePath.substringAfterLast('/').ifEmpty { file.name }
 
-    val suggestedMapping: String
+    val suggestedMappingKey: String
         get() {
             val fileExtension = extension
             val relativeParent = parentDirectory.takeUnless { it == "." }.orEmpty().lowercase(Locale.ROOT)
-            val key = if (fileExtension != null) {
+            return if (fileExtension != null) {
                 "extension.${if (relativeParent.isEmpty()) "" else "$relativeParent/"}$fileExtension"
             } else {
                 "file.${relativePath.lowercase(Locale.ROOT)}"
             }
+        }
+
+    val suggestedMapping: String
+        get() {
             val slug = file.name.lowercase(Locale.ROOT)
                 .replace(Regex("[^a-z0-9._-]+"), "-")
                 .trim('-', '.')
                 .ifEmpty { "custom" }
-            return "${escapePropertyKey(key)}=/emberkai/icons/$slug-icon.svg"
+            return "${escapePropertyKey(suggestedMappingKey)}=/emberkai/icons/$slug-icon.svg"
         }
 
     private fun escapePropertyKey(key: String): String = key

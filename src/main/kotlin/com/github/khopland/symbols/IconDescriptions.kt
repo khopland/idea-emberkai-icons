@@ -64,6 +64,7 @@ internal object IconDescriptions {
     )
 
     private const val SERVICE_ROOT = "Service root"
+    private const val PROJECT_OVERRIDE = "Project icon override"
     private const val SEPARATOR = " · "
     private const val SECRET_WARNING = "not ignored by VCS — may contain secrets"
 
@@ -85,6 +86,7 @@ internal object IconDescriptions {
 
     private fun label(file: VirtualFile, name: String, resolution: IconResolution): String? {
         val key = resolution.mappingKey
+        if (resolution.mappingSource == MappingSource.PROJECT_OVERRIDE) return PROJECT_OVERRIDE
         return when (resolution.precedence) {
             IconPrecedence.CONTEXT_RULE ->
                 refined(key, file, name, resolution) ?: LABELS[key] ?: resolution.contextRule

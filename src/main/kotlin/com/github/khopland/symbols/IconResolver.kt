@@ -32,9 +32,12 @@ internal class IconResolver {
         resolveWithDetails(file, project).icon
 
     fun resolveWithDetails(file: VirtualFile, project: Project?): IconResolution {
+        val name = file.name.lowercase(Locale.ROOT)
         if (!file.isDirectory && project != null && !project.isDisposed &&
             EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.SPRING_BOOT) &&
-            !DumbService.isDumb(project)
+            !DumbService.isDumb(project) &&
+            // Project overrides also win over the Spring XML DOM icon.
+            ProjectIconOverrideStore.getInstance(project).fileOverride(file, name) == null
         ) {
             val springIcon = SpringDomIconSupport.iconFor(file, project)
             if (springIcon != null) {
@@ -51,7 +54,6 @@ internal class IconResolver {
             }
         }
 
-        val name = file.name.lowercase(Locale.ROOT)
         val resolution = if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
         if (file.isDirectory || resolution.precedence == IconPrecedence.NATIVE_POLICY) return resolution
         return applyActiveProfile(applySecretBadge(applyEnvironmentBadge(resolution, file), file, project), name, project)
@@ -136,6 +138,14 @@ internal class IconResolver {
                 precedence = IconPrecedence.PROJECT_ROLE,
                 detail = "The project root model leaves this folder to its native language or generated-source icon.",
             )
+        }
+        if (project != null && !project.isDisposed) {
+            ProjectIconOverrideStore.getInstance(project).folderOverride(directory, name)?.let {
+                return it.toResolution(
+                    precedence = IconPrecedence.MAPPING,
+                    detail = "A project icon override matched this folder.",
+                )
+            }
         }
         if (projectRole == ProjectFolderIcons.Role.PACKAGE ||
             projectRole == ProjectFolderIcons.Role.TEST_PACKAGE
@@ -263,6 +273,15 @@ internal class IconResolver {
             )
         }
 
+        if (project != null && !project.isDisposed) {
+            ProjectIconOverrideStore.getInstance(project).fileOverride(file, name)?.let {
+                return it.toResolution(
+                    precedence = IconPrecedence.MAPPING,
+                    detail = "A project icon override matched this file.",
+                )
+            }
+        }
+
         mappings.contextualMatch(file, "file.", name)?.let {
             return it.toResolution(IconPrecedence.MAPPING, detail = "A path-specific file mapping matched.")
         }
@@ -308,6 +327,16 @@ internal class IconResolver {
         precedence = precedence,
         detail = detail,
     )
+
+    private fun ProjectIconOverride.toResolution(precedence: IconPrecedence, detail: String): IconResolution =
+        IconResolution(
+            icon = icon,
+            mappingKey = key,
+            mappingSource = MappingSource.PROJECT_OVERRIDE,
+            resourcePath = resourcePath,
+            precedence = precedence,
+            detail = detail,
+        )
 
     private fun architectureResolution(directory: VirtualFile, project: Project?): IconResolution? {
         if (!EmberkaiIconsSettings.getInstance().isEnabled(architectureRule.category)) return null

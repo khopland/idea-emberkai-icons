@@ -73,6 +73,18 @@ internal class IconMappings {
         return extensionMatch(name)?.icon
     }
 
+    /** Every bundled mapping key and artwork path, excluding project-local overrides. */
+    fun catalog(): List<IconCatalogEntry> {
+        val entries = linkedMapOf<String, IconCatalogEntry>()
+        upstream.keys.toList().forEach { key ->
+            entries[key] = IconCatalogEntry(key, MappingSource.UPSTREAM, "/symbols/icons/" + upstream.getString(key))
+        }
+        custom.keys.toList().forEach { key ->
+            entries[key] = IconCatalogEntry(key, MappingSource.CUSTOM, custom.getString(key))
+        }
+        return entries.values.sortedBy { it.key.lowercase(Locale.ROOT) }
+    }
+
     fun extensionMatch(name: String): MappedIcon? {
         var current = name
         while (true) {
@@ -88,6 +100,7 @@ internal class IconMappings {
 internal enum class MappingSource(val displayName: String) {
     UPSTREAM("Upstream Symbols mapping"),
     CUSTOM("Custom Emberkai mapping"),
+    PROJECT_OVERRIDE("Project icon override"),
 }
 
 internal data class MappedIcon(
@@ -96,3 +109,16 @@ internal data class MappedIcon(
     val resourcePath: String,
     val icon: Icon,
 )
+
+internal data class IconCatalogEntry(
+    val key: String,
+    val source: MappingSource,
+    val resourcePath: String,
+) {
+    val icon: Icon?
+        get() = try {
+            IconLoader.findIcon(resourcePath, SymbolsIconProvider::class.java)
+        } catch (_: RuntimeException) {
+            null
+        }
+}

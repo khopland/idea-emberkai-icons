@@ -48,6 +48,10 @@ internal class IconCoverageAuditDialog(
         isEnabled = false
         addActionListener { reportSelectedFinding() }
     }
+    private val createOverride = JButton("Create Override…").apply {
+        isEnabled = false
+        addActionListener { createSelectedOverride() }
+    }
     private val openFile = JButton("Open File").apply {
         isEnabled = false
         addActionListener { openSelectedFile() }
@@ -104,6 +108,7 @@ internal class IconCoverageAuditDialog(
             bottom.add(status, BorderLayout.NORTH)
             bottom.add(JPanel(FlowLayout(FlowLayout.RIGHT, 8, 0)).apply {
                 add(openFile)
+                add(createOverride)
                 add(copyMapping)
                 add(reportMissing)
             }, BorderLayout.SOUTH)
@@ -126,12 +131,16 @@ internal class IconCoverageAuditDialog(
                 appendLine("Current mapping: ${finding.mappingKey ?: "none"}")
                 appendLine("Mapping source: ${finding.mappingSource?.displayName ?: "none"}")
                 appendLine()
+                appendLine("Suggested override key:")
+                appendLine(finding.suggestedMappingKey)
+                appendLine()
                 appendLine("Suggested mapping for icons.properties:")
                 append(finding.suggestedMapping)
             }
         }
         details.caretPosition = 0
         openFile.isEnabled = finding != null
+        createOverride.isEnabled = finding != null
         copyMapping.isEnabled = finding != null
         reportMissing.isEnabled = finding != null
         status.text = finding?.kind?.displayName ?: " "
@@ -141,6 +150,19 @@ internal class IconCoverageAuditDialog(
         val finding = selectedFinding ?: return
         CopyPasteManager.getInstance().setContents(StringSelection(finding.suggestedMapping))
         status.text = "Suggested mapping copied. Replace the artwork path with an existing or new SVG."
+    }
+
+    private fun createSelectedOverride() {
+        val finding = selectedFinding ?: return
+        IconOverrideDialog(
+            project = project,
+            file = finding.file,
+            initialKey = finding.suggestedMappingKey,
+            initialIconPath = null,
+            onSaved = {
+                status.text = "Override saved. Re-run the audit to verify the new icon."
+            },
+        ).show()
     }
 
     private fun reportSelectedFinding() {
