@@ -54,7 +54,7 @@ internal class IconResolver {
         val name = file.name.lowercase(Locale.ROOT)
         val resolution = if (file.isDirectory) folderIcon(file, name, project) else fileIcon(file, name, project)
         if (file.isDirectory || resolution.precedence == IconPrecedence.NATIVE_POLICY) return resolution
-        return applySecretBadge(applyEnvironmentBadge(resolution, file), file, project)
+        return applyActiveProfile(applySecretBadge(applyEnvironmentBadge(resolution, file), file, project), name, project)
     }
 
     private fun applyEnvironmentBadge(resolution: IconResolution, file: VirtualFile): IconResolution {
@@ -65,6 +65,21 @@ internal class IconResolver {
             icon = EnvironmentVariantBadgeIcon(baseIcon, variant),
             environmentVariant = variant,
             detail = "${resolution.detail} A ${variant.displayName} environment badge marks this configuration variant.",
+        )
+    }
+
+    /** Only files the Spring Boot rule recognized can carry the live marker; the lookup is a set test. */
+    private fun applyActiveProfile(resolution: IconResolution, name: String, project: Project?): IconResolution {
+        if (resolution.contextRule != IconRuleCategory.SPRING_BOOT.displayName) return resolution
+        if (project == null || project.isDisposed) return resolution
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.isEnabled(IconRuleCategory.ACTIVE_SPRING_PROFILES)) return resolution
+        val profile = ActiveSpringProfiles.profileOf(name) ?: return resolution
+        val configuration = ActiveSpringProfiles.getIfCreated(project)?.configurationFor(profile) ?: return resolution
+        val icon = resolution.icon ?: return resolution
+        return resolution.copy(
+            icon = ActiveSpringProfileIcon(icon, settings.highContrastFolderIcons, settings.monochromeFolderIcons),
+            detail = "${resolution.detail} A live marker shows \"$profile\" is an active profile in run configuration '$configuration'.",
         )
     }
 

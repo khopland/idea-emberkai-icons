@@ -1,0 +1,8 @@
+<idea-plugin>
+    <projectListeners>
+        <!-- Java run configurations carry the VM options, arguments, and environment Spring reads. -->
+        <listener
+            class="com.github.khopland.symbols.ActiveSpringProfileListener"
+            topic="com.intellij.execution.RunManagerListener"/>
+    </projectListeners>
+</idea-plugin>

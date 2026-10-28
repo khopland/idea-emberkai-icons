@@ -31,6 +31,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var architecture: Boolean = false
         var environmentVariants: Boolean = true
         var unignoredSecrets: Boolean = true
+        var activeSpringProfiles: Boolean = true
     }
 
     @Volatile
@@ -107,6 +108,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         IconRuleCategory.ARCHITECTURE -> currentState.architecture
         IconRuleCategory.ENVIRONMENT_VARIANTS -> currentState.environmentVariants
         IconRuleCategory.UNIGNORED_SECRETS -> currentState.unignoredSecrets
+        IconRuleCategory.ACTIVE_SPRING_PROFILES -> currentState.activeSpringProfiles
     }
 
     internal fun setEnabled(category: IconRuleCategory, enabled: Boolean) {
@@ -125,6 +127,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
                 IconRuleCategory.ARCHITECTURE -> state.architecture = enabled
                 IconRuleCategory.ENVIRONMENT_VARIANTS -> state.environmentVariants = enabled
                 IconRuleCategory.UNIGNORED_SECRETS -> state.unignoredSecrets = enabled
+                IconRuleCategory.ACTIVE_SPRING_PROFILES -> state.activeSpringProfiles = enabled
             }
         }
     }
@@ -159,6 +162,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         copy.architecture = architecture
         copy.environmentVariants = environmentVariants
         copy.unignoredSecrets = unignoredSecrets
+        copy.activeSpringProfiles = activeSpringProfiles
     }
 
     companion object {

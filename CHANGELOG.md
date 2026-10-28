@@ -6,6 +6,7 @@
 - Added **Emberkai:** scopes for database migrations, infrastructure, Kubernetes and GitOps, API contracts, CI pipelines, Spring configuration, and production config, usable in Find in Files, the Project view, inspections, and File Colors.
 - Added Kubernetes kind badges for Deployments, StatefulSets, DaemonSets, Services, Ingresses, ConfigMaps, Secrets, Jobs, CronJobs, CustomResourceDefinitions, PersistentVolumeClaims, and Namespaces, plus a bundle badge for multi-document files that mix kinds.
 - Added unignored-secret warning badges: `.env` files, private keys, keystores, and similar credentials inside a VCS root that are not ignored get a red stop-sign badge, with a setting to turn it off.
+- Added a ring-and-dot live marker on Spring profile files activated by the selected run configuration, read from program arguments, VM options, `SPRING_PROFILES_ACTIVE`, Gradle `bootRun`, and the Spring Boot configuration's active profiles, with its own setting and an Explain This Icon note.
 
 ## [0.3.0] - 2026-10-28
 
