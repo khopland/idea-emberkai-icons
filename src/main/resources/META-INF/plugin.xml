@@ -40,6 +40,8 @@
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>
         or <b>Infrastructure</b>, to keep matching files in full color and dim the rest of the Project view.</p>
+        <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
+        <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>

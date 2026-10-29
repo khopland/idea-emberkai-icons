@@ -3,8 +3,11 @@ package com.github.khopland.symbols.settings
 import com.github.khopland.symbols.badges.EnvironmentVariant
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.ownership.CodeOwners
+import com.github.khopland.symbols.ownership.CodeOwnersRule
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.scope.packageSet.AbstractPackageSet
 import com.intellij.psi.search.scope.packageSet.CustomScopesProvider
@@ -35,12 +38,46 @@ internal enum class EmberkaiScope(val displayName: String, private val categorie
     }
 }
 
-class EmberkaiScopesProvider : CustomScopesProvider {
+/**
+ * The fixed Emberkai scopes, plus one "Owned by" scope per owner named in the project's CODEOWNERS
+ * file. Owner scopes are rebuilt only when the parsed CODEOWNERS rules change, and capped so a
+ * large organization does not flood scope pickers.
+ */
+class EmberkaiScopesProvider(private val project: Project) : CustomScopesProvider {
     private val scopes: List<NamedScope> = EmberkaiScope.entries.map { scope ->
         NamedScope(scope.scopeName, EmberkaiPackageSet(scope))
     }
 
-    override fun getCustomScopes(): List<NamedScope> = scopes
+    @Volatile
+    private var ownerScopes: Pair<List<CodeOwnersRule>, List<NamedScope>>? = null
+
+    override fun getCustomScopes(): List<NamedScope> = scopes + ownerScopes()
+
+    private fun ownerScopes(): List<NamedScope> {
+        if (project.isDisposed) return emptyList()
+        val codeOwners = project.guessProjectDir()?.let(CodeOwners::fileAt) ?: return emptyList()
+        val rules = runReadActionBlocking { CodeOwners.rules(codeOwners) }
+        ownerScopes?.takeIf { it.first === rules }?.let { return it.second }
+        val built = rules.flatMap { it.owners }.distinct()
+            .sortedBy { it.lowercase() }
+            .take(MAX_OWNER_SCOPES)
+            .map { owner -> NamedScope(ownerScopeName(owner), OwnerPackageSet(owner)) }
+        ownerScopes = rules to built
+        return built
+    }
+
+    internal companion object {
+        const val MAX_OWNER_SCOPES = 50
+
+        fun ownerScopeName(owner: String): String = "Emberkai: Owned by $owner"
+    }
+}
+
+private class OwnerPackageSet(private val owner: String) : AbstractPackageSet("emberkai:owner:$owner") {
+    override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean {
+        if (file.isDirectory || !file.isValid || project.isDisposed) return false
+        return runReadActionBlocking { CodeOwners.ownership(file) }?.owners?.contains(owner) == true
+    }
 }
 
 private class EmberkaiPackageSet(

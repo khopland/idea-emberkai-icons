@@ -18,7 +18,7 @@ import org.jetbrains.concurrency.CancellablePromise
 
 /** The files a lens matched, plus every folder that contains one of them. */
 internal class LensSnapshot(
-    val lens: IconLens,
+    val lens: Lens,
     val memberCount: Int,
     private val highlighted: Set<VirtualFile>,
 ) {
@@ -26,7 +26,7 @@ internal class LensSnapshot(
 
     companion object {
         /** Walks the project's content once; call inside a read action. */
-        fun collect(project: Project, lens: IconLens): LensSnapshot {
+        fun collect(project: Project, lens: Lens): LensSnapshot {
             val highlighted = HashSet<VirtualFile>()
             var members = 0
             ProjectFileIndex.getInstance(project).iterateContent { file ->
@@ -56,7 +56,7 @@ internal class IconLensService(private val project: Project) : Disposable {
     private val recomputeAlarm = Alarm(Alarm.ThreadToUse.SWING_THREAD, this)
 
     @Volatile
-    var active: IconLens? = null
+    var active: Lens? = null
         private set
 
     @Volatile
@@ -78,7 +78,7 @@ internal class IconLensService(private val project: Project) : Disposable {
     }
 
     /** Must be called from the EDT. The returned promise completes once the Project view shows [lens]. */
-    fun select(lens: IconLens?): CancellablePromise<*>? {
+    fun select(lens: Lens?): CancellablePromise<*>? {
         if (lens == active) return null
         active = lens
         snapshot = null
