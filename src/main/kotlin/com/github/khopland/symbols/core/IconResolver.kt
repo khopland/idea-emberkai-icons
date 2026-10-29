@@ -26,6 +26,7 @@ import com.github.khopland.symbols.rules.KubernetesIconRule
 import com.github.khopland.symbols.rules.LiquibaseIconRule
 import com.github.khopland.symbols.rules.MigrationIconRule
 import com.github.khopland.symbols.rules.SpringBootIconRule
+import com.github.khopland.symbols.rules.TerraformIconRule
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.isEnabled
 import com.github.khopland.symbols.spring.ActiveSpringProfileIcon
@@ -47,6 +48,7 @@ internal object IconResolver {
         LiquibaseIconRule(),
         HelmIconRule(),
         AnsibleIconRule(),
+        TerraformIconRule(),
         InfrastructureIconRule(),
         GitOpsIconRule(),
         MigrationIconRule(),

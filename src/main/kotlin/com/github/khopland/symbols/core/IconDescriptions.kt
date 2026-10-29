@@ -22,6 +22,8 @@ internal object IconDescriptions {
         "context.helm" to "Helm chart template",
         "context.helm-folder" to "Helm chart folder",
         "context.infrastructure" to "Infrastructure as code",
+        "context.opentofu" to "OpenTofu configuration",
+        "context.opentofu-folder" to "OpenTofu folder",
         "context.kubernetes" to "Kubernetes manifest",
         "context.kustomize" to "Kustomization",
         "context.kustomize-folder" to "Kustomize folder",

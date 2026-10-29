@@ -41,8 +41,10 @@ internal class InfrastructureIconRule : ContextIconRule {
 
     private companion object {
         val TEMPLATE_EXTENSIONS = setOf("yaml", "yml", "json")
-        val TERRAFORM_NAMES = setOf(".terraform-version", ".terraform.lock.hcl", "terraform.rc", "terragrunt.hcl")
-        val TERRAFORM_EXTENSIONS = listOf(".tf", ".tf.json", ".tfvars", ".tofu")
+        val TERRAFORM_NAMES = setOf(
+            ".terraform-version", ".opentofu-version", ".terraform.lock.hcl", "terraform.rc", "terragrunt.hcl",
+        )
+        val TERRAFORM_EXTENSIONS = listOf(".tf", ".tf.json", ".tfvars", ".tfvars.json", ".tofu", ".tofu.json")
         /** Packer templates and variables, and Nomad job specifications. */
         val HASHICORP_EXTENSIONS = listOf(".pkr.hcl", ".pkr.json", ".pkrvars.hcl", ".nomad.hcl", ".nomad")
         val AWS_MARKER = Pattern.compile("\\b(?:AWSTemplateFormatVersion|AWS::[A-Za-z0-9]+::[A-Za-z0-9]+)\\b")

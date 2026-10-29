@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added OpenTofu icons: `.tofu` files and `.opentofu-version` always use OpenTofu artwork, and Terraform files, lock files, and folders switch to it when the project shows OpenTofu (a version file, `.tofu` files, `registry.opentofu.org` in the lock file, or `opentofu` in `.tool-versions` or mise).
 - Added an IntelliJ IDEA folder icon for `.idea/`; files and folders inside it keep their native icons.
 - Added a CODEOWNERS ownership layer: Project view tooltips name each file's and folder's owners, **Explain This Icon** shows the CODEOWNERS line that assigned them, every owner gets an **Emberkai: Owned by …** scope, and **Lens > Owned By** highlights one owner's files. Matching follows GitHub's rules, with a setting to hide owners from tooltips.
 - Added Quarkus, Micronaut, and Ktor configuration icons, detected from build declarations like Spring Boot, with their own setting.
