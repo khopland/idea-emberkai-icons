@@ -385,6 +385,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "folders/folder-kustomize_dark", "folders/folder-migration_dark", "folders/folder-package_dark",
             "folders/folder-resources_dark", "folders/folder-snapshots_dark", "folders/folder-test-package_dark",
             "folders/folder-testdata_dark", "folders/folder-terraform", "folders/folder-terraform_dark",
+            "folders/folder-idea", "folders/folder-idea_dark",
             "frameworks/quarkus", "frameworks/micronaut", "frameworks/micronaut_dark", "frameworks/ktor",
             "quality/detekt", "quality/openrewrite", "quality/sonar", "contracts/asyncapi", "contracts/avro",
             "ci/circleci", "ci/circleci_dark", "ci/tekton", "ci/bazel", "devloop/skaffold", "devloop/tilt",

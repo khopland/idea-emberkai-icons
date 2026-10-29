@@ -140,9 +140,10 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         assertNull(provider.getIcon(unrelatedHcl.virtualFile, 0, project))
     }
 
-    fun testIdeAndGeneratedFoldersKeepNativeIcons() {
+    fun testIdeaFolderUsesIntelliJArtworkWhileIdeAndGeneratedContentsStayNative() {
+        assertCustomFolderIcon(".idea", "folders/folder-idea.svg")
         for (path in arrayOf(
-            ".idea", ".idea/runConfigurations", ".idea/inspectionProfiles",
+            ".idea/runConfigurations", ".idea/inspectionProfiles",
             "generated", "generated-sources", "generated-test-sources",
         )) {
             assertNativeFolder(path)
@@ -236,7 +237,7 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         val idea = myFixture.tempDirFixture.findOrCreateDir(".idea")
         val main = myFixture.tempDirFixture.findOrCreateDir("src/main")
         val maven = myFixture.tempDirFixture.findOrCreateDir(".mvn")
-        assertNull(provider.getIcon(idea, 0, null))
+        assertResourceIcon("emberkai/icons/folders/folder-idea.svg", provider.getIcon(idea, 0, null))
         assertResourceIcon("emberkai/icons/folders/folder-content.svg", provider.getIcon(main, 0, null))
         val icon = provider.getIcon(maven, 0, null)
         assertIcon("folders/folder-maven.svg", icon)
