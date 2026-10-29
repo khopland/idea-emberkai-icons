@@ -19,7 +19,8 @@
         source roots, packages, and their descendants share. Opt-in JVM architecture folders give
         controller, service, repository, domain, and similar packages distinct icons.</p>
         <p>Production, staging, test, and local variants of Spring profiles, Docker Compose files,
-        Helm values, and <code>.env</code> files get shape-and-color environment badges.
+        Helm values, and <code>.env</code> files get shape-and-color environment badges, and so do
+        environment folders such as <code>overlays/production/</code>, along with the configuration files inside them.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
         without being ignored get a red stop-sign warning badge. Spring profile files activated by the
         selected run configuration get a ring-and-dot live marker. Spring controllers, services,

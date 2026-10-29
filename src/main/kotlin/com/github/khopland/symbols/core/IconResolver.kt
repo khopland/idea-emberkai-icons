@@ -77,10 +77,27 @@ internal object IconResolver {
         if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)) return resolution
         val variant = EnvironmentVariant.fromFile(file) ?: return resolution
         val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
+        val reason = EnvironmentVariant.environmentFolderOf(file)
+            ?.takeIf { EnvironmentVariant.isInherited(file) }
+            ?.let { "This configuration file inherits it from the ${it.parent.name}/${it.name}/ environment folder." }
+            ?: "It marks this configuration variant."
         return resolution.copy(
             icon = EnvironmentVariantBadgeIcon(baseIcon, variant),
             environmentVariant = variant,
-            detail = "${resolution.detail} A ${variant.displayName} environment badge marks this configuration variant.",
+            detail = "${resolution.detail} A ${variant.displayName} environment badge is shown. $reason",
+        )
+    }
+
+    /** Environment folders such as `overlays/production/` carry the same badge as the files inside them. */
+    private fun applyFolderEnvironmentBadge(resolution: IconResolution, directory: VirtualFile): IconResolution {
+        val icon = resolution.icon ?: return resolution
+        if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS)) return resolution
+        val variant = EnvironmentVariant.fromDirectory(directory) ?: return resolution
+        return resolution.copy(
+            icon = EnvironmentVariantBadgeIcon(icon, variant),
+            environmentVariant = variant,
+            detail = "${resolution.detail} A ${variant.displayName} environment badge marks an environment folder; " +
+                "configuration files inside it inherit the badge.",
         )
     }
 
@@ -123,7 +140,11 @@ internal object IconResolver {
     }
 
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution =
-        applyModuleAccent(baseFolderIcon(directory, name, project), directory, project)
+        applyModuleAccent(
+            applyFolderEnvironmentBadge(baseFolderIcon(directory, name, project), directory),
+            directory,
+            project,
+        )
 
     private fun baseFolderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution {
         if (NativeIconPolicy.usesFolderIcon(directory, name, project)) {

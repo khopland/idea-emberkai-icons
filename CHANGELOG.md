@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added environment folders: children of `overlays/`, `envs/`, `environments/`, `clusters/`, and similar containers named after an environment, such as `overlays/production/` or `clusters/prod-eu/`, get the environment badge, and configuration files inside them inherit it. Inherited production files join the **Production config** scope and the **Production blast radius** lens.
 - Added Project view lenses (**View > Emberkai Icons > Lens**): files that answer one question, such as **Production blast radius**, **Infrastructure**, or **API contracts**, keep full color along with the folders that contain them, and everything else is dimmed, including native Java and Kotlin icons. Lenses use the Emberkai scopes, are computed in the background, and are not saved between sessions.
 
 ## [0.4.0] - 2026-10-29
