@@ -4,6 +4,8 @@ import com.github.khopland.symbols.audit.CoverageAuditFinding
 import com.github.khopland.symbols.audit.CoverageFindingKind
 import com.github.khopland.symbols.audit.IconCoverageAudit
 import com.intellij.openapi.progress.EmptyProgressIndicator
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 internal class IconCoverageAuditTest : IconProviderTestCase() {
     fun testAuditGroupsGenericAndUnmappedFilesAndSkipsDependencies() {
@@ -44,5 +46,32 @@ internal class IconCoverageAuditTest : IconProviderTestCase() {
             "file.deploy/my\\ tool=/emberkai/icons/my-tool.cfg-icon.svg",
             finding(null, "deploy/My Tool", "deploy").suggestedMapping,
         )
+    }
+
+    fun testReportUrlPrefillsMissingIconIssueForm() {
+        val file = myFixture.addFileToProject("deploy/Tiltfile", "data").virtualFile
+        val finding = CoverageAuditFinding(
+            file = file,
+            relativePath = "deploy/Tiltfile",
+            kind = CoverageFindingKind.NO_MAPPING,
+            extension = null,
+            parentDirectory = "deploy",
+            mappingKey = null,
+            mappingSource = null,
+            resourcePath = null,
+        )
+
+        val url = finding.reportUrl
+        val query = url.substringAfter('?').split('&').associate {
+            it.substringBefore('=') to URLDecoder.decode(it.substringAfter('='), StandardCharsets.UTF_8)
+        }
+
+        assertTrue(url.startsWith("https://github.com/khopland/idea-emberkai-icons/issues/new?"))
+        assertEquals("missing-icon.yml", query["template"])
+        assertEquals("Missing Emberkai icon: Tiltfile", query["title"])
+        assertEquals("deploy/Tiltfile", query["file"])
+        assertEquals("No Emberkai mapping", query["result"])
+        assertEquals("none", query["mapping"])
+        assertEquals(finding.suggestedMapping, query["suggested"])
     }
 }

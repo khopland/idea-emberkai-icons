@@ -13,6 +13,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.ArrayDeque
 import java.util.Locale
 
@@ -52,7 +54,20 @@ internal data class CoverageAuditFinding(
                 .ifEmpty { "custom" }
             return ProjectIconOverrideFile.entry(suggestedMappingKey, "/emberkai/icons/$slug-icon.svg")
         }
+
+    /** Opens the repository's missing-icon issue form with this finding's fields filled in. */
+    val reportUrl: String
+        get() = MISSING_ICON_FORM_URL + listOf(
+            "title" to "Missing Emberkai icon: ${file.name}",
+            "file" to relativePath,
+            "result" to kind.displayName,
+            "mapping" to (mappingKey ?: "none"),
+            "suggested" to suggestedMapping,
+        ).joinToString("") { (field, value) -> "&$field=${URLEncoder.encode(value, StandardCharsets.UTF_8)}" }
 }
+
+private const val MISSING_ICON_FORM_URL =
+    "https://github.com/khopland/idea-emberkai-icons/issues/new?template=missing-icon.yml"
 
 internal data class CoverageAuditGroup(
     val label: String,

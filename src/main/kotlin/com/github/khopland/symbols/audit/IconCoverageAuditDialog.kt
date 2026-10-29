@@ -15,8 +15,6 @@ import java.awt.FlowLayout
 import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -169,22 +167,7 @@ internal class IconCoverageAuditDialog(
 
     private fun reportSelectedFinding() {
         val finding = selectedFinding ?: return
-        val title = "Missing Emberkai icon: ${finding.file.name}"
-        val body = buildString {
-            appendLine("The Rule-Aware Icon Coverage audit found this file.")
-            appendLine()
-            appendLine("- File: `${finding.relativePath}`")
-            appendLine("- Result: ${finding.kind.displayName}")
-            appendLine("- Current mapping: `${finding.mappingKey ?: "none"}`")
-            appendLine()
-            appendLine("Suggested mapping:")
-            appendLine("```properties")
-            appendLine(finding.suggestedMapping)
-            appendLine("```")
-        }
-        val url = "https://github.com/khopland/idea-emberkai-icons/issues/new" +
-            "?title=${encode(title)}&body=${encode(body)}"
-        BrowserUtil.browse(url)
+        BrowserUtil.browse(finding.reportUrl)
     }
 
     private fun openSelectedFile() {
@@ -196,5 +179,4 @@ internal class IconCoverageAuditDialog(
         }
     }
 
-    private fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
 }

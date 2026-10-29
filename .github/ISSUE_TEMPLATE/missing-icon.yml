@@ -1,0 +1,37 @@
+name: Missing icon
+description: Request an icon for a file or folder that Emberkai shows with a generic icon or none at all.
+title: "Missing Emberkai icon: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Audit Icon Coverage** fills in this form when you press **Report** on a finding. You can also fill it in by hand.
+  - type: input
+    id: file
+    attributes:
+      label: File or folder
+      description: Path relative to the project root.
+      placeholder: deploy/skaffold.yaml
+    validations:
+      required: true
+  - type: input
+    id: result
+    attributes:
+      label: Audit result
+      placeholder: No Emberkai mapping
+  - type: input
+    id: mapping
+    attributes:
+      label: Current mapping key
+      placeholder: none
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested mapping
+      render: properties
+  - type: textarea
+    id: context
+    attributes:
+      label: Tool or context
+      description: Which tool reads this file, and how to recognize it (filename, folder, or file contents).
