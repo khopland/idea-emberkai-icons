@@ -186,9 +186,9 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
         val lowerName = name.lowercase(Locale.ROOT)
         val parent = file.parent.takeIf { snapshot.hasContextualKeys }
         val lookup = { key: String -> match(snapshot, key) }
-        return MappingKeys.contextual(parent, "file.", lowerName, lookup)
+        return MappingKeys.contextual(parent, "file.", lowerName, snapshot.contextDepth("file."), lookup)
             ?: lookup("file.$lowerName")
-            ?: MappingKeys.contextualExtension(parent, lowerName, lookup)
+            ?: MappingKeys.contextualExtension(parent, lowerName, snapshot.contextDepth("extension."), lookup)
             ?: MappingKeys.extension(lowerName, lookup)
     }
 
@@ -197,8 +197,9 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
         if (snapshot.values.isEmpty()) return null
         val lowerName = name.lowercase(Locale.ROOT)
         val parent = directory.parent.takeIf { snapshot.hasContextualKeys }
-        return MappingKeys.contextual(parent, "folder.", lowerName) { match(snapshot, it) }
-            ?: match(snapshot, "folder.$lowerName")
+        return MappingKeys.contextual(parent, "folder.", lowerName, snapshot.contextDepth("folder.")) {
+            match(snapshot, it)
+        } ?: match(snapshot, "folder.$lowerName")
     }
 
     override fun dispose() {
@@ -333,6 +334,14 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
      */
     private inner class Snapshot(val values: Map<String, String>, private val iconsDirectory: String?) {
         val hasContextualKeys = values.keys.any { '/' in it }
+
+        /** Deepest key per prefix, so a lookup stops walking parents where no override can match. */
+        private val contextDepths: Map<String, Int> = values.keys
+            .groupingBy { it.substringBefore('.') + "." }
+            .fold(0) { depth, key -> maxOf(depth, key.count { it == '/' }) }
+
+        fun contextDepth(prefix: String): Int = contextDepths[prefix] ?: 0
+
         private val artwork = ConcurrentHashMap<String, Optional<Artwork>>()
 
         fun artwork(value: String): Artwork? = artwork.computeIfAbsent(value) {

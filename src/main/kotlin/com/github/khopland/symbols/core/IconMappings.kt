@@ -6,54 +6,59 @@ import java.util.Locale
 import java.util.ResourceBundle
 import javax.swing.Icon
 
-/** Loads artwork and gives local mappings precedence over the upstream bundle. */
+/**
+ * Loads artwork and gives local mappings precedence over the upstream bundle.
+ *
+ * Both bundles are read into maps once. A [ResourceBundle] lookup is a hash lookup plus fallback
+ * work, and the Project view asks for an icon for every node it draws, so the hot path stays on
+ * plain maps. Icons load on first use, so the intermediate matches the contextual search discards
+ * never touch [IconLoader].
+ */
 internal class IconMappings {
-    private val upstream = ResourceBundle.getBundle(
-        "symbols.icons", Locale.ROOT, SymbolsIconProvider::class.java.classLoader,
-    )
-    private val custom = ResourceBundle.getBundle(
-        "emberkai.icons", Locale.ROOT, SymbolsIconProvider::class.java.classLoader,
-    )
+    private val upstream = load("symbols.icons")
+    private val custom = load("emberkai.icons")
+
+    /** Deepest contextual key per prefix, so the parent walk stops where a match can still exist. */
+    private val contextDepths: Map<String, Int> = buildMap {
+        for (key in upstream.keys + custom.keys) {
+            merge(key.substringBefore('.') + ".", key.count { it == '/' }, ::maxOf)
+        }
+    }
 
     fun get(key: String?): Icon? = resolve(key)?.icon
 
     fun resolve(key: String?): MappedIcon? {
         if (key == null) return null
-        val source: MappingSource
-        val path: String
-        when {
-            custom.containsKey(key) -> {
-                source = MappingSource.CUSTOM
-                path = custom.getString(key)
-            }
-            upstream.containsKey(key) -> {
-                source = MappingSource.UPSTREAM
-                path = "/symbols/icons/" + upstream.getString(key)
-            }
-            else -> return null
-        }
-        val icon = IconLoader.getIcon(path, SymbolsIconProvider::class.java)
-        return MappedIcon(key, source, path, icon)
+        custom[key]?.let { return MappedIcon(key, MappingSource.CUSTOM, it) }
+        upstream[key]?.let { return MappedIcon(key, MappingSource.UPSTREAM, "/symbols/icons/$it") }
+        return null
     }
 
     fun contextualMatch(file: VirtualFile, prefix: String, name: String): MappedIcon? =
-        MappingKeys.contextual(file.parent, prefix, name, ::resolve)
+        MappingKeys.contextual(file.parent, prefix, name, contextDepth(prefix), ::resolve)
 
     fun contextualExtensionMatch(file: VirtualFile, name: String): MappedIcon? =
-        MappingKeys.contextualExtension(file.parent, name, ::resolve)
+        MappingKeys.contextualExtension(file.parent, name, contextDepth("extension."), ::resolve)
 
     fun extensionMatch(name: String): MappedIcon? = MappingKeys.extension(name, ::resolve)
 
     /** Every bundled mapping key and artwork path, excluding project-local overrides. */
     fun catalog(): List<IconCatalogEntry> {
         val entries = linkedMapOf<String, IconCatalogEntry>()
-        upstream.keys.toList().forEach { key ->
-            entries[key] = IconCatalogEntry(key, MappingSource.UPSTREAM, "/symbols/icons/" + upstream.getString(key))
+        upstream.forEach { (key, path) ->
+            entries[key] = IconCatalogEntry(key, MappingSource.UPSTREAM, "/symbols/icons/$path")
         }
-        custom.keys.toList().forEach { key ->
-            entries[key] = IconCatalogEntry(key, MappingSource.CUSTOM, custom.getString(key))
+        custom.forEach { (key, path) ->
+            entries[key] = IconCatalogEntry(key, MappingSource.CUSTOM, path)
         }
         return entries.values.sortedBy { it.key.lowercase(Locale.ROOT) }
+    }
+
+    private fun contextDepth(prefix: String): Int = contextDepths[prefix] ?: 0
+
+    private fun load(bundle: String): Map<String, String> {
+        val resource = ResourceBundle.getBundle(bundle, Locale.ROOT, SymbolsIconProvider::class.java.classLoader)
+        return resource.keys.asSequence().associateWith(resource::getString)
     }
 }
 
@@ -62,22 +67,38 @@ internal class IconMappings {
  * name with parent folders, such as `file.deploy/prod/values.yaml`; the longest matching suffix wins
  * without depending on the checkout path. Compound extensions are tried before shorter ones, so
  * `extension.gradle.kts` wins over `extension.kts`.
+ *
+ * [maxDepth] bounds the parent walk: bundled keys are at most two folders deep, so a file in a deep
+ * tree no longer builds and looks up a key for every ancestor up to the filesystem root. Callers
+ * with user-defined keys pass the deepest depth among their keys.
  */
 internal object MappingKeys {
-    fun <T : Any> contextual(parent: VirtualFile?, prefix: String, name: String, lookup: (String) -> T?): T? {
+    fun <T : Any> contextual(
+        parent: VirtualFile?,
+        prefix: String,
+        name: String,
+        maxDepth: Int = Int.MAX_VALUE,
+        lookup: (String) -> T?,
+    ): T? {
         var current = parent
         var context = name
         var longest: T? = null
-        while (current != null) {
+        var depth = 0
+        while (current != null && depth < maxDepth) {
             context = current.name.lowercase(Locale.ROOT) + "/" + context
             longest = lookup(prefix + context) ?: longest
             current = current.parent
+            depth++
         }
         return longest
     }
 
-    fun <T : Any> contextualExtension(parent: VirtualFile?, name: String, lookup: (String) -> T?): T? =
-        extensionSuffixes(name).firstNotNullOfOrNull { contextual(parent, "extension.", it, lookup) }
+    fun <T : Any> contextualExtension(
+        parent: VirtualFile?,
+        name: String,
+        maxDepth: Int = Int.MAX_VALUE,
+        lookup: (String) -> T?,
+    ): T? = extensionSuffixes(name).firstNotNullOfOrNull { contextual(parent, "extension.", it, maxDepth, lookup) }
 
     fun <T : Any> extension(name: String, lookup: (String) -> T?): T? =
         extensionSuffixes(name).firstNotNullOfOrNull { lookup("extension.$it") }
@@ -93,12 +114,16 @@ internal enum class MappingSource(val displayName: String) {
     PROJECT_OVERRIDE("Project icon override"),
 }
 
-internal data class MappedIcon(
+/** A mapping match; [icon] is loaded on first use so discarded contextual matches stay cheap. */
+internal class MappedIcon(
     val key: String,
     val source: MappingSource,
     val resourcePath: String,
-    val icon: Icon,
-)
+) {
+    val icon: Icon by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        IconLoader.getIcon(resourcePath, SymbolsIconProvider::class.java)
+    }
+}
 
 internal data class IconCatalogEntry(
     val key: String,

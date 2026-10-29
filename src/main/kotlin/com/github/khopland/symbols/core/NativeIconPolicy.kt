@@ -31,8 +31,10 @@ internal object NativeIconPolicy {
         if (name in FOLDER_NAMES) return true
         var parent = directory.parent
         while (parent != null) {
-            if (parent.name.lowercase(Locale.ROOT) in FOLDER_TREES) return true
-            parent = parent.parent
+            val current = parent
+            // Compare without allocating a lowercased copy for every ancestor.
+            if (FOLDER_TREES.any { it.equals(current.name, ignoreCase = true) }) return true
+            parent = current.parent
         }
         if (project == null || project.isDisposed) return false
         if (ProjectPathUtil.isProjectBase(directory, project)) return true
