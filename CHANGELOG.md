@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Redrew icons whose meaning was unclear: SonarQube is a quality gauge, Jest snapshots a camera, pre-commit a checked commit, Tilt and mise show their initials, and JVM `client/` and `mapper/` packages no longer share one node-graph badge. Skaffold, just, detekt, Quarkus, Packer, and Flyway migrations got bolder, filled artwork.
 - Redrew the Ansible, Tekton, CircleCI, Dagger, Skaffold, SonarQube, OpenRewrite, AsyncAPI, and Avro icons and the Ansible, migration, test-data, fixtures, and Kustomize folder badges as filled, outlined artwork that stays legible at 16 px, matching the Kubernetes and JVM folder icons.
 - Added OpenTofu icons: `.tofu` files and `.opentofu-version` always use OpenTofu artwork, and Terraform files, lock files, and folders switch to it when the project shows OpenTofu (a version file, `.tofu` files, `registry.opentofu.org` in the lock file, or `opentofu` in `.tool-versions` or mise).
 - Added an IntelliJ IDEA folder icon for `.idea/`; files and folders inside it keep their native icons.
