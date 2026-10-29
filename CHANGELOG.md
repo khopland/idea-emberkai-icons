@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-29
+
 - Added error reporting through JetBrains Marketplace: exceptions and UI freezes attributed to Emberkai Icons can be submitted from the IDE's error-reporting dialog, or sent automatically when **Send error reports to JetBrains automatically** is enabled.
 - Raised the minimum supported IDE version to 2026.1 (build 261), matching the IDE releases that ship the Emberkai theme.
 - Added semantic Project view tooltips that describe what Emberkai recognized, such as a Kubernetes manifest, Flyway migration, environment variant, or module accent. Screen readers announce the same text, and a setting turns them off.
@@ -44,7 +46,8 @@
 - Established the Symbols-based Java/Kotlin icon provider, checked-in SVG assets, and a minimal Gradle build.
 - Added upstream icon, license, and attribution updates with a check mode and manual CI workflow; included original icon notices under the MIT license.
 
-[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/khopland/idea-emberkai-icons/releases/tag/v0.1.0
