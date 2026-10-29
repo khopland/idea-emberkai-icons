@@ -1,5 +1,15 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.accents.ModuleAccentColor
+import com.github.khopland.symbols.accents.ModuleAccentIcon
+import com.github.khopland.symbols.badges.BadgedIcon
+import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.badges.EnvironmentVariantBadgeIcon
+import com.github.khopland.symbols.badges.UnignoredSecretBadgeIcon
+import com.github.khopland.symbols.core.SymbolsIconProvider
+import com.github.khopland.symbols.spring.ActiveSpringProfileIcon
+import com.github.khopland.symbols.spring.ModulithFolderIcon
+import com.github.khopland.symbols.spring.ModulithLock
 import com.intellij.openapi.util.IconLoader
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.awt.GraphicsEnvironment

@@ -1,5 +1,10 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.badges.EnvironmentVariantBadgeIcon
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.setEnabled
 import javax.swing.Icon
 
 internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {

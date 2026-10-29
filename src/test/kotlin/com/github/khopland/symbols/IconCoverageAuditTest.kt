@@ -1,5 +1,8 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.audit.CoverageAuditFinding
+import com.github.khopland.symbols.audit.CoverageFindingKind
+import com.github.khopland.symbols.audit.IconCoverageAudit
 import com.intellij.openapi.progress.EmptyProgressIndicator
 
 internal class IconCoverageAuditTest : IconProviderTestCase() {

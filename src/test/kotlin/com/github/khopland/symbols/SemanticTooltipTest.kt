@@ -1,5 +1,9 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.IconDescriptions
+import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.core.SemanticTooltipDecorator
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode

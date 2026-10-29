@@ -2,7 +2,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Without XML support no detector exists, so XML files keep their mapped icon. -->
         <applicationService
-            serviceInterface="com.github.khopland.symbols.SpringXmlConfigDetector"
-            serviceImplementation="com.github.khopland.symbols.DomSpringXmlConfigDetector"/>
+            serviceInterface="com.github.khopland.symbols.spring.SpringXmlConfigDetector"
+            serviceImplementation="com.github.khopland.symbols.spring.DomSpringXmlConfigDetector"/>
     </extensions>
 </idea-plugin>

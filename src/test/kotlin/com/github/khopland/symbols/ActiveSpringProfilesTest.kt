@@ -1,5 +1,14 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.core.IconDescriptions
+import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.setEnabled
+import com.github.khopland.symbols.spring.ActiveSpringProfileIcon
+import com.github.khopland.symbols.spring.ActiveSpringProfiles
+import com.github.khopland.symbols.spring.SpringProfileArguments
 import com.intellij.execution.RunManager
 import com.intellij.execution.RunnerAndConfigurationSettings
 import com.intellij.execution.application.ApplicationConfiguration

@@ -1,5 +1,13 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.audit.StereotypeRow
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.SemanticTooltipDecorator
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.setEnabled
+import com.github.khopland.symbols.stereotypes.ClassStereotype
+import com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider
+import com.github.khopland.symbols.stereotypes.ClassStereotypes
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.ClassTreeNode
