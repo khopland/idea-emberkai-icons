@@ -5,6 +5,10 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.Properties
+import kotlin.reflect.KMutableProperty1
 
 @Service(Service.Level.APP)
 @State(name = "EmberkaiIconsSettings", storages = [Storage("emberkai-icons.xml")])
@@ -95,44 +99,10 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             updateState { it.semanticTooltips = value }
         }
 
-    internal fun isEnabled(category: IconRuleCategory): Boolean = when (category) {
-        IconRuleCategory.CI -> currentState.ci
-        IconRuleCategory.MIGRATION -> currentState.migrations
-        IconRuleCategory.HELM -> currentState.helm
-        IconRuleCategory.ANSIBLE -> currentState.ansible
-        IconRuleCategory.INFRASTRUCTURE -> currentState.infrastructure
-        IconRuleCategory.GITOPS -> currentState.gitOps
-        IconRuleCategory.API_SPECIFICATION -> currentState.apiSpecifications
-        IconRuleCategory.KUBERNETES -> currentState.kubernetes
-        IconRuleCategory.SPRING_BOOT -> currentState.springBoot
-        IconRuleCategory.SPRING_MODULITH -> currentState.springModulith
-        IconRuleCategory.ARCHITECTURE -> currentState.architecture
-        IconRuleCategory.ENVIRONMENT_VARIANTS -> currentState.environmentVariants
-        IconRuleCategory.UNIGNORED_SECRETS -> currentState.unignoredSecrets
-        IconRuleCategory.ACTIVE_SPRING_PROFILES -> currentState.activeSpringProfiles
-        IconRuleCategory.STEREOTYPE_BADGES -> currentState.stereotypeBadges
-    }
+    internal fun isEnabled(category: IconRuleCategory): Boolean = currentState.isEnabled(category)
 
     internal fun setEnabled(category: IconRuleCategory, enabled: Boolean) {
-        updateState { state ->
-            when (category) {
-                IconRuleCategory.CI -> state.ci = enabled
-                IconRuleCategory.MIGRATION -> state.migrations = enabled
-                IconRuleCategory.HELM -> state.helm = enabled
-                IconRuleCategory.ANSIBLE -> state.ansible = enabled
-                IconRuleCategory.INFRASTRUCTURE -> state.infrastructure = enabled
-                IconRuleCategory.GITOPS -> state.gitOps = enabled
-                IconRuleCategory.API_SPECIFICATION -> state.apiSpecifications = enabled
-                IconRuleCategory.KUBERNETES -> state.kubernetes = enabled
-                IconRuleCategory.SPRING_BOOT -> state.springBoot = enabled
-                IconRuleCategory.SPRING_MODULITH -> state.springModulith = enabled
-                IconRuleCategory.ARCHITECTURE -> state.architecture = enabled
-                IconRuleCategory.ENVIRONMENT_VARIANTS -> state.environmentVariants = enabled
-                IconRuleCategory.UNIGNORED_SECRETS -> state.unignoredSecrets = enabled
-                IconRuleCategory.ACTIVE_SPRING_PROFILES -> state.activeSpringProfiles = enabled
-                IconRuleCategory.STEREOTYPE_BADGES -> state.stereotypeBadges = enabled
-            }
-        }
+        updateState { it.setEnabled(category, enabled) }
     }
 
     private fun updateState(update: (State) -> Unit) {
@@ -170,7 +140,91 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     }
 
     companion object {
+        private val EXPORTED_FLAGS: List<Pair<String, KMutableProperty1<State, Boolean>>> = listOf(
+            "preserveNativeJavaKotlinIcons" to State::preserveNativeJavaKotlinIcons,
+            "colorServiceFolders" to State::colorServiceFolders,
+            "moduleAwareColors" to State::moduleAwareColors,
+            "highContrastFolderIcons" to State::highContrastFolderIcons,
+            "monochromeFolderIcons" to State::monochromeFolderIcons,
+            "reducedFolderColor" to State::reducedFolderColor,
+            "semanticTooltips" to State::semanticTooltips,
+            "ci" to State::ci,
+            "migrations" to State::migrations,
+            "helm" to State::helm,
+            "ansible" to State::ansible,
+            "infrastructure" to State::infrastructure,
+            "gitOps" to State::gitOps,
+            "apiSpecifications" to State::apiSpecifications,
+            "kubernetes" to State::kubernetes,
+            "springBoot" to State::springBoot,
+            "springModulith" to State::springModulith,
+            "architecture" to State::architecture,
+            "environmentVariants" to State::environmentVariants,
+            "unignoredSecrets" to State::unignoredSecrets,
+            "activeSpringProfiles" to State::activeSpringProfiles,
+            "stereotypeBadges" to State::stereotypeBadges,
+        )
+        private const val PALETTE_KEY = "serviceFolderPalette"
+
         fun getInstance(): EmberkaiIconsSettings =
             ApplicationManager.getApplication().getService(EmberkaiIconsSettings::class.java)
+
+        /** Writes [state] as a portable properties file. */
+        internal fun export(state: State, path: Path) {
+            val properties = Properties()
+            EXPORTED_FLAGS.forEach { (name, property) -> properties.setProperty(name, property.get(state).toString()) }
+            properties.setProperty(PALETTE_KEY, state.serviceFolderPalette)
+            Files.newOutputStream(path).use { properties.store(it, "Emberkai Icons settings") }
+        }
+
+        /** Reads an exported file; missing or invalid values fall back to the defaults. */
+        internal fun import(path: Path): State {
+            val properties = Properties()
+            Files.newInputStream(path).use(properties::load)
+            return State().apply {
+                EXPORTED_FLAGS.forEach { (name, property) ->
+                    properties.getProperty(name)?.trim()?.toBooleanStrictOrNull()?.let { property.set(this, it) }
+                }
+                serviceFolderPalette = FolderIconPalette.fromId(properties.getProperty(PALETTE_KEY)?.trim()).name
+            }
+        }
+    }
+}
+
+internal fun EmberkaiIconsSettings.State.isEnabled(category: IconRuleCategory): Boolean = when (category) {
+    IconRuleCategory.CI -> ci
+    IconRuleCategory.MIGRATION -> migrations
+    IconRuleCategory.HELM -> helm
+    IconRuleCategory.ANSIBLE -> ansible
+    IconRuleCategory.INFRASTRUCTURE -> infrastructure
+    IconRuleCategory.GITOPS -> gitOps
+    IconRuleCategory.API_SPECIFICATION -> apiSpecifications
+    IconRuleCategory.KUBERNETES -> kubernetes
+    IconRuleCategory.SPRING_BOOT -> springBoot
+    IconRuleCategory.SPRING_MODULITH -> springModulith
+    IconRuleCategory.ARCHITECTURE -> architecture
+    IconRuleCategory.ENVIRONMENT_VARIANTS -> environmentVariants
+    IconRuleCategory.UNIGNORED_SECRETS -> unignoredSecrets
+    IconRuleCategory.ACTIVE_SPRING_PROFILES -> activeSpringProfiles
+    IconRuleCategory.STEREOTYPE_BADGES -> stereotypeBadges
+}
+
+internal fun EmberkaiIconsSettings.State.setEnabled(category: IconRuleCategory, enabled: Boolean) {
+    when (category) {
+        IconRuleCategory.CI -> ci = enabled
+        IconRuleCategory.MIGRATION -> migrations = enabled
+        IconRuleCategory.HELM -> helm = enabled
+        IconRuleCategory.ANSIBLE -> ansible = enabled
+        IconRuleCategory.INFRASTRUCTURE -> infrastructure = enabled
+        IconRuleCategory.GITOPS -> gitOps = enabled
+        IconRuleCategory.API_SPECIFICATION -> apiSpecifications = enabled
+        IconRuleCategory.KUBERNETES -> kubernetes = enabled
+        IconRuleCategory.SPRING_BOOT -> springBoot = enabled
+        IconRuleCategory.SPRING_MODULITH -> springModulith = enabled
+        IconRuleCategory.ARCHITECTURE -> architecture = enabled
+        IconRuleCategory.ENVIRONMENT_VARIANTS -> environmentVariants = enabled
+        IconRuleCategory.UNIGNORED_SECRETS -> unignoredSecrets = enabled
+        IconRuleCategory.ACTIVE_SPRING_PROFILES -> activeSpringProfiles = enabled
+        IconRuleCategory.STEREOTYPE_BADGES -> stereotypeBadges = enabled
     }
 }

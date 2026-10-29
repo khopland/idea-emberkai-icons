@@ -82,7 +82,7 @@ private class ExplainIconDialog(
 
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
-        preferredSize = Dimension(520, 390)
+        preferredSize = Dimension(640, 400)
         add(JLabel("<html><b>${escape(file.name)}</b><br>${escape(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
@@ -109,8 +109,27 @@ private class ExplainIconDialog(
                 status.text = "Artwork resource could not be opened."
             }
         }
+        val store = ProjectIconOverrideStore.getInstance(project)
+        val override = JButton("Override This Icon…")
+        override.isEnabled = !IconOverrideKeySuggestions.keepsNativeIcon(resolution)
+        override.addActionListener {
+            val key = IconOverrideKeySuggestions.forFile(file, resolution)
+            var saved = false
+            IconOverrideDialog(project, file, key, store.overrides()[key]) { saved = true }.show()
+            // The resolution shown here is stale once the override changes.
+            if (saved) close(OK_EXIT_CODE)
+        }
+        val removeOverride = JButton("Remove override")
+        removeOverride.isEnabled = resolution.mappingSource == MappingSource.PROJECT_OVERRIDE &&
+            resolution.mappingKey != null
+        removeOverride.addActionListener {
+            val key = resolution.mappingKey ?: return@addActionListener
+            if (store.removeOverride(key)) close(OK_EXIT_CODE) else status.text = "Could not update the overrides file."
+        }
         actions.add(copyKey)
         actions.add(revealArtwork)
+        actions.add(override)
+        actions.add(removeOverride)
         actions.add(status)
         add(actions, BorderLayout.SOUTH)
     }
@@ -187,6 +206,9 @@ private class ExplainIconDialog(
     }
 
     private fun findArtwork(resourcePath: String): VirtualFile? {
+        if (!resourcePath.startsWith("/symbols/") && !resourcePath.startsWith("/emberkai/")) {
+            LocalFileSystem.getInstance().findFileByPath(resourcePath)?.let { return it }
+        }
         val resource = ExplainIconAction::class.java.getResource(resourcePath) ?: return null
         return when (resource.protocol) {
             "file" -> LocalFileSystem.getInstance()

@@ -129,5 +129,29 @@
                 description="Find generic or unmapped icons under this directory">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
+        <action id="com.github.khopland.symbols.OverrideIcon"
+                class="com.github.khopland.symbols.OverrideIconAction"
+                text="Override This Icon…"
+                description="Create a project-local icon override for this file or folder">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+        <action id="com.github.khopland.symbols.OpenIconOverrides"
+                class="com.github.khopland.symbols.OpenIconOverridesAction"
+                text="Open Icon Overrides File"
+                description="Open or create .idea/emberkai-icons.properties">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="com.github.khopland.symbols.ReloadIconOverrides"
+                class="com.github.khopland.symbols.ReloadIconOverridesAction"
+                text="Reload Icon Overrides"
+                description="Reload project-local icon overrides">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+        <action id="com.github.khopland.symbols.BrowseIconCatalog"
+                class="com.github.khopland.symbols.BrowseIconCatalogAction"
+                text="Browse Bundled Icons"
+                description="Search every bundled icon and copy its mapping key or path">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>
