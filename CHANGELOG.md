@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Added Quarkus, Micronaut, and Ktor configuration icons, detected from build declarations like Spring Boot, with their own setting.
+- Added icons for detekt, OpenRewrite, SonarQube, and Jib configuration; AsyncAPI contracts (by name or metadata) and Avro schemas, which join the **API contracts** scope; CircleCI, Tekton, and Bazel; Skaffold, Tilt, Dagger, and Testcontainers; and Packer, Vagrant, and Nomad, which join the **Infrastructure** scope.
+- Fixed Skaffold configuration and Tekton resources showing the generic Kubernetes icon.
 - Added migration version conflict badges: Flyway versioned migrations that share a version with a sibling, such as `V3__a.sql` and `V3_0__b.sql` after a merge, and the folder that holds them get an amber warning badge, with its own setting. Migration folder tooltips list the number of versioned migrations, the latest version, and any conflicts.
 - Added environment folders: children of `overlays/`, `envs/`, `environments/`, `clusters/`, and similar containers named after an environment, such as `overlays/production/` or `clusters/prod-eu/`, get the environment badge, and configuration files inside them inherit it. Inherited production files join the **Production config** scope and the **Production blast radius** lens.
 - Added Project view lenses (**View > Emberkai Icons > Lens**): files that answer one question, such as **Production blast radius**, **Infrastructure**, or **API contracts**, keep full color along with the folders that contain them, and everything else is dimmed, including native Java and Kotlin icons. Lenses use the Emberkai scopes, are computed in the background, and are not saved between sessions.

@@ -15,13 +15,14 @@ import org.yaml.snakeyaml.nodes.Tag
 
 /** Reads only top-level scalar metadata from YAML/JSON; never constructs tagged objects. */
 internal enum class StructuredFileKind {
-    NONE, OPEN_API, KUBERNETES, KUSTOMIZE, FLUX, ARGOCD;
+    NONE, OPEN_API, ASYNC_API, KUBERNETES, KUSTOMIZE, FLUX, ARGOCD, TEKTON, SKAFFOLD;
 
     companion object {
         private val CACHE: Key<FileContentCache.Inspection<Metadata>> = Key.create("emberkai.structuredKind")
         private val UNKNOWN = Metadata(NONE, null)
         private val EXTENSIONS = setOf("yaml", "yml", "json")
         private val OPEN_API_VERSION = Pattern.compile("3\\.\\d+(?:\\.\\d+)?(?:[-+][A-Za-z0-9.-]+)?")
+        private val ASYNC_API_VERSION = Pattern.compile("[23]\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?")
         private val API_VERSION = Pattern.compile("(?:[A-Za-z0-9][A-Za-z0-9.-]*/)?v\\d+(?:(?:alpha|beta)\\d+)?")
         private val KIND = Pattern.compile("[A-Za-z][A-Za-z0-9]*")
         private val ARGOCD_KINDS = setOf("Application", "ApplicationSet", "AppProject")
@@ -98,6 +99,11 @@ internal enum class StructuredFileKind {
                     val openApi = fields["openapi"] ?: ""
                     val swagger = fields["swagger"] ?: ""
                     if (OPEN_API_VERSION.matcher(openApi).matches() || swagger == "2.0") return Metadata(OPEN_API, null)
+                    if (ASYNC_API_VERSION.matcher(fields["asyncapi"] ?: "").matches()) return Metadata(ASYNC_API, null)
+                    // Skaffold and Tekton look like Kubernetes objects but have their own artwork.
+                    if (apiVersion.startsWith("skaffold/")) return Metadata(SKAFFOLD, null)
+                    val group = apiVersion.substringBefore('/', "")
+                    if (group == "tekton.dev" || group.endsWith(".tekton.dev")) return Metadata(TEKTON, null)
                     if (apiVersion.startsWith("argoproj.io/") && kind in ARGOCD_KINDS) return Metadata(ARGOCD, null)
                     if (apiVersion.substringBefore('/').endsWith(".toolkit.fluxcd.io")) return Metadata(FLUX, null)
                     if (isResource) {

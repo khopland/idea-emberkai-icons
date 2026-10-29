@@ -248,7 +248,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
         assertCustomPathIcon("ci/azure-pipelines-pr.yaml", "ci/azurepipelines.svg")
         assertCustomPathIcon("bitbucket-pipelines.yaml", "ci/bitbucket.svg")
         assertPathIcon("pipeline.yml", "files/yaml.svg")
-        assertPathIcon(".circleci/config.yml", "files/yaml.svg")
+        assertCustomPathIcon(".circleci/config.yml", "ci/circleci.svg")
         assertPathIcon(".buildkite/pipeline.yaml", "files/yaml.svg")
         assertPathIcon("config/.drone.yml", "files/yaml.svg")
         assertPathIcon("nested/config.yaml", "files/yaml.svg")
@@ -260,7 +260,8 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
         for ((name, icon) in folders) {
             assertCustomFolderIcon("ci/$name", "folders/$icon.svg")
         }
-        for (name in arrayOf(".circleci", ".buildkite", ".drone", "drone")) {
+        assertFolderIcon("ci/.circleci", "folders/folder-config.svg")
+        for (name in arrayOf(".buildkite", ".drone", "drone")) {
             assertFolderIcon("ci/$name", "folders/folder.svg")
         }
     }
@@ -384,6 +385,10 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "folders/folder-kustomize_dark", "folders/folder-migration_dark", "folders/folder-package_dark",
             "folders/folder-resources_dark", "folders/folder-snapshots_dark", "folders/folder-test-package_dark",
             "folders/folder-testdata_dark", "folders/folder-terraform", "folders/folder-terraform_dark",
+            "frameworks/quarkus", "frameworks/micronaut", "frameworks/micronaut_dark", "frameworks/ktor",
+            "quality/detekt", "quality/openrewrite", "quality/sonar", "contracts/asyncapi", "contracts/avro",
+            "ci/circleci", "ci/circleci_dark", "ci/tekton", "ci/bazel", "devloop/skaffold", "devloop/tilt",
+            "devloop/dagger", "devloop/dagger_dark", "infra/packer", "infra/vagrant", "infra/nomad",
         )) {
             val path = "emberkai/icons/$name.svg"
             val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)

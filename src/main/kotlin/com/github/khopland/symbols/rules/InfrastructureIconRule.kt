@@ -8,7 +8,10 @@ import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 import java.util.regex.Pattern
 
-/** Recognizes AWS SAM and CloudFormation files by filename or AWS template markers. */
+/**
+ * Recognizes AWS SAM and CloudFormation files by filename or AWS template markers. Terraform,
+ * Packer, Nomad, and Vagrant files are drawn by static mappings and only join the scope here.
+ */
 internal class InfrastructureIconRule : ContextIconRule {
     override val category = IconRuleCategory.INFRASTRUCTURE
 
@@ -29,6 +32,7 @@ internal class InfrastructureIconRule : ContextIconRule {
 
     override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
         name in TERRAFORM_NAMES || TERRAFORM_EXTENSIONS.any { name.endsWith(it) } ||
+            name == "vagrantfile" || HASHICORP_EXTENSIONS.any { name.endsWith(it) } ||
             fileIconKey(file, name, project) != null
 
     private fun isAwsTemplate(file: VirtualFile): Boolean = FileContentCache.inspect(
@@ -39,6 +43,8 @@ internal class InfrastructureIconRule : ContextIconRule {
         val TEMPLATE_EXTENSIONS = setOf("yaml", "yml", "json")
         val TERRAFORM_NAMES = setOf(".terraform-version", ".terraform.lock.hcl", "terraform.rc", "terragrunt.hcl")
         val TERRAFORM_EXTENSIONS = listOf(".tf", ".tf.json", ".tfvars", ".tofu")
+        /** Packer templates and variables, and Nomad job specifications. */
+        val HASHICORP_EXTENSIONS = listOf(".pkr.hcl", ".pkr.json", ".pkrvars.hcl", ".nomad.hcl", ".nomad")
         val AWS_MARKER = Pattern.compile("\\b(?:AWSTemplateFormatVersion|AWS::[A-Za-z0-9]+::[A-Za-z0-9]+)\\b")
         val AWS_TEMPLATE: Key<FileContentCache.Inspection<Boolean>> = Key.create("emberkai.awsTemplate")
     }

@@ -6,7 +6,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 
-/** Recognizes Kubernetes objects and resource kinds from root metadata, and Kustomize trees from their marker. */
+/**
+ * Recognizes Kubernetes objects and resource kinds from root metadata, Kustomize trees from their
+ * marker, and Kubernetes-shaped tool files: Tekton resources and Skaffold configuration.
+ */
 internal class KubernetesIconRule : ContextIconRule {
     override val category = IconRuleCategory.KUBERNETES
 
@@ -14,10 +17,13 @@ internal class KubernetesIconRule : ContextIconRule {
         if (name == "kustomization.yaml" || name == "kustomization.yml" || name == "kustomization") {
             return "context.kustomize"
         }
+        if (name == "skaffold.yaml" || name == "skaffold.yml") return "context.skaffold"
         return when (StructuredFileKind.of(file)) {
             StructuredFileKind.KUBERNETES -> StructuredFileKind.kubernetesResource(file)
                 ?.let { "context.kubernetes.$it" } ?: "context.kubernetes"
             StructuredFileKind.KUSTOMIZE -> "context.kustomize"
+            StructuredFileKind.TEKTON -> "context.tekton"
+            StructuredFileKind.SKAFFOLD -> "context.skaffold"
             else -> null
         }
     }
