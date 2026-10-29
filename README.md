@@ -7,6 +7,23 @@
 
 File and folder icons for JetBrains IDEs, named to complement the Emberkai theme. Built on the Symbols icon set, with native IntelliJ type icons for Java and Kotlin.
 
+<table>
+  <tr>
+    <td><picture>
+      <source media="(prefers-color-scheme: light)" srcset="design/screenshots/spring-service-light.png">
+      <img src="design/screenshots/spring-service-dark.png" alt="A Spring Boot service in the Project view: stereotype glyphs on Kotlin classes, Spring config with environment badges, and a Flyway migration folder warning about a duplicate version" width="320">
+    </picture></td>
+    <td><picture>
+      <source media="(prefers-color-scheme: light)" srcset="design/screenshots/kubernetes-and-ci-light.png">
+      <img src="design/screenshots/kubernetes-and-ci-dark.png" alt="GitHub workflows, an Argo CD application, a Helm chart with environment-badged values files, Kubernetes manifests with kind badges, and Terraform files" width="320">
+    </picture></td>
+    <td><picture>
+      <source media="(prefers-color-scheme: light)" srcset="design/screenshots/repository-overview-light.png">
+      <img src="design/screenshots/repository-overview-dark.png" alt="A repository root with colored service folders, a production Kustomize overlay whose files inherit its badge, and production and local variants of Docker Compose and .env files" width="320">
+    </picture></td>
+  </tr>
+</table>
+
 Java and Kotlin declarations, source files, and compiled Java classes keep their native IntelliJ icons and modifier badges. Gradle Kotlin build scripts (`*.gradle.kts`) use Gradle icons; other files and folders use Symbols icons.
 
 IntelliJ supplies visibility, static/final, runnable/test markers, read status, and registered icon layers. Nested types keep their own icons. Specialized framework providers, including live test status, take priority; methods, fields, type parameters, and package/module descriptors retain their native presentation. Java source-root integration loads only when the IDE's Java plugin is available; Kotlin's native icons come from the Kotlin plugin. Other files and folders use Symbols icons.
@@ -73,7 +90,7 @@ Requires Java 21. No icon generator or submodules are needed.
 ./gradlew test verifyPluginStructure buildPlugin
 ```
 
-The ZIP is written to `build/distributions/emberkai-icons-<version>.zip`. Run `./gradlew runIde` to try the plugin in a sandbox.
+The ZIP is written to `build/distributions/emberkai-icons-<version>.zip`. Run `./gradlew runIde` to try the plugin in a sandbox. Run `./gradlew test --tests '*MarketplaceScreenshots' -Pscreenshots` to re-render the screenshots in `design/screenshots/` from the plugin's real icons.
 
 `SymbolsIconProvider` registers the PSI and virtual-file entry points. `IconResolver` defines matching precedence; `IconMappings` loads resources, and `ProjectIconOverrideStore` layers project-local `.idea/emberkai-icons.properties` entries on top of them. Both match names, extensions, and parent paths through `MappingKeys`, so overrides follow the same lookup order as bundled mappings. `ProjectFolderIcons` translates IntelliJ root roles into themed folder icons, and `SourceSetFolders` handles layouts before import. `NativeIconPolicy` preserves native Java/Kotlin icons and specialized folders. `IconLensDecorator` dims Project view nodes outside the active lens from a snapshot `IconLensService` computes in the background. `ClassStereotypeLayerProvider` adds stereotype glyphs to native Java icons through the platform's icon layers; Kotlin icons bypass those layers, so `KotlinStereotypeIconProvider` wraps the Kotlin plugin's own icon instead. Badges such as environment variants and module accents extend `BadgedIcon`, which keeps dark and light variants of the base artwork working. Integrations that need optional platform modules (Java, Kotlin, VCS, XML, and Spring Modulith) are registered from their own descriptors next to `plugin.xml`. Each tool has a focused `ContextIconRule`; `FileContentCache` shares bounded, modification-aware inspection, and `StructuredFileKind` reads YAML/JSON metadata without constructing tagged objects.
 

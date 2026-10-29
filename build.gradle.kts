@@ -82,3 +82,11 @@ tasks.processResources {
     from(listOf("LICENSE", "NOTICE")) { into("META-INF") }
     from("licenses") { into("META-INF/licenses") }
 }
+
+// ./gradlew test --tests '*MarketplaceScreenshots' -Pscreenshots renders design/screenshots/*.png.
+tasks.test {
+    if (providers.gradleProperty("screenshots").isPresent) {
+        systemProperty("emberkai.screenshots.dir", layout.projectDirectory.dir("design/screenshots").asFile.absolutePath)
+        outputs.upToDateWhen { false }
+    }
+}
