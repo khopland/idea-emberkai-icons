@@ -2,11 +2,28 @@ package com.github.khopland.symbols
 
 import com.intellij.openapi.util.IconLoader
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import java.awt.GraphicsEnvironment
 import java.awt.image.BufferedImage
 import javax.swing.Icon
 
 internal class BadgedIconTest : BasePlatformTestCase() {
     private val base: Icon = IconLoader.getIcon("/emberkai/icons/folder-helm.svg", SymbolsIconProvider::class.java)
+
+    // Headless runs (CI) leave the icon loader inactive, so every icon paints as a 1x1 placeholder.
+    private val activatesIconLoader = GraphicsEnvironment.isHeadless()
+
+    override fun setUp() {
+        super.setUp()
+        if (activatesIconLoader) IconLoader.activate()
+    }
+
+    override fun tearDown() {
+        try {
+            if (activatesIconLoader) IconLoader.deactivate()
+        } finally {
+            super.tearDown()
+        }
+    }
 
     fun testDarkVariantsReplaceTheBaseArtworkAndKeepTheBadge() {
         val darkPixels = pixels(IconLoader.getDarkIcon(base, true))
