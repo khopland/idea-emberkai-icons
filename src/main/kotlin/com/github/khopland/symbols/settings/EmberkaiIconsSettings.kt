@@ -45,6 +45,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var activeSpringProfiles: Boolean = true,
         var stereotypeBadges: Boolean = true,
         var migrationConflicts: Boolean = true,
+        var runningServices: Boolean = true,
     )
 
     /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
@@ -134,6 +135,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.ACTIVE_SPRING_PROFILES -> State::activeSpringProfiles
             IconRuleCategory.STEREOTYPE_BADGES -> State::stereotypeBadges
             IconRuleCategory.MIGRATION_CONFLICTS -> State::migrationConflicts
+            IconRuleCategory.RUNNING_SERVICES -> State::runningServices
         }
 
         /** Writes [state] as a portable properties file. */

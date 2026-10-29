@@ -93,6 +93,7 @@ internal object IconDescriptions {
             resolution.activeProfileConfiguration?.let { "active in '$it'" },
             resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
             resolution.migrationConflict?.let { "duplicate version V$it" },
+            resolution.runningSessions.takeIf { it.isNotEmpty() }?.joinToString(", ") { it.describe() },
             migrationFolderSummary(file, resolution),
             if (resolution.secretExposed) SECRET_WARNING else null,
         )

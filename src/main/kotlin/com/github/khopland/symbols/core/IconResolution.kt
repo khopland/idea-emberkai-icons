@@ -2,6 +2,7 @@ package com.github.khopland.symbols.core
 
 import com.github.khopland.symbols.accents.ModuleAccent
 import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.run.RunningServices
 import javax.swing.Icon
 
 /** The icon chosen for a file together with the rule and mapping that produced it. */
@@ -19,6 +20,8 @@ internal data class IconResolution(
     val activeProfileConfiguration: String? = null,
     /** The Flyway version this migration shares with a sibling, when the conflict badge is shown. */
     val migrationConflict: String? = null,
+    /** Live run and debug sessions owned by this module folder, when the running marker is shown. */
+    val runningSessions: List<RunningServices.Session> = emptyList(),
     val precedence: IconPrecedence,
     val detail: String,
 )

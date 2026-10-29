@@ -27,6 +27,8 @@ import com.github.khopland.symbols.rules.LiquibaseIconRule
 import com.github.khopland.symbols.rules.MigrationIconRule
 import com.github.khopland.symbols.rules.SpringBootIconRule
 import com.github.khopland.symbols.rules.TerraformIconRule
+import com.github.khopland.symbols.run.RunningServiceIcon
+import com.github.khopland.symbols.run.RunningServices
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.isEnabled
 import com.github.khopland.symbols.spring.ActiveSpringProfileIcon
@@ -174,14 +176,43 @@ internal object IconResolver {
     }
 
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution =
-        applyModuleAccent(
-            applyFolderMigrationConflict(
-                applyFolderEnvironmentBadge(baseFolderIcon(directory, name, project), directory),
+        applyRunningService(
+            applyModuleAccent(
+                applyFolderMigrationConflict(
+                    applyFolderEnvironmentBadge(baseFolderIcon(directory, name, project), directory),
+                    directory,
+                ),
                 directory,
+                project,
             ),
             directory,
             project,
         )
+
+    /**
+     * A module folder with a live run or debug session carries the running marker. It shares the
+     * top-right corner with module accents, which module roots rarely carry, so it replaces the dot.
+     */
+    private fun applyRunningService(resolution: IconResolution, directory: VirtualFile, project: Project?): IconResolution {
+        if (project == null || project.isDisposed) return resolution
+        val sessions = RunningServices.getIfCreated(project)?.sessionsFor(directory)?.takeIf { it.isNotEmpty() }
+            ?: return resolution
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.isEnabled(IconRuleCategory.RUNNING_SERVICES)) return resolution
+        val icon = resolution.icon ?: return resolution
+        val base = (icon as? ModuleAccentIcon)?.baseIcon ?: icon
+        return resolution.copy(
+            icon = RunningServiceIcon(
+                base,
+                debug = sessions.all { it.debug },
+                highContrast = settings.highContrastFolderIcons,
+                monochrome = settings.monochromeFolderIcons,
+            ),
+            runningSessions = sessions,
+            detail = "${resolution.detail} A running marker shows a live session: " +
+                sessions.joinToString("; ") { it.describe() } + ".",
+        )
+    }
 
     private fun baseFolderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution {
         if (NativeIconPolicy.usesFolderIcon(directory, name, project)) {

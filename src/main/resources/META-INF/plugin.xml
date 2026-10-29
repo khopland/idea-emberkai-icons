@@ -24,7 +24,8 @@
         environment folders such as <code>overlays/production/</code>, along with the configuration files inside them.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
         without being ignored get a red stop-sign warning badge. Spring profile files activated by the
-        selected run configuration get a ring-and-dot live marker. Flyway migrations that share a version
+        selected run configuration get a ring-and-dot live marker, and module folders with a live run or
+        debug session get a running marker that names the configuration and Spring Boot port. Flyway migrations that share a version
         with a sibling get an amber warning badge. Spring controllers, services,
         repositories, configuration classes, and JPA entities keep their native Java/Kotlin class icons
         with a small stereotype badge.</p>
