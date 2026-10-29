@@ -56,6 +56,18 @@ internal class CoverageGapsTest : IconProviderTestCase() {
         assertNull(IconResolver.resolveWithDetails(lookalike, project).contextRule)
     }
 
+    fun testNearestFrameworkDeclarationWinsOverASharedCatalog() {
+        // A monorepo catalog declares Spring Boot for some services; the service's own build file decides.
+        myFixture.addFileToProject("gradle/libs.versions.toml", "[plugins]\nspring-boot = { id = \"org.springframework.boot\", version = \"3.4.0\" }")
+        myFixture.addFileToProject("services/orders/build.gradle.kts", "plugins { id(\"io.quarkus\") }")
+        myFixture.addFileToProject("services/catalog/build.gradle.kts", "plugins { id(\"io.micronaut.application\") }")
+        myFixture.addFileToProject("services/payments/build.gradle.kts", "plugins { java }")
+
+        assertCustomPathIcon("services/orders/src/main/resources/application.properties", "frameworks/quarkus.svg")
+        assertCustomPathIcon("services/catalog/src/main/resources/application.yml", "frameworks/micronaut.svg")
+        assertCustomPathIcon("services/payments/src/main/resources/application.yml", "spring.svg")
+    }
+
     fun testJvmFrameworkIconsCanBeDisabled() {
         myFixture.addFileToProject("svc/build.gradle.kts", "plugins { id(\"io.ktor.plugin\") }")
         val conf = myFixture.addFileToProject("svc/src/main/resources/application.conf", "ktor {}").virtualFile
