@@ -109,6 +109,6 @@ internal object IconDescriptions {
                 file.parent?.name == "crds" -> "Helm chart CRD"
                 else -> null
             }
-            else -> null
+            else -> if (key?.startsWith("context.kubernetes.") == true) LABELS["context.kubernetes"] else null
         }
 }
