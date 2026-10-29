@@ -22,6 +22,7 @@ internal class CiConfigIconRule : ContextIconRule {
 
     override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean {
         if (name == "jenkinsfile" || name == ".gitlab-ci.yml" || name == ".gitlab-ci.yaml") return true
+        if ((name == "config.yml" || name == "config.yaml") && file.parent?.name == ".circleci") return true
         if (file.extension?.lowercase(Locale.ROOT) in YAML_EXTENSIONS &&
             file.parent?.name == "workflows" && file.parent?.parent?.name == ".github"
         ) {

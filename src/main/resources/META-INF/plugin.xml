@@ -10,9 +10,10 @@
         Spring Boot configuration and Helm charts have context-aware icons, and Spring XML
         configuration uses Emberkai artwork. Spring Modulith package locks are painted onto
         Emberkai folders when that plugin is installed.</p>
-        <p>Includes CI pipelines, Ansible, infrastructure as code, database migrations,
-        OpenAPI contracts, Kubernetes, Kustomize, Flux, and Argo CD,
-        developer-tool configuration, and test assets.</p>
+        <p>Includes CI pipelines (including CircleCI, Tekton, and Bazel), Ansible, infrastructure as code
+        (including Packer, Vagrant, and Nomad), database migrations, OpenAPI and AsyncAPI contracts, Avro schemas,
+        Kubernetes, Kustomize, Flux, Argo CD, and Skaffold, Quarkus, Micronaut, and Ktor configuration,
+        JVM quality tooling, developer-tool configuration, and test assets.</p>
         <p>Symbols-style project folders retain source/test colors, resource and
         package markers, and blue module/source-set badges, including Kotlin Multiplatform.
         Opt-in module-aware accents give every IntelliJ module a stable color that service roots,

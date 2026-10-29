@@ -21,6 +21,7 @@ import com.github.khopland.symbols.rules.GitOpsIconRule
 import com.github.khopland.symbols.rules.HelmIconRule
 import com.github.khopland.symbols.rules.InfrastructureIconRule
 import com.github.khopland.symbols.rules.JvmArchitectureFolderIconRule
+import com.github.khopland.symbols.rules.JvmFrameworkIconRule
 import com.github.khopland.symbols.rules.KubernetesIconRule
 import com.github.khopland.symbols.rules.LiquibaseIconRule
 import com.github.khopland.symbols.rules.MigrationIconRule
@@ -52,6 +53,7 @@ internal object IconResolver {
         ApiSpecificationIconRule(),
         KubernetesIconRule(),
         SpringBootIconRule(),
+        JvmFrameworkIconRule(),
         architectureRule,
     )
 

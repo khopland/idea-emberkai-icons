@@ -37,6 +37,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var kubernetes: Boolean = true,
         var springBoot: Boolean = true,
         var springModulith: Boolean = true,
+        var jvmFrameworks: Boolean = true,
         var architecture: Boolean = false,
         var environmentVariants: Boolean = true,
         var unignoredSecrets: Boolean = true,
@@ -123,6 +124,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.KUBERNETES -> State::kubernetes
             IconRuleCategory.SPRING_BOOT -> State::springBoot
             IconRuleCategory.SPRING_MODULITH -> State::springModulith
+            IconRuleCategory.JVM_FRAMEWORKS -> State::jvmFrameworks
             IconRuleCategory.ARCHITECTURE -> State::architecture
             IconRuleCategory.ENVIRONMENT_VARIANTS -> State::environmentVariants
             IconRuleCategory.UNIGNORED_SECRETS -> State::unignoredSecrets
