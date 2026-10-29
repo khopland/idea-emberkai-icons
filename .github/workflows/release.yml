@@ -35,6 +35,12 @@ jobs:
       - name: Test, verify structure, and build
         run: ./gradlew --no-daemon test verifyPluginStructure buildPlugin
       - name: Upload installable plugin
+        uses: actions/upload-artifact@v7
+        with:
+          name: plugin-archive
+          path: build/distributions/*.zip
+          if-no-files-found: error
+      - name: Attach archive to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ github.event.release.tag_name }}
@@ -58,7 +64,12 @@ jobs:
           distribution: zulu
           java-version: 21
       - uses: gradle/actions/setup-gradle@v6
-      - name: Publish plugin
+      - name: Download the tested archive
+        uses: actions/download-artifact@v8
+        with:
+          name: plugin-archive
+          path: build/distributions
+      - name: Sign and publish the tested archive
         env:
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
           CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
@@ -69,4 +80,5 @@ jobs:
             echo "::error::PUBLISH_TOKEN secret is not set"
             exit 1
           fi
-          ./gradlew --no-daemon publishPlugin
+          # The archive was already built and tested by the build job, so only sign and upload it.
+          ./gradlew --no-daemon signPlugin publishPlugin -x buildPlugin
