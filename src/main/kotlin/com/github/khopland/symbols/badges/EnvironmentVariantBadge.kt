@@ -51,19 +51,67 @@ internal enum class EnvironmentVariant(
             Pattern.compile("^\\.env\\.([a-z0-9_-]+)$"),
         )
 
+        /** Folders whose children are named after environments, as in Kustomize, GitOps, and Terraform layouts. */
+        private val ENVIRONMENT_CONTAINERS = setOf("overlays", "envs", "env", "environments", "clusters", "stages")
+
+        /** Only configuration formats inherit an environment folder's variant; docs and sources do not. */
+        private val INHERITING_EXTENSIONS = setOf(
+            "yaml", "yml", "json", "jsonnet", "libsonnet", "tf", "tfvars", "hcl", "tofu",
+            "properties", "toml", "conf", "cfg", "ini", "env", "xml", "cue",
+        )
+        private const val INHERITING_NAME = "kustomization"
+        private const val MAX_INHERITANCE_DEPTH = 6
+        private val FOLDER_NAME_SEPARATORS = Regex("[-_.]")
+
+        /** The file's own name wins; otherwise configuration files inherit from an [environmentFolderOf]. */
         fun fromFile(file: VirtualFile): EnvironmentVariant? {
             if (file.isDirectory) return null
             val name = file.name.lowercase(Locale.ROOT)
-            val token = PROFILE_NAMES.firstNotNullOfOrNull { pattern ->
+            fromFileName(name)?.let { return it }
+            if (!inheritsFolderVariant(name)) return null
+            return environmentFolderOf(file)?.let(::fromDirectory)
+        }
+
+        /** Whether [file]'s variant comes from a parent environment folder rather than its own name. */
+        fun isInherited(file: VirtualFile): Boolean =
+            !file.isDirectory && fromFileName(file.name.lowercase(Locale.ROOT)) == null && fromFile(file) != null
+
+        /**
+         * A folder such as `overlays/production/` or `clusters/prod-eu/`. Only children of an
+         * environment container qualify, so `src/test/` is never a test environment, and a name that
+         * mixes environments, such as `prod-to-staging`, is ignored.
+         */
+        fun fromDirectory(directory: VirtualFile): EnvironmentVariant? {
+            if (!directory.isDirectory) return null
+            val parent = directory.parent?.name?.lowercase(Locale.ROOT) ?: return null
+            if (parent !in ENVIRONMENT_CONTAINERS) return null
+            return directory.name.lowercase(Locale.ROOT)
+                .split(FOLDER_NAME_SEPARATORS)
+                .mapNotNull(::fromToken)
+                .distinct()
+                .singleOrNull()
+        }
+
+        /** The nearest ancestor of [file] that names an environment, at most a few levels up. */
+        fun environmentFolderOf(file: VirtualFile): VirtualFile? =
+            generateSequence(file.parent) { it.parent }
+                .take(MAX_INHERITANCE_DEPTH)
+                .firstOrNull { fromDirectory(it) != null }
+
+        private fun fromFileName(name: String): EnvironmentVariant? =
+            PROFILE_NAMES.firstNotNullOfOrNull { pattern ->
                 pattern.matcher(name).takeIf { it.matches() }?.group(1)
-            } ?: return null
-            return when (token) {
-                "prod", "production" -> PRODUCTION
-                "stage", "staging" -> STAGING
-                "test", "testing" -> TEST
-                "local", "dev", "development" -> LOCAL
-                else -> null
-            }
+            }?.let(::fromToken)
+
+        private fun inheritsFolderVariant(name: String): Boolean =
+            name == INHERITING_NAME || name.substringAfterLast('.', "") in INHERITING_EXTENSIONS
+
+        private fun fromToken(token: String): EnvironmentVariant? = when (token) {
+            "prod", "production" -> PRODUCTION
+            "stage", "staging" -> STAGING
+            "test", "testing" -> TEST
+            "local", "dev", "development" -> LOCAL
+            else -> null
         }
     }
 }
