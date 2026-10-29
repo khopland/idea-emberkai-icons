@@ -27,6 +27,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var monochromeFolderIcons: Boolean = false,
         var reducedFolderColor: Boolean = false,
         var semanticTooltips: Boolean = true,
+        var codeOwnerTooltips: Boolean = true,
         var ci: Boolean = true,
         var migrations: Boolean = true,
         var helm: Boolean = true,
@@ -66,6 +67,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     var monochromeFolderIcons by flag(State::monochromeFolderIcons)
     var reducedFolderColor by flag(State::reducedFolderColor)
     var semanticTooltips by flag(State::semanticTooltips)
+    var codeOwnerTooltips by flag(State::codeOwnerTooltips)
 
     internal var serviceFolderPalette: FolderIconPalette
         get() = FolderIconPalette.fromId(currentState.serviceFolderPalette)
@@ -105,6 +107,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             State::monochromeFolderIcons,
             State::reducedFolderColor,
             State::semanticTooltips,
+            State::codeOwnerTooltips,
         )
         private val EXPORTED_FLAGS = GENERAL_FLAGS + IconRuleCategory.entries.map(::flag)
         private const val PALETTE_KEY = "serviceFolderPalette"

@@ -80,7 +80,7 @@ internal class EmberkaiScopesTest : IconProviderTestCase() {
     private fun contains(scope: EmberkaiScope, path: String): Boolean {
         val file = myFixture.findFileInTempDir(path)
         assertNotNull(path, file)
-        val named = EmberkaiScopesProvider().customScopes.single { it.scopeId == scope.scopeName }
+        val named = EmberkaiScopesProvider(project).customScopes.single { it.scopeId == scope.scopeName }
         return (named.value as PackageSetBase).contains(file!!, project, null)
     }
 }

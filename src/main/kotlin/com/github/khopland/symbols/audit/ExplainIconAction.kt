@@ -6,9 +6,12 @@ import com.github.khopland.symbols.core.IconResolution
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.MappingSource
+import com.github.khopland.symbols.core.SemanticTooltipDecorator
 import com.github.khopland.symbols.overrides.IconOverrideDialog
 import com.github.khopland.symbols.overrides.IconOverrideKeySuggestions
 import com.github.khopland.symbols.overrides.ProjectIconOverrideStore
+import com.github.khopland.symbols.ownership.CodeOwners
+import com.github.khopland.symbols.ownership.Ownership
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.isEnabled
 import com.github.khopland.symbols.stereotypes.ClassStereotypes
@@ -70,7 +73,8 @@ internal class ExplainIconAction : AnAction(), DumbAware {
         } else {
             null
         }
-        ExplainIconDialog(project, file, resolution, stereotype).show()
+        val ownership = runReadActionBlocking { CodeOwners.ownership(file) }
+        ExplainIconDialog(project, file, resolution, stereotype, ownership).show()
     }
 
     private companion object {
@@ -83,6 +87,7 @@ private class ExplainIconDialog(
     private val file: VirtualFile,
     private val resolution: IconResolution,
     private val stereotype: StereotypeRow?,
+    private val ownership: Ownership?,
 ) : DialogWrapper(project) {
     private val status = JLabel(" ")
 
@@ -191,6 +196,12 @@ private class ExplainIconDialog(
         addRow("Native policy", nativePolicy)
         addRow("Project role", projectRole)
         stereotype?.let { addRow("Stereotype badge", it.describe()) }
+        ownership?.let {
+            addRow(
+                "Code owners",
+                "${SemanticTooltipDecorator.describeOwners(it.owners)} — ${it.codeOwnersFile.name} line ${it.rule.line}: ${it.rule.pattern}",
+            )
+        }
     }
 
     private fun JPanel.addRow(name: String, value: String) {

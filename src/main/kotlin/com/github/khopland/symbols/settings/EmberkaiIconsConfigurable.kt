@@ -91,6 +91,10 @@ class EmberkaiIconsConfigurable : Configurable {
             "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. " +
                 "Screen readers announce it as the node description.",
         )
+        addFlag(
+            root, State::codeOwnerTooltips, "Show CODEOWNERS owners in Project view tooltips",
+            "Name the owners from the repository's CODEOWNERS file, such as \"Owned by @org/payments\".",
+        )
 
         root.add(sectionTitle("Folder accessibility"))
         folderPalette = JComboBox(DefaultComboBoxModel(FolderIconPalette.entries.toTypedArray())).apply {
