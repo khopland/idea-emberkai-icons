@@ -63,6 +63,8 @@
     <applicationListeners>
         <listener class="com.github.khopland.symbols.badges.FlywayMigrationCacheListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+        <listener class="com.github.khopland.symbols.rules.OpenTofuSignalCacheListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable

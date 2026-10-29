@@ -131,7 +131,8 @@ internal class SymbolsIconProviderTest : IconProviderTestCase() {
         assertFileIcon(".terraform-version", "files/terraform.svg")
         assertFileIcon(".terraform.lock.hcl", "files/terraform.svg")
         assertFileIcon("terraform.rc", "files/terraform.svg")
-        assertFileIcon("main.tofu", "files/terraform.svg")
+        // A .tofu file marks its folder tree as OpenTofu, so keep it away from the Terraform folders below.
+        assertCustomPathIcon("tofu-stack/main.tofu", "infra/opentofu.svg")
         assertCustomFolderIcon("terraform", "folders/folder-terraform.svg")
         assertCustomFolderIcon("terragrunt", "folders/folder-terraform.svg")
 
