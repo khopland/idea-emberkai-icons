@@ -1,0 +1,8 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Without Git no branch comparison exists, so the Changed on this branch lens is not offered. -->
+        <projectService
+            serviceInterface="com.github.khopland.symbols.lens.BranchChanges"
+            serviceImplementation="com.github.khopland.symbols.lens.GitBranchChanges"/>
+    </extensions>
+</idea-plugin>

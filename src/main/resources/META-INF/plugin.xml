@@ -40,7 +40,8 @@
         <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>
-        or <b>Infrastructure</b>, to keep matching files in full color and dim the rest of the Project view.</p>
+        or <b>Infrastructure</b>, to keep matching files in full color and dim the rest of the Project view.
+        <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.</p>
         <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
         <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.</p>
         <p>Icons by Miguel Solorio, from
@@ -49,6 +50,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
     <depends optional="true" config-file="vcs-secrets.xml">com.intellij.modules.vcs</depends>
+    <depends optional="true" config-file="git-lens.xml">Git4Idea</depends>
     <depends optional="true" config-file="spring-xml.xml">com.intellij.modules.xml</depends>
     <depends optional="true" config-file="java-support.xml">com.intellij.java</depends>
     <depends optional="true" config-file="kotlin-stereotypes.xml">org.jetbrains.kotlin</depends>
