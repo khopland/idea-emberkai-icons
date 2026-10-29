@@ -1,0 +1,17 @@
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 19H5C3.89543 19 3 18.1046 3 17V7C3 5.89543 3.89543 5 5 5H7.78388C8.2469 5 8.69558 5.16065 9.05336 5.45455L11.4466 7.42045C11.8044 7.71435 12.2531 7.875 12.7161 7.875H19C20.1046 7.875 21 8.77043 21 9.875V11" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<g transform="translate(12 10) scale(.48)">
+<defs>
+<linearGradient id="folder-idea-tile" x1="1" y1="1" x2="23" y2="23" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FF8100"/>
+<stop offset="0.35" stop-color="#FE2857"/>
+<stop offset="0.7" stop-color="#8D53FF"/>
+<stop offset="1" stop-color="#087CFA"/>
+</linearGradient>
+</defs>
+<rect x="1" y="1" width="22" height="22" rx="5" fill="url(#folder-idea-tile)"/>
+<rect x="5" y="5" width="14" height="14" fill="#000000"/>
+<path d="M8.3 7.6V12.8M13.6 7.6V11.6A1.6 1.6 0 0 1 10.6 12.4" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round"/>
+<rect x="7.5" y="15" width="6" height="1.6" fill="#FFFFFF"/>
+</g>
+</svg>

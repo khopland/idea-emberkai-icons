@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added an IntelliJ IDEA folder icon for `.idea/`; files and folders inside it keep their native icons.
 - Added a CODEOWNERS ownership layer: Project view tooltips name each file's and folder's owners, **Explain This Icon** shows the CODEOWNERS line that assigned them, every owner gets an **Emberkai: Owned by …** scope, and **Lens > Owned By** highlights one owner's files. Matching follows GitHub's rules, with a setting to hide owners from tooltips.
 - Added Quarkus, Micronaut, and Ktor configuration icons, detected from build declarations like Spring Boot, with their own setting.
 - Added icons for detekt, OpenRewrite, SonarQube, and Jib configuration; AsyncAPI contracts (by name or metadata) and Avro schemas, which join the **API contracts** scope; CircleCI, Tekton, and Bazel; Skaffold, Tilt, Dagger, and Testcontainers; and Packer, Vagrant, and Nomad, which join the **Infrastructure** scope.
