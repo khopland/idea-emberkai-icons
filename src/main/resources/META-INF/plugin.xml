@@ -21,7 +21,8 @@
         <p>Production, staging, test, and local variants of Spring profiles, Docker Compose files,
         Helm values, and <code>.env</code> files get shape-and-color environment badges.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
-        without being ignored get a red stop-sign warning badge.</p>
+        without being ignored get a red stop-sign warning badge. Spring profile files activated by the
+        selected run configuration get a ring-and-dot live marker.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -40,6 +41,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
     <depends optional="true" config-file="vcs-secrets.xml">com.intellij.modules.vcs</depends>
+    <depends optional="true" config-file="java-active-profiles.xml">com.intellij.java</depends>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"

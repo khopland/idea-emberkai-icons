@@ -75,6 +75,7 @@ internal object IconDescriptions {
         val parts = listOfNotNull(
             base,
             variant?.displayName,
+            resolution.activeProfileConfiguration?.let { "active in '$it'" },
             resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
             if (resolution.secretExposed) SECRET_WARNING else null,
         )
