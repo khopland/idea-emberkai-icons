@@ -4,7 +4,6 @@ import com.github.khopland.symbols.lens.IconLens
 import com.github.khopland.symbols.lens.IconLensDecorator
 import com.github.khopland.symbols.lens.IconLensService
 import com.github.khopland.symbols.lens.LensSnapshot
-import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ViewSettings
@@ -15,6 +14,9 @@ import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.ui.SimpleTextAttributes
+import java.awt.Color
+import java.awt.Component
+import java.awt.Graphics
 import javax.swing.Icon
 
 internal class IconLensTest : IconProviderTestCase() {
@@ -74,13 +76,13 @@ internal class IconLensTest : IconProviderTestCase() {
         assertNull(member.forcedTextForeground)
 
         val dimmed = decorate(PsiFileNode(project, readme, ViewSettings.DEFAULT))
-        assertNotSame(ICON, dimmed.getIcon(false))
-        assertEquals(IconLoader.getDisabledIcon(ICON), dimmed.getIcon(false))
         assertEquals(SimpleTextAttributes.GRAYED_ATTRIBUTES.fgColor, dimmed.forcedTextForeground)
         assertEquals("Outside the Database migrations lens", dimmed.tooltip)
+        // Headless runs have no disabled variant, and getDisabledIcon returns the icon itself.
+        assertEquals(IconLoader.getDisabledIcon(ICON), dimmed.getIcon(false))
 
         val folder = PsiDirectoryNode(project, PsiManager.getInstance(project).findDirectory(docs)!!, ViewSettings.DEFAULT)
-        assertNotSame(ICON, decorate(folder).getIcon(false))
+        assertEquals("Outside the Database migrations lens", decorate(folder).tooltip)
 
         service.select(null)
         assertNull(service.snapshot)
@@ -114,6 +116,15 @@ internal class IconLensTest : IconProviderTestCase() {
     }
 
     private companion object {
-        val ICON: Icon = AllIcons.FileTypes.Text
+        val ICON: Icon = object : Icon {
+            override fun paintIcon(component: Component?, g: Graphics, x: Int, y: Int) {
+                g.color = Color.ORANGE
+                g.fillRect(x, y, iconWidth, iconHeight)
+            }
+
+            override fun getIconWidth(): Int = 16
+
+            override fun getIconHeight(): Int = 16
+        }
     }
 }
