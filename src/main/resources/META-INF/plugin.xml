@@ -23,7 +23,8 @@
         environment folders such as <code>overlays/production/</code>, along with the configuration files inside them.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
         without being ignored get a red stop-sign warning badge. Spring profile files activated by the
-        selected run configuration get a ring-and-dot live marker. Spring controllers, services,
+        selected run configuration get a ring-and-dot live marker. Flyway migrations that share a version
+        with a sibling get an amber warning badge. Spring controllers, services,
         repositories, configuration classes, and JPA entities keep their native Java/Kotlin class icons
         with a small stereotype badge.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
@@ -56,6 +57,10 @@
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <supportsKotlinPluginMode supportsK2="true"/>
     </extensions>
+    <applicationListeners>
+        <listener class="com.github.khopland.symbols.badges.FlywayMigrationCacheListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+    </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"

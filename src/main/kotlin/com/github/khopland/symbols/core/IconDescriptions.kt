@@ -1,5 +1,6 @@
 package com.github.khopland.symbols.core
 
+import com.github.khopland.symbols.badges.FlywayMigrations
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 
@@ -81,10 +82,28 @@ internal object IconDescriptions {
             variant?.displayName,
             resolution.activeProfileConfiguration?.let { "active in '$it'" },
             resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
+            resolution.migrationConflict?.let { "duplicate version V$it" },
+            migrationFolderSummary(file, resolution),
             if (resolution.secretExposed) SECRET_WARNING else null,
         )
         if (parts.isEmpty()) return null
         return parts.joinToString(SEPARATOR).replaceFirstChar { it.uppercase(Locale.ROOT) }
+    }
+
+    /** Migration folders summarize their Flyway versions, such as "12 versioned · latest V12 · 1 version conflict". */
+    private fun migrationFolderSummary(file: VirtualFile, resolution: IconResolution): String? {
+        if (resolution.mappingKey != "context.migration-folder") return null
+        val summary = FlywayMigrations.summary(file) ?: return null
+        val conflicts = summary.conflicts.size
+        return listOfNotNull(
+            "${summary.versionedCount} versioned",
+            summary.latestVersion?.let { "latest V$it" },
+            when (conflicts) {
+                0 -> null
+                1 -> "1 version conflict"
+                else -> "$conflicts version conflicts"
+            },
+        ).joinToString(SEPARATOR)
     }
 
     private fun label(file: VirtualFile, name: String, resolution: IconResolution): String? {

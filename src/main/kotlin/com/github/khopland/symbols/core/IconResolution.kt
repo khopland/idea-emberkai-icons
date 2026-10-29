@@ -17,6 +17,8 @@ internal data class IconResolution(
     val secretExposed: Boolean = false,
     /** Run configuration that activates this Spring profile file, when the live marker is shown. */
     val activeProfileConfiguration: String? = null,
+    /** The Flyway version this migration shares with a sibling, when the conflict badge is shown. */
+    val migrationConflict: String? = null,
     val precedence: IconPrecedence,
     val detail: String,
 )

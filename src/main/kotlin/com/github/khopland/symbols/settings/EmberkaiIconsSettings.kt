@@ -42,6 +42,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var unignoredSecrets: Boolean = true,
         var activeSpringProfiles: Boolean = true,
         var stereotypeBadges: Boolean = true,
+        var migrationConflicts: Boolean = true,
     )
 
     /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
@@ -127,6 +128,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.UNIGNORED_SECRETS -> State::unignoredSecrets
             IconRuleCategory.ACTIVE_SPRING_PROFILES -> State::activeSpringProfiles
             IconRuleCategory.STEREOTYPE_BADGES -> State::stereotypeBadges
+            IconRuleCategory.MIGRATION_CONFLICTS -> State::migrationConflicts
         }
 
         /** Writes [state] as a portable properties file. */
