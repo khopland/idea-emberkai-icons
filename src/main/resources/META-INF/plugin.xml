@@ -22,7 +22,9 @@
         Helm values, and <code>.env</code> files get shape-and-color environment badges.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
         without being ignored get a red stop-sign warning badge. Spring profile files activated by the
-        selected run configuration get a ring-and-dot live marker.</p>
+        selected run configuration get a ring-and-dot live marker. Spring controllers, services,
+        repositories, configuration classes, and JPA entities keep their native Java/Kotlin class icons
+        with a small stereotype badge.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -31,8 +33,6 @@
         mapping selected it. Project view tooltips describe recognized tool files, project roles,
         environment variants, and module accents. Run <b>Tools | Audit Project Icon Coverage</b>
         to find files that still use generic icons.</p>
-        mapping selected it, or run <b>Tools | Audit Project Icon Coverage</b> to find files that
-        still use generic icons.</p>
         <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Icons by Miguel Solorio, from
@@ -42,6 +42,17 @@
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
     <depends optional="true" config-file="vcs-secrets.xml">com.intellij.modules.vcs</depends>
     <depends optional="true" config-file="java-active-profiles.xml">com.intellij.java</depends>
+    <depends optional="true" config-file="java-stereotypes.xml">com.intellij.java</depends>
+    <depends optional="true" config-file="kotlin-stereotypes.xml">org.jetbrains.kotlin</depends>
+    <extensionPoints>
+        <extensionPoint qualifiedName="com.github.khopland.symbols.classStereotypeSupport"
+                        interface="com.github.khopland.symbols.ClassStereotypeSupport"
+                        dynamic="true"/>
+    </extensionPoints>
+    <!-- The Kotlin stereotype support reads only stub-backed PSI, which both Kotlin plugin modes provide. -->
+    <extensions defaultExtensionNs="org.jetbrains.kotlin">
+        <supportsKotlinPluginMode supportsK2="true"/>
+    </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"
@@ -52,6 +63,7 @@
         <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.SemanticTooltipDecorator"/>
         <customScopesProvider implementation="com.github.khopland.symbols.EmberkaiScopesProvider"/>
+        <iconLayerProvider implementation="com.github.khopland.symbols.ClassStereotypeLayerProvider"/>
     </extensions>
     <actions>
         <group id="com.github.khopland.symbols.EmberkaiQuickToggles"
@@ -81,6 +93,10 @@
                     class="com.github.khopland.symbols.ToggleArchitectureFoldersAction"
                     text="JVM architecture folders"
                     description="Show distinct icons for controller, service, repository, and similar packages"/>
+            <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
+                    class="com.github.khopland.symbols.ToggleStereotypeBadgesAction"
+                    text="Spring stereotype badges"
+                    description="Badge native class icons for Spring controllers, services, repositories, configuration, and JPA entities"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"

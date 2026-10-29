@@ -27,7 +27,7 @@ dependencies {
         bundledPlugin("com.intellij.java")
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)
-        testBundledPlugin("org.jetbrains.kotlin")
+        bundledPlugin("org.jetbrains.kotlin")
     }
 }
 

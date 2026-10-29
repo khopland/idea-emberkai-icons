@@ -1,0 +1,8 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.github.khopland.symbols">
+        <classStereotypeSupport implementation="com.github.khopland.symbols.KotlinClassStereotypeSupport"/>
+    </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <iconProvider implementation="com.github.khopland.symbols.KotlinStereotypeIconProvider" order="first"/>
+    </extensions>
+</idea-plugin>

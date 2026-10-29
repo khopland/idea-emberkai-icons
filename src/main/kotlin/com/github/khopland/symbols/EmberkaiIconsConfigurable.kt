@@ -2,6 +2,7 @@ package com.github.khopland.symbols
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.options.Configurable
+import com.intellij.ui.LayeredIcon
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
@@ -203,7 +204,13 @@ class EmberkaiIconsConfigurable : Configurable {
             }
         }
         val packageNode = DefaultMutableTreeNode(PreviewItem("com.example", packageIcon))
-        val javaIcon = if (preserveNativeIcons?.isSelected != false) AllIcons.FileTypes.Java else mappings.get("extension.java")
+        val nativeJava = preserveNativeIcons?.isSelected != false
+        val javaIcon = when {
+            !nativeJava -> mappings.get("extension.java")
+            categoryBoxes[IconRuleCategory.STEREOTYPE_BADGES]?.isSelected != false ->
+                LayeredIcon(AllIcons.Nodes.Class, ClassStereotype.APPLICATION.icon)
+            else -> AllIcons.Nodes.Class
+        }
         packageNode.add(DefaultMutableTreeNode(PreviewItem("Application.java", javaIcon)))
         main.add(packageNode)
         src.add(main)

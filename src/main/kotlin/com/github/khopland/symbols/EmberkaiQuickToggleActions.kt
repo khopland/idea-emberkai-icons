@@ -45,6 +45,11 @@ class ToggleReducedFolderColorAction : EmberkaiSettingsToggle("Reduce service-fo
     override fun update(state: Boolean) { settings.reducedFolderColor = state }
 }
 
+class ToggleStereotypeBadgesAction : EmberkaiSettingsToggle("Spring stereotype badges") {
+    override fun selected(): Boolean = settings.isEnabled(IconRuleCategory.STEREOTYPE_BADGES)
+    override fun update(state: Boolean) { settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, state) }
+}
+
 class ToggleArchitectureFoldersAction : EmberkaiSettingsToggle("JVM architecture folders") {
     override fun selected(): Boolean = settings.isEnabled(IconRuleCategory.ARCHITECTURE)
     override fun update(state: Boolean) { settings.setEnabled(IconRuleCategory.ARCHITECTURE, state) }
