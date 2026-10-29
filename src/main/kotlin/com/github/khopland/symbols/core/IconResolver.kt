@@ -4,6 +4,8 @@ import com.github.khopland.symbols.accents.ModuleAccentIcon
 import com.github.khopland.symbols.accents.ModuleAccentStore
 import com.github.khopland.symbols.badges.EnvironmentVariant
 import com.github.khopland.symbols.badges.EnvironmentVariantBadgeIcon
+import com.github.khopland.symbols.badges.FlywayMigrations
+import com.github.khopland.symbols.badges.MigrationConflictBadgeIcon
 import com.github.khopland.symbols.badges.SecretFileExposure
 import com.github.khopland.symbols.badges.SecretFileNames
 import com.github.khopland.symbols.badges.UnignoredSecretBadgeIcon
@@ -60,7 +62,8 @@ internal object IconResolver {
         if (file.isDirectory) return folderIcon(file, name, project)
         val resolution = fileIcon(file, name, project)
         if (resolution.precedence == IconPrecedence.NATIVE_POLICY) return resolution
-        return applyActiveProfile(applySecretBadge(applyEnvironmentBadge(resolution, file), file, project), name, project)
+        val badged = applySecretBadge(applyEnvironmentBadge(resolution, file), file, project)
+        return applyMigrationConflict(applyActiveProfile(badged, name, project), file)
     }
 
     /**
@@ -85,6 +88,33 @@ internal object IconResolver {
             icon = EnvironmentVariantBadgeIcon(baseIcon, variant),
             environmentVariant = variant,
             detail = "${resolution.detail} A ${variant.displayName} environment badge is shown. $reason",
+        )
+    }
+
+    /** Warns about a Flyway version that a sibling migration also uses; Flyway refuses to run either. */
+    private fun applyMigrationConflict(resolution: IconResolution, file: VirtualFile): IconResolution {
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.isEnabled(IconRuleCategory.MIGRATION_CONFLICTS)) return resolution
+        val (version, others) = FlywayMigrations.conflict(file) ?: return resolution
+        val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
+        return resolution.copy(
+            icon = MigrationConflictBadgeIcon(baseIcon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
+            migrationConflict = version,
+            detail = "${resolution.detail} A warning badge marks a duplicate Flyway version: V$version is also used by " +
+                "${others.joinToString()}. Flyway fails validation until one of them is renumbered.",
+        )
+    }
+
+    /** A folder with duplicate Flyway versions carries the warning so it is visible while collapsed. */
+    private fun applyFolderMigrationConflict(resolution: IconResolution, directory: VirtualFile): IconResolution {
+        val icon = resolution.icon ?: return resolution
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.isEnabled(IconRuleCategory.MIGRATION_CONFLICTS)) return resolution
+        val conflicts = FlywayMigrations.summary(directory)?.conflicts?.takeIf { it.isNotEmpty() } ?: return resolution
+        return resolution.copy(
+            icon = MigrationConflictBadgeIcon(icon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
+            detail = "${resolution.detail} A warning badge marks duplicate Flyway versions in this folder: " +
+                conflicts.keys.joinToString { "V$it" } + ".",
         )
     }
 
@@ -141,7 +171,10 @@ internal object IconResolver {
 
     private fun folderIcon(directory: VirtualFile, name: String, project: Project?): IconResolution =
         applyModuleAccent(
-            applyFolderEnvironmentBadge(baseFolderIcon(directory, name, project), directory),
+            applyFolderMigrationConflict(
+                applyFolderEnvironmentBadge(baseFolderIcon(directory, name, project), directory),
+                directory,
+            ),
             directory,
             project,
         )
