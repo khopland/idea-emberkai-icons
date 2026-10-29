@@ -1,5 +1,0 @@
-<idea-plugin>
-    <extensions defaultExtensionNs="com.github.khopland.symbols">
-        <classStereotypeSupport implementation="com.github.khopland.symbols.JavaClassStereotypeSupport"/>
-    </extensions>
-</idea-plugin>

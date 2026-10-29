@@ -97,9 +97,9 @@ internal class ActiveSpringProfilesTest : IconProviderTestCase() {
         assertNotLive(local)
         assertNotLive(qa)
         assertNotLive(plain)
-        val explanation = IconResolver().resolveWithDetails(kafka.virtualFile, project).detail
+        val explanation = IconResolver.resolveWithDetails(kafka.virtualFile, project).detail
         assertTrue(explanation, explanation.contains("active profile in run configuration 'Service'"))
-        val resolution = IconResolver().resolveWithDetails(kafka.virtualFile, project)
+        val resolution = IconResolver.resolveWithDetails(kafka.virtualFile, project)
         assertEquals(
             "Spring Boot configuration · active in 'Service'",
             IconDescriptions.describe(kafka.virtualFile, resolution),
@@ -112,7 +112,7 @@ internal class ActiveSpringProfilesTest : IconProviderTestCase() {
         assertEnvironmentBadge("emberkai/icons/spring.svg", EnvironmentVariant.LOCAL, localIcon!!.baseIcon)
         assertEquals(
             "Spring Boot configuration · local · active in 'Local'",
-            IconDescriptions.describe(local.virtualFile, IconResolver().resolveWithDetails(local.virtualFile, project)),
+            IconDescriptions.describe(local.virtualFile, IconResolver.resolveWithDetails(local.virtualFile, project)),
         )
     }
 

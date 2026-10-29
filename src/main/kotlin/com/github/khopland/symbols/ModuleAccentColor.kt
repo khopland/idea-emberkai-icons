@@ -32,10 +32,7 @@ internal enum class ModuleAccentColor(
         fun fromId(id: String?): ModuleAccentColor? = entries.firstOrNull { it.id == id }
 
         /** Derive a stable default color from the module name, following the active palette order. */
-        fun defaultFor(moduleName: String, palette: FolderIconPalette): ModuleAccentColor {
-            val colors = ServiceFolderIconStyle.colorNames(palette)
-            val index = Math.floorMod(moduleName.lowercase(Locale.ROOT).hashCode(), colors.size)
-            return fromId(colors[index]) ?: BLUE
-        }
+        fun defaultFor(moduleName: String, palette: FolderIconPalette): ModuleAccentColor =
+            palette.colors[Math.floorMod(moduleName.lowercase(Locale.ROOT).hashCode(), palette.colors.size)]
     }
 }

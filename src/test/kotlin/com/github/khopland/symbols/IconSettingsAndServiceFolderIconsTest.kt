@@ -1,13 +1,17 @@
 package com.github.khopland.symbols
 
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VfsUtil
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import java.awt.Component
+import java.awt.Container
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
+import javax.swing.JCheckBox
 
 internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings
@@ -40,6 +44,38 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
             settings.setEnabled(category, true)
             assertTrue("$category enabled", settings.isEnabled(category))
         }
+    }
+
+    fun testEveryCategoryAndGeneralFlagHasItsOwnField() {
+        val fields = EmberkaiIconsSettings.GENERAL_FLAGS + IconRuleCategory.entries.map(EmberkaiIconsSettings::flag)
+        assertEquals(fields.size, fields.map { it.name }.toSet().size)
+    }
+
+    fun testConfigurableAppliesAndResetsTheForm() {
+        val configurable = EmberkaiIconsConfigurable()
+        try {
+            val root = configurable.createComponent()
+            assertFalse(configurable.isModified)
+
+            val helm = checkBoxes(root).single { it.text == IconRuleCategory.HELM.displayName }
+            helm.doClick()
+            assertTrue(configurable.isModified)
+            configurable.reset()
+            assertFalse(configurable.isModified)
+            assertTrue(helm.isSelected)
+
+            helm.doClick()
+            configurable.apply()
+            assertFalse(configurable.isModified)
+            assertFalse(settings.isEnabled(IconRuleCategory.HELM))
+        } finally {
+            configurable.disposeUIResources()
+        }
+    }
+
+    private fun checkBoxes(component: Component): List<JCheckBox> = buildList {
+        if (component is JCheckBox) add(component)
+        if (component is Container) component.components.forEach { addAll(checkBoxes(it)) }
     }
 
     fun testKubernetesCategorySwitchChangesIconResolution() {
@@ -110,8 +146,7 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
 
     fun testServiceRootCacheTracksManifestCreationAndDeletion() {
         val directory = localDirectory("services/catalog")
-        val icons = ServiceFolderIcons(IconMappings())
-        assertNull(icons.icon(directory, project))
+        assertNull(serviceFolderIcon(directory))
 
         lateinit var marker: VirtualFile
         WriteCommandAction.runWriteCommandAction(project) {
@@ -120,10 +155,10 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         }
         assertNotNull(
             "A service manifest created after the first lookup should invalidate its cached result",
-            icons.icon(directory, project),
+            serviceFolderIcon(directory),
         )
         WriteCommandAction.runWriteCommandAction(project) { marker.delete(this@IconSettingsAndServiceFolderIconsTest) }
-        assertNull(icons.icon(directory, project))
+        assertNull(serviceFolderIcon(directory))
     }
 
     fun testSiblingServiceRootsReceiveDifferentPaletteIcons() {
@@ -131,10 +166,8 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         val beta = localDirectory("services/beta")
         addLocalFile("services/alpha/build.gradle.kts", "plugins {}")
         addLocalFile("services/beta/package.json", "{}")
-
-        val icons = ServiceFolderIcons(IconMappings())
-        val betaIcon = icons.icon(beta, project)
-        val alphaIcon = icons.icon(alpha, project)
+        val betaIcon = serviceFolderIcon(beta)
+        val alphaIcon = serviceFolderIcon(alpha)
         assertNotNull(alphaIcon)
         assertNotNull(betaIcon)
         assertNotSame(alphaIcon, betaIcon)
@@ -145,7 +178,7 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
     fun testDependenciesAreNotClassifiedAsServiceRoots() {
         val packageDirectory = localDirectory("node_modules/example")
         addLocalFile("node_modules/example/package.json", "{}")
-        assertNull(ServiceFolderIcons(IconMappings()).icon(packageDirectory, project))
+        assertNull(serviceFolderIcon(packageDirectory))
     }
 
     fun testCanonicalPathComparisonFollowsSymlinks() {
@@ -162,8 +195,9 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
                 return
             }
 
-            assertTrue(ProjectPathUtil.isSamePath(realRoot.toString(), alias.toString()))
-            assertTrue(ProjectPathUtil.isAncestorPath(alias.toString(), realChild.toString()))
+            val canonicalAlias = ProjectPathUtil.canonicalPath(alias.toString())
+            assertTrue(FileUtil.pathsEqual(ProjectPathUtil.canonicalPath(realRoot.toString()), canonicalAlias))
+            assertTrue(FileUtil.isAncestor(canonicalAlias, ProjectPathUtil.canonicalPath(realChild.toString()), false))
         } finally {
             temporaryRoot.toFile().deleteRecursively()
         }

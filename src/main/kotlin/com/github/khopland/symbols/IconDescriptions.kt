@@ -89,7 +89,7 @@ internal object IconDescriptions {
         if (resolution.mappingSource == MappingSource.PROJECT_OVERRIDE) return PROJECT_OVERRIDE
         return when (resolution.precedence) {
             IconPrecedence.CONTEXT_RULE ->
-                refined(key, file, name, resolution) ?: LABELS[key] ?: resolution.contextRule
+                refined(key, file, name) ?: LABELS[key] ?: resolution.contextRule?.displayName
             IconPrecedence.PROJECT_ROLE, IconPrecedence.MAPPING ->
                 if (key?.startsWith("folder.service.") == true) SERVICE_ROOT else LABELS[key]
             else -> null
@@ -97,10 +97,9 @@ internal object IconDescriptions {
     }
 
     /** A few keys cover several tool files; the filename tells them apart. */
-    private fun refined(key: String?, file: VirtualFile, name: String, resolution: IconResolution): String? =
+    private fun refined(key: String?, file: VirtualFile, name: String): String? =
         when (key) {
-            "context.spring" ->
-                if (resolution.contextRule == IconResolver.SPRING_XML_RULE) "Spring XML configuration" else null
+            "context.spring" -> if (name.endsWith(".xml")) "Spring XML configuration" else null
             "context.migration" -> when {
                 name.startsWith("db.changelog") -> "Liquibase changelog"
                 name.startsWith("r__") -> "Flyway repeatable migration"

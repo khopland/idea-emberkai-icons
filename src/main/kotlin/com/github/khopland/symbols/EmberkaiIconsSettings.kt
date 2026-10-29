@@ -8,95 +8,65 @@ import com.intellij.openapi.components.Storage
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Properties
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
 
 @Service(Service.Level.APP)
 @State(name = "EmberkaiIconsSettings", storages = [Storage("emberkai-icons.xml")])
 class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.State> {
-    class State {
-        var preserveNativeJavaKotlinIcons: Boolean = true
-        var colorServiceFolders: Boolean = true
-        var moduleAwareColors: Boolean = false
-        var serviceFolderPalette: String = FolderIconPalette.EMBERKAI.name
-        var highContrastFolderIcons: Boolean = false
-        var monochromeFolderIcons: Boolean = false
-        var reducedFolderColor: Boolean = false
-        var semanticTooltips: Boolean = true
-        var ci: Boolean = true
-        var migrations: Boolean = true
-        var helm: Boolean = true
-        var ansible: Boolean = true
-        var infrastructure: Boolean = true
-        var gitOps: Boolean = true
-        var apiSpecifications: Boolean = true
-        var kubernetes: Boolean = true
-        var springBoot: Boolean = true
-        var springModulith: Boolean = true
-        var architecture: Boolean = false
-        var environmentVariants: Boolean = true
-        var unignoredSecrets: Boolean = true
-        var activeSpringProfiles: Boolean = true
-        var stereotypeBadges: Boolean = true
-    }
+    /** Field names are the persisted and exported setting names; keep them stable. */
+    data class State(
+        var preserveNativeJavaKotlinIcons: Boolean = true,
+        var colorServiceFolders: Boolean = true,
+        var moduleAwareColors: Boolean = false,
+        var serviceFolderPalette: String = FolderIconPalette.EMBERKAI.name,
+        var highContrastFolderIcons: Boolean = false,
+        var monochromeFolderIcons: Boolean = false,
+        var reducedFolderColor: Boolean = false,
+        var semanticTooltips: Boolean = true,
+        var ci: Boolean = true,
+        var migrations: Boolean = true,
+        var helm: Boolean = true,
+        var ansible: Boolean = true,
+        var infrastructure: Boolean = true,
+        var gitOps: Boolean = true,
+        var apiSpecifications: Boolean = true,
+        var kubernetes: Boolean = true,
+        var springBoot: Boolean = true,
+        var springModulith: Boolean = true,
+        var architecture: Boolean = false,
+        var environmentVariants: Boolean = true,
+        var unignoredSecrets: Boolean = true,
+        var activeSpringProfiles: Boolean = true,
+        var stereotypeBadges: Boolean = true,
+    )
 
+    /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
     @Volatile
     private var currentState = State()
     private val stateLock = Any()
 
-    override fun getState(): State = currentState.copyState()
+    override fun getState(): State = currentState.copy()
 
     override fun loadState(state: State) {
         synchronized(stateLock) {
-            currentState = state.copyState()
+            currentState = state.copy()
         }
     }
 
-    var preserveNativeJavaKotlinIcons: Boolean
-        get() = currentState.preserveNativeJavaKotlinIcons
-        set(value) {
-            updateState { it.preserveNativeJavaKotlinIcons = value }
-        }
-
-    var colorServiceFolders: Boolean
-        get() = currentState.colorServiceFolders
-        set(value) {
-            updateState { it.colorServiceFolders = value }
-        }
-
-    var moduleAwareColors: Boolean
-        get() = currentState.moduleAwareColors
-        set(value) {
-            updateState { it.moduleAwareColors = value }
-        }
+    var preserveNativeJavaKotlinIcons by flag(State::preserveNativeJavaKotlinIcons)
+    var colorServiceFolders by flag(State::colorServiceFolders)
+    var moduleAwareColors by flag(State::moduleAwareColors)
+    var highContrastFolderIcons by flag(State::highContrastFolderIcons)
+    var monochromeFolderIcons by flag(State::monochromeFolderIcons)
+    var reducedFolderColor by flag(State::reducedFolderColor)
+    var semanticTooltips by flag(State::semanticTooltips)
 
     internal var serviceFolderPalette: FolderIconPalette
         get() = FolderIconPalette.fromId(currentState.serviceFolderPalette)
         set(value) {
             updateState { it.serviceFolderPalette = value.name }
-        }
-
-    var highContrastFolderIcons: Boolean
-        get() = currentState.highContrastFolderIcons
-        set(value) {
-            updateState { it.highContrastFolderIcons = value }
-        }
-
-    var monochromeFolderIcons: Boolean
-        get() = currentState.monochromeFolderIcons
-        set(value) {
-            updateState { it.monochromeFolderIcons = value }
-        }
-
-    var reducedFolderColor: Boolean
-        get() = currentState.reducedFolderColor
-        set(value) {
-            updateState { it.reducedFolderColor = value }
-        }
-
-    var semanticTooltips: Boolean
-        get() = currentState.semanticTooltips
-        set(value) {
-            updateState { it.semanticTooltips = value }
         }
 
     internal fun isEnabled(category: IconRuleCategory): Boolean = currentState.isEnabled(category)
@@ -107,72 +77,60 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
 
     private fun updateState(update: (State) -> Unit) {
         synchronized(stateLock) {
-            val newState = currentState.copyState()
-            update(newState)
-            currentState = newState
+            currentState = currentState.copy().also(update)
         }
     }
 
-    private fun State.copyState(): State = State().also { copy ->
-        copy.preserveNativeJavaKotlinIcons = preserveNativeJavaKotlinIcons
-        copy.colorServiceFolders = colorServiceFolders
-        copy.moduleAwareColors = moduleAwareColors
-        copy.serviceFolderPalette = serviceFolderPalette
-        copy.highContrastFolderIcons = highContrastFolderIcons
-        copy.monochromeFolderIcons = monochromeFolderIcons
-        copy.reducedFolderColor = reducedFolderColor
-        copy.semanticTooltips = semanticTooltips
-        copy.ci = ci
-        copy.migrations = migrations
-        copy.helm = helm
-        copy.ansible = ansible
-        copy.infrastructure = infrastructure
-        copy.gitOps = gitOps
-        copy.apiSpecifications = apiSpecifications
-        copy.kubernetes = kubernetes
-        copy.springBoot = springBoot
-        copy.springModulith = springModulith
-        copy.architecture = architecture
-        copy.environmentVariants = environmentVariants
-        copy.unignoredSecrets = unignoredSecrets
-        copy.activeSpringProfiles = activeSpringProfiles
-        copy.stereotypeBadges = stereotypeBadges
-    }
+    private fun flag(field: KMutableProperty1<State, Boolean>) =
+        object : ReadWriteProperty<EmberkaiIconsSettings, Boolean> {
+            override fun getValue(thisRef: EmberkaiIconsSettings, property: KProperty<*>): Boolean =
+                field.get(currentState)
+
+            override fun setValue(thisRef: EmberkaiIconsSettings, property: KProperty<*>, value: Boolean) {
+                updateState { field.set(it, value) }
+            }
+        }
 
     companion object {
-        private val EXPORTED_FLAGS: List<Pair<String, KMutableProperty1<State, Boolean>>> = listOf(
-            "preserveNativeJavaKotlinIcons" to State::preserveNativeJavaKotlinIcons,
-            "colorServiceFolders" to State::colorServiceFolders,
-            "moduleAwareColors" to State::moduleAwareColors,
-            "highContrastFolderIcons" to State::highContrastFolderIcons,
-            "monochromeFolderIcons" to State::monochromeFolderIcons,
-            "reducedFolderColor" to State::reducedFolderColor,
-            "semanticTooltips" to State::semanticTooltips,
-            "ci" to State::ci,
-            "migrations" to State::migrations,
-            "helm" to State::helm,
-            "ansible" to State::ansible,
-            "infrastructure" to State::infrastructure,
-            "gitOps" to State::gitOps,
-            "apiSpecifications" to State::apiSpecifications,
-            "kubernetes" to State::kubernetes,
-            "springBoot" to State::springBoot,
-            "springModulith" to State::springModulith,
-            "architecture" to State::architecture,
-            "environmentVariants" to State::environmentVariants,
-            "unignoredSecrets" to State::unignoredSecrets,
-            "activeSpringProfiles" to State::activeSpringProfiles,
-            "stereotypeBadges" to State::stereotypeBadges,
+        /** Boolean settings that are not icon categories; categories map through [flag]. */
+        internal val GENERAL_FLAGS: List<KMutableProperty1<State, Boolean>> = listOf(
+            State::preserveNativeJavaKotlinIcons,
+            State::colorServiceFolders,
+            State::moduleAwareColors,
+            State::highContrastFolderIcons,
+            State::monochromeFolderIcons,
+            State::reducedFolderColor,
+            State::semanticTooltips,
         )
+        private val EXPORTED_FLAGS = GENERAL_FLAGS + IconRuleCategory.entries.map(::flag)
         private const val PALETTE_KEY = "serviceFolderPalette"
 
         fun getInstance(): EmberkaiIconsSettings =
             ApplicationManager.getApplication().getService(EmberkaiIconsSettings::class.java)
 
+        /** The state field that stores whether [category] is enabled. */
+        internal fun flag(category: IconRuleCategory): KMutableProperty1<State, Boolean> = when (category) {
+            IconRuleCategory.CI -> State::ci
+            IconRuleCategory.MIGRATION -> State::migrations
+            IconRuleCategory.HELM -> State::helm
+            IconRuleCategory.ANSIBLE -> State::ansible
+            IconRuleCategory.INFRASTRUCTURE -> State::infrastructure
+            IconRuleCategory.GITOPS -> State::gitOps
+            IconRuleCategory.API_SPECIFICATION -> State::apiSpecifications
+            IconRuleCategory.KUBERNETES -> State::kubernetes
+            IconRuleCategory.SPRING_BOOT -> State::springBoot
+            IconRuleCategory.SPRING_MODULITH -> State::springModulith
+            IconRuleCategory.ARCHITECTURE -> State::architecture
+            IconRuleCategory.ENVIRONMENT_VARIANTS -> State::environmentVariants
+            IconRuleCategory.UNIGNORED_SECRETS -> State::unignoredSecrets
+            IconRuleCategory.ACTIVE_SPRING_PROFILES -> State::activeSpringProfiles
+            IconRuleCategory.STEREOTYPE_BADGES -> State::stereotypeBadges
+        }
+
         /** Writes [state] as a portable properties file. */
         internal fun export(state: State, path: Path) {
             val properties = Properties()
-            EXPORTED_FLAGS.forEach { (name, property) -> properties.setProperty(name, property.get(state).toString()) }
+            EXPORTED_FLAGS.forEach { properties.setProperty(it.name, it.get(state).toString()) }
             properties.setProperty(PALETTE_KEY, state.serviceFolderPalette)
             Files.newOutputStream(path).use { properties.store(it, "Emberkai Icons settings") }
         }
@@ -182,8 +140,8 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             val properties = Properties()
             Files.newInputStream(path).use(properties::load)
             return State().apply {
-                EXPORTED_FLAGS.forEach { (name, property) ->
-                    properties.getProperty(name)?.trim()?.toBooleanStrictOrNull()?.let { property.set(this, it) }
+                EXPORTED_FLAGS.forEach { property ->
+                    properties.getProperty(property.name)?.trim()?.toBooleanStrictOrNull()?.let { property.set(this, it) }
                 }
                 serviceFolderPalette = FolderIconPalette.fromId(properties.getProperty(PALETTE_KEY)?.trim()).name
             }
@@ -191,40 +149,9 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     }
 }
 
-internal fun EmberkaiIconsSettings.State.isEnabled(category: IconRuleCategory): Boolean = when (category) {
-    IconRuleCategory.CI -> ci
-    IconRuleCategory.MIGRATION -> migrations
-    IconRuleCategory.HELM -> helm
-    IconRuleCategory.ANSIBLE -> ansible
-    IconRuleCategory.INFRASTRUCTURE -> infrastructure
-    IconRuleCategory.GITOPS -> gitOps
-    IconRuleCategory.API_SPECIFICATION -> apiSpecifications
-    IconRuleCategory.KUBERNETES -> kubernetes
-    IconRuleCategory.SPRING_BOOT -> springBoot
-    IconRuleCategory.SPRING_MODULITH -> springModulith
-    IconRuleCategory.ARCHITECTURE -> architecture
-    IconRuleCategory.ENVIRONMENT_VARIANTS -> environmentVariants
-    IconRuleCategory.UNIGNORED_SECRETS -> unignoredSecrets
-    IconRuleCategory.ACTIVE_SPRING_PROFILES -> activeSpringProfiles
-    IconRuleCategory.STEREOTYPE_BADGES -> stereotypeBadges
-}
+internal fun EmberkaiIconsSettings.State.isEnabled(category: IconRuleCategory): Boolean =
+    EmberkaiIconsSettings.flag(category).get(this)
 
 internal fun EmberkaiIconsSettings.State.setEnabled(category: IconRuleCategory, enabled: Boolean) {
-    when (category) {
-        IconRuleCategory.CI -> ci = enabled
-        IconRuleCategory.MIGRATION -> migrations = enabled
-        IconRuleCategory.HELM -> helm = enabled
-        IconRuleCategory.ANSIBLE -> ansible = enabled
-        IconRuleCategory.INFRASTRUCTURE -> infrastructure = enabled
-        IconRuleCategory.GITOPS -> gitOps = enabled
-        IconRuleCategory.API_SPECIFICATION -> apiSpecifications = enabled
-        IconRuleCategory.KUBERNETES -> kubernetes = enabled
-        IconRuleCategory.SPRING_BOOT -> springBoot = enabled
-        IconRuleCategory.SPRING_MODULITH -> springModulith = enabled
-        IconRuleCategory.ARCHITECTURE -> architecture = enabled
-        IconRuleCategory.ENVIRONMENT_VARIANTS -> environmentVariants = enabled
-        IconRuleCategory.UNIGNORED_SECRETS -> unignoredSecrets = enabled
-        IconRuleCategory.ACTIVE_SPRING_PROFILES -> activeSpringProfiles = enabled
-        IconRuleCategory.STEREOTYPE_BADGES -> stereotypeBadges = enabled
-    }
+    EmberkaiIconsSettings.flag(category).set(this, enabled)
 }

@@ -1,12 +1,16 @@
 package com.github.khopland.symbols
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.DumbAware
 
-abstract class EmberkaiSettingsToggle(text: String) : ToggleAction(text), DumbAware {
+/** View-menu toggles for single settings; text and descriptions are registered in plugin.xml. */
+abstract class EmberkaiSettingsToggle : ToggleAction(), DumbAware {
     protected val settings: EmberkaiIconsSettings
         get() = EmberkaiIconsSettings.getInstance()
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     final override fun isSelected(event: AnActionEvent): Boolean = selected()
 
@@ -20,37 +24,37 @@ abstract class EmberkaiSettingsToggle(text: String) : ToggleAction(text), DumbAw
     protected abstract fun update(state: Boolean)
 }
 
-class ToggleServiceFolderColorsAction : EmberkaiSettingsToggle("Color service folders") {
+class ToggleServiceFolderColorsAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.colorServiceFolders
     override fun update(state: Boolean) { settings.colorServiceFolders = state }
 }
 
-class ToggleModuleAwareColorsAction : EmberkaiSettingsToggle("Module-aware accent colors") {
+class ToggleModuleAwareColorsAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.moduleAwareColors
     override fun update(state: Boolean) { settings.moduleAwareColors = state }
 }
 
-class ToggleHighContrastFoldersAction : EmberkaiSettingsToggle("High-contrast folder markers") {
+class ToggleHighContrastFoldersAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.highContrastFolderIcons
     override fun update(state: Boolean) { settings.highContrastFolderIcons = state }
 }
 
-class ToggleMonochromeFoldersAction : EmberkaiSettingsToggle("Monochrome service folders") {
+class ToggleMonochromeFoldersAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.monochromeFolderIcons
     override fun update(state: Boolean) { settings.monochromeFolderIcons = state }
 }
 
-class ToggleReducedFolderColorAction : EmberkaiSettingsToggle("Reduce service-folder color") {
+class ToggleReducedFolderColorAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.reducedFolderColor
     override fun update(state: Boolean) { settings.reducedFolderColor = state }
 }
 
-class ToggleStereotypeBadgesAction : EmberkaiSettingsToggle("Spring stereotype badges") {
+class ToggleStereotypeBadgesAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.isEnabled(IconRuleCategory.STEREOTYPE_BADGES)
     override fun update(state: Boolean) { settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, state) }
 }
 
-class ToggleArchitectureFoldersAction : EmberkaiSettingsToggle("JVM architecture folders") {
+class ToggleArchitectureFoldersAction : EmberkaiSettingsToggle() {
     override fun selected(): Boolean = settings.isEnabled(IconRuleCategory.ARCHITECTURE)
     override fun update(state: Boolean) { settings.setEnabled(IconRuleCategory.ARCHITECTURE, state) }
 }

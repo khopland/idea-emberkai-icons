@@ -1,28 +1,34 @@
 package com.github.khopland.symbols
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.IconLoader
+import com.intellij.openapi.util.text.StringUtil.escapeXmlEntities
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.psi.PsiManager
 import java.awt.BorderLayout
+import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.GridLayout
 import java.awt.Insets
+import java.awt.datatransfer.StringSelection
 import java.net.JarURLConnection
 import java.nio.file.Paths
+import javax.swing.BorderFactory
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -30,13 +36,9 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
-import javax.swing.BorderFactory
-import java.awt.GridLayout
-import java.awt.Dimension
-import java.awt.datatransfer.StringSelection
 
 /** Project view action that describes how Emberkai selected an icon. */
-internal class ExplainIconAction : AnAction("Explain This Icon"), DumbAware {
+internal class ExplainIconAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
@@ -46,12 +48,10 @@ internal class ExplainIconAction : AnAction("Explain This Icon"), DumbAware {
     override fun actionPerformed(event: AnActionEvent) {
         val project = event.project ?: return
         val file = event.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isValid } ?: return
-        val resolution = computeReadAction<IconResolution> {
-            IconResolver().resolveWithDetails(file, project)
-        }
+        val resolution = runReadActionBlocking { IconResolver.resolveWithDetails(file, project) }
         // Only Java and Kotlin classes carry stereotype badges; scripts and class files never do.
         val stereotype = if (file.extension in STEREOTYPE_EXTENSIONS) {
-            computeReadAction<StereotypeRow> {
+            runReadActionBlocking<StereotypeRow> {
                 StereotypeRow(PsiManager.getInstance(project).findFile(file)?.let(ClassStereotypes::fileStereotype))
             }
         } else {
@@ -83,7 +83,7 @@ private class ExplainIconDialog(
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
         preferredSize = Dimension(640, 400)
-        add(JLabel("<html><b>${escape(file.name)}</b><br>${escape(file.path)}</html>"), BorderLayout.NORTH)
+        add(JLabel("<html><b>${escapeXmlEntities(file.name)}</b><br>${escapeXmlEntities(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
         body.add(previewPanel(), BorderLayout.NORTH)
@@ -162,7 +162,7 @@ private class ExplainIconDialog(
     private fun detailsPanel(): JComponent = JPanel(GridBagLayout()).apply {
         val mapping = resolution.mappingKey ?: "No Emberkai mapping"
         val source = resolution.mappingSource?.displayName ?: "None; the IDE supplies the icon"
-        val contextRule = resolution.contextRule ?: "None"
+        val contextRule = resolution.contextRule?.displayName ?: "None"
         val projectRole = resolution.projectRole?.let { "Took precedence — $it" }
             ?: "No project role took precedence"
         val nativePolicy = if (resolution.precedence == IconPrecedence.NATIVE_POLICY) {
@@ -223,11 +223,6 @@ private class ExplainIconDialog(
             else -> null
         }
     }
-
-    private fun escape(text: String): String = text
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
 }
 
 /** The class stereotype behind a source file's badge; present only for Java and Kotlin sources. */

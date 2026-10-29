@@ -41,8 +41,8 @@
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
     <depends optional="true" config-file="vcs-secrets.xml">com.intellij.modules.vcs</depends>
-    <depends optional="true" config-file="java-active-profiles.xml">com.intellij.java</depends>
-    <depends optional="true" config-file="java-stereotypes.xml">com.intellij.java</depends>
+    <depends optional="true" config-file="spring-xml.xml">com.intellij.modules.xml</depends>
+    <depends optional="true" config-file="java-support.xml">com.intellij.java</depends>
     <depends optional="true" config-file="kotlin-stereotypes.xml">org.jetbrains.kotlin</depends>
     <extensionPoints>
         <extensionPoint qualifiedName="com.github.khopland.symbols.classStereotypeSupport"

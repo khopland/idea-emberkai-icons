@@ -19,7 +19,7 @@ internal class GitOpsIconRule : ContextIconRule {
         return if (hasFluxSystemAncestor(file.parent, project)) "context.flux" else null
     }
 
-    override fun folderIconKey(directory: VirtualFile): String? {
+    override fun folderIconKey(directory: VirtualFile, project: Project?): String? {
         val name = directory.name.lowercase(Locale.ROOT)
         return when (name) {
             "argocd", "argocd-apps" -> "context.argocd-folder"

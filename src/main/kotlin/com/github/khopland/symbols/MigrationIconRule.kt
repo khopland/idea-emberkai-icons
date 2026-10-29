@@ -15,7 +15,7 @@ internal class MigrationIconRule : ContextIconRule {
     override fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
         name == "flyway.conf" || name == "flyway.toml" || fileIconKey(file, name, project) != null
 
-    override fun folderIconKey(directory: VirtualFile): String? {
+    override fun folderIconKey(directory: VirtualFile, project: Project?): String? {
         val name = directory.name.lowercase(Locale.ROOT)
         return if (name == "migration" || name == "migrations") "context.migration-folder" else null
     }

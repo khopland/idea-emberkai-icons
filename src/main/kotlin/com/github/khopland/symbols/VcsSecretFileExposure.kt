@@ -53,12 +53,10 @@ internal class VcsSecretFileExposure(private val project: Project) : SecretFileE
     }
 
     private fun isInVcsAndNotIgnored(file: VirtualFile): Boolean =
-        project.getService(ProjectLevelVcsManager::class.java).getVcsRootFor(file) != null &&
+        ProjectLevelVcsManager.getInstance(project).getVcsRootFor(file) != null &&
             !changeListManager().isIgnoredFile(file)
 
-    // getService instead of getInstance: newer platforms moved getInstance to a Kotlin companion that
-    // older IDEs lack, so calling it compiles to bytecode that fails there.
-    private fun changeListManager(): ChangeListManager = project.getService(ChangeListManager::class.java)
+    private fun changeListManager(): ChangeListManager = ChangeListManager.getInstance(project)
 
     private fun scheduleRecheck() {
         if (project.isDisposed || shownBadges.isEmpty() || !recheckScheduled.compareAndSet(false, true)) return

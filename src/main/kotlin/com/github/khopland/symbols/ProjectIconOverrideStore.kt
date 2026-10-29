@@ -180,35 +180,21 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
         val snapshot = snapshot()
         if (snapshot.values.isEmpty()) return null
         val lowerName = name.lowercase(Locale.ROOT)
-
-        if (snapshot.hasContextualKeys) contextualMatch(snapshot, "file.", file.parent, lowerName)?.let { return it }
-        match(snapshot, "file.$lowerName")?.let { return it }
-        var current = lowerName
-        while (true) {
-            if (snapshot.hasContextualKeys) {
-                contextualMatch(snapshot, "extension.", file.parent, current)?.let { return it }
-            }
-            val dot = current.indexOf('.')
-            if (dot < 0) break
-            current = current.substring(dot + 1)
-        }
-        current = lowerName
-        while (true) {
-            match(snapshot, "extension.$current")?.let { return it }
-            val dot = current.indexOf('.')
-            if (dot < 0) return null
-            current = current.substring(dot + 1)
-        }
+        val parent = file.parent.takeIf { snapshot.hasContextualKeys }
+        val lookup = { key: String -> match(snapshot, key) }
+        return MappingKeys.contextual(parent, "file.", lowerName, lookup)
+            ?: lookup("file.$lowerName")
+            ?: MappingKeys.contextualExtension(parent, lowerName, lookup)
+            ?: MappingKeys.extension(lowerName, lookup)
     }
 
     fun folderOverride(directory: VirtualFile, name: String): ProjectIconOverride? {
         val snapshot = snapshot()
         if (snapshot.values.isEmpty()) return null
         val lowerName = name.lowercase(Locale.ROOT)
-        if (snapshot.hasContextualKeys) {
-            contextualMatch(snapshot, "folder.", directory.parent, lowerName)?.let { return it }
-        }
-        return match(snapshot, "folder.$lowerName")
+        val parent = directory.parent.takeIf { snapshot.hasContextualKeys }
+        return MappingKeys.contextual(parent, "folder.", lowerName) { match(snapshot, it) }
+            ?: match(snapshot, "folder.$lowerName")
     }
 
     override fun dispose() {
@@ -216,24 +202,6 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
             cached = null
             detachArtworkLoader()
         }
-    }
-
-    /** Mirrors [IconMappings.contextualMatch]: the longest matching parent suffix wins. */
-    private fun contextualMatch(
-        snapshot: Snapshot,
-        prefix: String,
-        parent: VirtualFile?,
-        name: String,
-    ): ProjectIconOverride? {
-        var current = parent
-        var context = name
-        var longest: ProjectIconOverride? = null
-        while (current != null) {
-            context = current.name.lowercase(Locale.ROOT) + "/" + context
-            longest = match(snapshot, prefix + context) ?: longest
-            current = current.parent
-        }
-        return longest
     }
 
     private fun match(snapshot: Snapshot, key: String): ProjectIconOverride? {

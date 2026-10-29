@@ -1,5 +1,6 @@
 package com.github.khopland.symbols
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.scope.packageSet.AbstractPackageSet
@@ -23,18 +24,17 @@ internal enum class EmberkaiScope(val displayName: String, private val categorie
 
     val scopeName: String get() = "Emberkai: $displayName"
 
-    fun contains(file: VirtualFile, project: Project, resolver: IconResolver): Boolean {
+    fun contains(file: VirtualFile, project: Project): Boolean {
         if (file.isDirectory || !file.isValid || project.isDisposed) return false
         if (this == PRODUCTION_CONFIG) return EnvironmentVariant.fromFile(file) == EnvironmentVariant.PRODUCTION
         // Rules read VFS children and cached documents; Find in Files may call from a pooled thread.
-        return computeReadAction { resolver.recognizedCategory(file, project) } in categories
+        return runReadActionBlocking { IconResolver.recognizedCategory(file, project) } in categories
     }
 }
 
 class EmberkaiScopesProvider : CustomScopesProvider {
-    private val resolver = IconResolver()
     private val scopes: List<NamedScope> = EmberkaiScope.entries.map { scope ->
-        NamedScope(scope.scopeName, EmberkaiPackageSet(scope, resolver))
+        NamedScope(scope.scopeName, EmberkaiPackageSet(scope))
     }
 
     override fun getCustomScopes(): List<NamedScope> = scopes
@@ -42,8 +42,7 @@ class EmberkaiScopesProvider : CustomScopesProvider {
 
 private class EmberkaiPackageSet(
     private val scope: EmberkaiScope,
-    private val resolver: IconResolver,
 ) : AbstractPackageSet("emberkai:${scope.name.lowercase()}") {
     override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean =
-        scope.contains(file, project, resolver)
+        scope.contains(file, project)
 }

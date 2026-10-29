@@ -6,13 +6,14 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.util.text.StringUtil.escapeXmlEntities
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.awt.datatransfer.StringSelection
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import java.awt.datatransfer.StringSelection
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.swing.JButton
@@ -94,7 +95,7 @@ internal class IconCoverageAuditDialog(
         val content = JPanel(BorderLayout(0, 8)).apply {
             border = EmptyBorder(12, 12, 8, 12)
             preferredSize = Dimension(900, 520)
-            add(JLabel("<html>${escape(summary)}<br>Native policy and project-role icons are omitted.</html>"), BorderLayout.NORTH)
+            add(JLabel("<html>${escapeXmlEntities(summary)}<br>Native policy and project-role icons are omitted.</html>"), BorderLayout.NORTH)
             val split = JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT,
                 JScrollPane(tree),
@@ -195,9 +196,4 @@ internal class IconCoverageAuditDialog(
     }
 
     private fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
-
-    private fun escape(text: String): String = text
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
 }

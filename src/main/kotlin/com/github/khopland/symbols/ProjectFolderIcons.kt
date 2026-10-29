@@ -11,7 +11,7 @@ import org.jetbrains.jps.model.java.JavaSourceRootProperties
 import org.jetbrains.jps.model.module.JpsModuleSourceRoot
 
 /** Applies IntelliJ's root and package roles to Symbols-style folder artwork. */
-internal class ProjectFolderIcons {
+internal object ProjectFolderIcons {
     enum class Role(val iconKey: String?) {
         CONTENT_ROOT("folder.role.content-root"),
         SOURCE("folder.role.source"),
@@ -34,34 +34,32 @@ internal class ProjectFolderIcons {
         return if (directory == index.getContentRootForFile(directory)) Role.CONTENT_ROOT else null
     }
 
-    companion object {
-        fun sourceRole(source: JpsModuleSourceRoot, root: Boolean): Role? {
-            // Java and Kotlin's JVM/Multiplatform root types share these public
-            // property contracts, so no Kotlin-plugin dependency is necessary.
-            val properties = source.properties
-            val test = source.rootType.isForTests()
-            if (properties is JavaSourceRootProperties) {
-                if (properties.isForGeneratedSources) return Role.NATIVE
-                if (root) return if (test) Role.TEST_SOURCE else Role.SOURCE
-                return if (test) Role.TEST_PACKAGE else Role.PACKAGE
-            }
-            if (properties is JavaResourceRootProperties) {
-                if (properties.isForGeneratedSources) return Role.NATIVE
-                if (!root) return null
-                return if (test) Role.TEST_RESOURCES else Role.RESOURCES
-            }
-            // Other language plugins retain ownership of their own root types.
-            return Role.NATIVE
+    fun sourceRole(source: JpsModuleSourceRoot, root: Boolean): Role? {
+        // Java and Kotlin's JVM/Multiplatform root types share these public
+        // property contracts, so no Kotlin-plugin dependency is necessary.
+        val properties = source.properties
+        val test = source.rootType.isForTests()
+        if (properties is JavaSourceRootProperties) {
+            if (properties.isForGeneratedSources) return Role.NATIVE
+            if (root) return if (test) Role.TEST_SOURCE else Role.SOURCE
+            return if (test) Role.TEST_PACKAGE else Role.PACKAGE
         }
+        if (properties is JavaResourceRootProperties) {
+            if (properties.isForGeneratedSources) return Role.NATIVE
+            if (!root) return null
+            return if (test) Role.TEST_RESOURCES else Role.RESOURCES
+        }
+        // Other language plugins retain ownership of their own root types.
+        return Role.NATIVE
+    }
 
-        private fun sourceFolder(directory: VirtualFile, root: VirtualFile, index: ProjectFileIndex): SourceFolder? {
-            val module: Module = index.getModuleForFile(directory) ?: return null
-            for (entry in ModuleRootManager.getInstance(module).contentEntries) {
-                for (source in entry.sourceFolders) {
-                    if (root == source.file) return source
-                }
+    private fun sourceFolder(directory: VirtualFile, root: VirtualFile, index: ProjectFileIndex): SourceFolder? {
+        val module: Module = index.getModuleForFile(directory) ?: return null
+        for (entry in ModuleRootManager.getInstance(module).contentEntries) {
+            for (source in entry.sourceFolders) {
+                if (root == source.file) return source
             }
-            return null
         }
+        return null
     }
 }

@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 
 /** Starts an audit for the entire project from the Tools menu. */
-internal class AuditProjectIconCoverageAction : AnAction("Audit Project Icon Coverage"), DumbAware {
+internal class AuditProjectIconCoverageAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
@@ -31,7 +31,7 @@ internal class AuditProjectIconCoverageAction : AnAction("Audit Project Icon Cov
 }
 
 /** Starts an audit for the selected Project view directory. */
-internal class AuditDirectoryIconCoverageAction : AnAction("Audit Icon Coverage"), DumbAware {
+internal class AuditDirectoryIconCoverageAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {

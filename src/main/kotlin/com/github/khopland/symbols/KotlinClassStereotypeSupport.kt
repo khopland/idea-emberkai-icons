@@ -111,12 +111,11 @@ internal class KotlinStereotypeIconProvider : IconProvider(), DumbAware {
         if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) return null
         val badge = ClassStereotypes.badgeFor(element)?.stereotype?.icon ?: return null
         val native = nativeIcon(element, flags) ?: return null
-        return LayeredIcon(native, badge)
+        return LayeredIcon.layeredIcon(arrayOf(native, badge))
     }
 
     private fun nativeIcon(element: PsiElement, flags: Int): Icon? {
-        // Instance calls compile the same whether the IDE's DumbService is a Java or Kotlin class.
-        val dumb = element.project.getService(DumbService::class.java).isDumb
+        val dumb = DumbService.isDumb(element.project)
         return IconProvider.EXTENSION_POINT_NAME.extensionList.asSequence()
             .dropWhile { it !== this }
             .drop(1)

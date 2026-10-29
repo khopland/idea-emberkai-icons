@@ -5,6 +5,7 @@ import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
+import com.intellij.openapi.util.text.StringUtil.escapeXmlEntities
 import com.intellij.psi.PsiElement
 
 /**
@@ -13,11 +14,7 @@ import com.intellij.psi.PsiElement
  * Native tooltips are kept, and the description is appended after them. Class and file nodes whose
  * native icon carries a Spring stereotype badge also name the stereotype.
  */
-class SemanticTooltipDecorator internal constructor(
-    private val resolver: IconResolver,
-) : ProjectViewNodeDecorator {
-    constructor() : this(IconResolver())
-
+class SemanticTooltipDecorator : ProjectViewNodeDecorator {
     override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
         if (!EmberkaiIconsSettings.getInstance().semanticTooltips) return
         val description = listOfNotNull(
@@ -31,7 +28,7 @@ class SemanticTooltipDecorator internal constructor(
         if (node !is PsiFileNode && node !is PsiDirectoryNode) return null
         val project = node.project ?: return null
         val file = node.virtualFile?.takeIf { it.isValid } ?: return null
-        return IconDescriptions.describe(file, resolver.resolveWithDetails(file, project))
+        return IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project))
     }
 
     internal companion object {
@@ -40,14 +37,9 @@ class SemanticTooltipDecorator internal constructor(
             if (description in existing) return existing
             val closing = existing.lastIndexOf("</html>", ignoreCase = true)
             if (closing >= 0) {
-                return existing.substring(0, closing) + "<br>" + escape(description) + existing.substring(closing)
+                return existing.substring(0, closing) + "<br>" + escapeXmlEntities(description) + existing.substring(closing)
             }
             return "$existing · $description"
         }
-
-        private fun escape(text: String): String = text
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
     }
 }

@@ -28,16 +28,7 @@ internal object IconOverrideKeySuggestions {
         val names = if (file.isDirectory) {
             listOf("folder.$name")
         } else {
-            buildList {
-                add("file.$name")
-                var current = name
-                while (true) {
-                    add("extension.$current")
-                    val dot = current.indexOf('.')
-                    if (dot < 0) break
-                    current = current.substring(dot + 1)
-                }
-            }
+            listOf("file.$name") + MappingKeys.extensionSuffixes(name).map { "extension.$it" }
         }
         return names.any { candidate ->
             if (normalized == candidate) return@any true
