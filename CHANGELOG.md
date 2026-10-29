@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added error reporting through JetBrains Marketplace: exceptions and UI freezes attributed to Emberkai Icons can be submitted from the IDE's error-reporting dialog, or sent automatically when **Send error reports to JetBrains automatically** is enabled.
 - Raised the minimum supported IDE version to 2026.1 (build 261), matching the IDE releases that ship the Emberkai theme.
 - Added semantic Project view tooltips that describe what Emberkai recognized, such as a Kubernetes manifest, Flyway migration, environment variant, or module accent. Screen readers announce the same text, and a setting turns them off.
 - Added **Emberkai:** scopes for database migrations, infrastructure, Kubernetes and GitOps, API contracts, CI pipelines, Spring configuration, and production config, usable in Find in Files, the Project view, inspections, and File Colors.
