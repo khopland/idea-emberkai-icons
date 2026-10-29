@@ -3,17 +3,25 @@ package com.github.khopland.symbols
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.lens.IconLens
 import com.github.khopland.symbols.lens.LensSnapshot
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.testFramework.IndexingTestUtil
+import com.intellij.util.PathUtil
+import java.io.IOException
 
 /**
  * Icon lookups run on hot UI paths, so every new rule or badge has to stay cheap. This resolves a
  * synthetic monorepo and fails when the average lookup exceeds a fixed budget. Budgets are roughly
  * ten times the times measured on a developer laptop, which absorbs slower and noisier CI runners
  * while still catching a rule that starts reading file contents on every warm lookup.
+ *
+ * Both budgets share one corpus: building it is the expensive part of this test, and the checks
+ * only need the files to exist, not to be PSI.
  */
 internal class IconLookupBudgetTest : IconProviderTestCase() {
-    fun testIconLookupsStayWithinBudget() {
+    fun testHotPathsStayWithinBudget() {
         val files = corpus()
 
         // The first pass reads content and fills caches; later passes must be served from them.
@@ -22,23 +30,25 @@ internal class IconLookupBudgetTest : IconProviderTestCase() {
 
         assertTrue("Cold lookup averaged ${cold}ns, budget ${COLD_BUDGET_NS}ns", cold <= COLD_BUDGET_NS)
         assertTrue("Warm lookup averaged ${warm}ns, budget ${WARM_BUDGET_NS}ns", warm <= WARM_BUDGET_NS)
-    }
 
-    fun testLensSnapshotStaysWithinBudget() {
-        val fileCount = corpus().count { !it.isDirectory }
-
-        val perFile = bestOf(LENS_PASSES) {
+        val fileCount = files.count { !it.isDirectory }
+        val lens = bestOf(LENS_PASSES) {
             runReadAction { LensSnapshot.collect(project, IconLens.PRODUCTION_BLAST_RADIUS) }
         } / fileCount
 
-        assertTrue("Lens snapshot averaged ${perFile}ns per file, budget ${LENS_BUDGET_NS}ns", perFile <= LENS_BUDGET_NS)
+        assertTrue("Lens snapshot averaged ${lens}ns per file, budget ${LENS_BUDGET_NS}ns", lens <= LENS_BUDGET_NS)
     }
 
-    /** Twenty services with a typical mix of tool files, plain files, and their folders. */
+    /**
+     * Twenty services with a typical mix of tool files, plain files, and their folders.
+     *
+     * The files are created straight in the in-memory temp file system. `addFileToProject` would
+     * also build a PSI file and drop the PSI caches for every entry, which the lookups never touch.
+     */
     private fun corpus(): List<VirtualFile> {
-        val files = mutableListOf<VirtualFile>()
+        val entries = LinkedHashMap<String, String>()
         fun add(path: String, content: String) {
-            files += myFixture.addFileToProject(path, content).virtualFile
+            entries[path] = content
         }
         for (service in 0 until SERVICES) {
             val root = "services/svc$service"
@@ -54,6 +64,23 @@ internal class IconLookupBudgetTest : IconProviderTestCase() {
             for (index in 0 until 20) add("$root/docs/note$index.md", "# note")
             for (index in 0 until 20) add("$root/data/item$index.json", "{}")
         }
+
+        val root = myFixture.tempDirFixture.findOrCreateDir("")
+        val files = WriteAction.computeAndWait<List<VirtualFile>, IOException> {
+            val directories = hashMapOf("" to root)
+            fun directory(path: String): VirtualFile = directories.getOrPut(path) {
+                val name = PathUtil.getFileName(path)
+                val parent = directory(PathUtil.getParentPath(path))
+                parent.findChild(name) ?: parent.createChildDirectory(this, name)
+            }
+            entries.map { (path, content) ->
+                val file = directory(PathUtil.getParentPath(path)).createChildData(this, PathUtil.getFileName(path))
+                VfsUtil.saveText(file, content)
+                file
+            }
+        }
+        IndexingTestUtil.waitUntilIndexesAreReady(project)
+
         val directories = files.flatMap { generateSequence(it.parent) { parent -> parent.parent }.take(4).toList() }
         return files + directories.distinct()
     }
