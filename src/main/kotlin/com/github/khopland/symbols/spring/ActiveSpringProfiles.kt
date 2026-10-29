@@ -79,19 +79,22 @@ internal object SpringProfileArguments {
         split(environment?.get(ENVIRONMENT_VARIABLE))
 
     /** Spring Boot's Gradle `bootRun` forwards `--args='...'` to the application. */
-    fun fromGradleArguments(arguments: String?): Set<String>? {
+    fun fromGradleArguments(arguments: String?): Set<String>? =
+        gradleForwardedArguments(arguments).firstNotNullOfOrNull(::fromProgramArguments)
+
+    /** Each `--args` value of a Gradle `bootRun` command line, still unparsed. */
+    fun gradleForwardedArguments(arguments: String?): List<String> {
         val tokens = tokens(arguments, supportSingleQuotes = true)
-        val forwarded = tokens.mapIndexedNotNull { index, token ->
+        return tokens.mapIndexedNotNull { index, token ->
             when {
                 token.startsWith("--args=") -> token.removePrefix("--args=")
                 token == "--args" -> tokens.getOrNull(index + 1)
                 else -> null
             }
         }
-        return forwarded.firstNotNullOfOrNull(::fromProgramArguments)
     }
 
-    private fun tokens(arguments: String?, supportSingleQuotes: Boolean = false): List<String> =
+    internal fun tokens(arguments: String?, supportSingleQuotes: Boolean = false): List<String> =
         if (arguments.isNullOrBlank()) emptyList() else ParametersListUtil.parse(arguments, false, supportSingleQuotes)
 
     private fun split(value: String?): Set<String>? = value

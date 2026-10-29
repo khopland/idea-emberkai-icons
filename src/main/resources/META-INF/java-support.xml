@@ -4,6 +4,10 @@
         <listener
             class="com.github.khopland.symbols.spring.ActiveSpringProfileListener"
             topic="com.intellij.execution.RunManagerListener"/>
+        <!-- Module-based and Gradle run configurations name the module folder a live session belongs to. -->
+        <listener
+            class="com.github.khopland.symbols.run.RunningServiceListener"
+            topic="com.intellij.execution.ExecutionListener"/>
     </projectListeners>
     <extensions defaultExtensionNs="com.github.khopland.symbols">
         <classStereotypeSupport implementation="com.github.khopland.symbols.stereotypes.JavaClassStereotypeSupport"/>

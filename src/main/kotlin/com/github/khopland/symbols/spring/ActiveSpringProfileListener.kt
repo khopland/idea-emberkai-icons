@@ -47,7 +47,8 @@ internal object ActiveSpringProfileReader {
         return profiles?.takeIf { it.isNotEmpty() }?.let { ActiveSpringProfiles.Snapshot(settings.name, it) }
     }
 
-    private fun profilesOf(configuration: RunConfiguration): Set<String> {
+    /** The profiles [configuration] activates; may throw when a configuration misreports its parameters. */
+    fun profilesOf(configuration: RunConfiguration): Set<String> {
         if (configuration is ExternalSystemRunConfiguration) return gradleProfilesOf(configuration)
         val program = configuration as? CommonProgramRunConfigurationParameters
         return SpringProfileArguments.resolve(
