@@ -64,6 +64,8 @@
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.SemanticTooltipDecorator"/>
         <customScopesProvider implementation="com.github.khopland.symbols.EmberkaiScopesProvider"/>
         <iconLayerProvider implementation="com.github.khopland.symbols.ClassStereotypeLayerProvider"/>
+        <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
     <actions>
         <group id="com.github.khopland.symbols.EmberkaiQuickToggles"
