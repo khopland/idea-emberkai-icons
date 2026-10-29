@@ -19,7 +19,9 @@
         source roots, packages, and their descendants share. Opt-in JVM architecture folders give
         controller, service, repository, domain, and similar packages distinct icons.</p>
         <p>Production, staging, test, and local variants of Spring profiles, Docker Compose files,
-        Helm values, and <code>.env</code> files get shape-and-color environment badges.</p>
+        Helm values, and <code>.env</code> files get shape-and-color environment badges.
+        Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
+        without being ignored get a red stop-sign warning badge.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -37,6 +39,7 @@
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
+    <depends optional="true" config-file="vcs-secrets.xml">com.intellij.modules.vcs</depends>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"

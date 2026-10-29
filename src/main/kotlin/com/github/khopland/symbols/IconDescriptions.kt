@@ -65,6 +65,7 @@ internal object IconDescriptions {
 
     private const val SERVICE_ROOT = "Service root"
     private const val SEPARATOR = " · "
+    private const val SECRET_WARNING = "not ignored by VCS — may contain secrets"
 
     fun describe(file: VirtualFile, resolution: IconResolution): String? {
         val name = file.name.lowercase(Locale.ROOT)
@@ -75,6 +76,7 @@ internal object IconDescriptions {
             base,
             variant?.displayName,
             resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
+            if (resolution.secretExposed) SECRET_WARNING else null,
         )
         if (parts.isEmpty()) return null
         return parts.joinToString(SEPARATOR).replaceFirstChar { it.uppercase(Locale.ROOT) }
