@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added Project view lenses (**View > Emberkai Icons > Lens**): files that answer one question, such as **Production blast radius**, **Infrastructure**, or **API contracts**, keep full color along with the folders that contain them, and everything else is dimmed, including native Java and Kotlin icons. Lenses use the Emberkai scopes, are computed in the background, and are not saved between sessions.
+
 ## [0.4.0] - 2026-10-29
 
 - Added error reporting through JetBrains Marketplace: exceptions and UI freezes attributed to Emberkai Icons can be submitted from the IDE's error-reporting dialog, or sent automatically when **Send error reports to JetBrains automatically** is enabled.

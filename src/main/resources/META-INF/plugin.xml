@@ -35,6 +35,8 @@
         to find files that still use generic icons.</p>
         <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
+        <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>
+        or <b>Infrastructure</b>, to keep matching files in full color and dim the rest of the Project view.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>
@@ -62,6 +64,7 @@
         <iconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.core.SemanticTooltipDecorator"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.symbols.lens.IconLensDecorator"/>
         <customScopesProvider implementation="com.github.khopland.symbols.settings.EmberkaiScopesProvider"/>
         <iconLayerProvider implementation="com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider"/>
         <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
@@ -71,6 +74,12 @@
         <group id="com.github.khopland.symbols.EmberkaiQuickToggles"
                text="Emberkai Icons"
                popup="true">
+            <group id="com.github.khopland.symbols.IconLens"
+                   class="com.github.khopland.symbols.lens.IconLensActionGroup"
+                   text="Lens"
+                   description="Keep files that answer one question in full color and dim the rest of the Project view"
+                   popup="true"/>
+            <separator/>
             <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
                     class="com.github.khopland.symbols.settings.ToggleServiceFolderColorsAction"
                     text="Color service folders"
