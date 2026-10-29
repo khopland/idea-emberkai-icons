@@ -31,9 +31,8 @@ internal object SpringModulithProjectViewSupport : ModulithSupport {
  */
 class SpringModulithFolderDecorator internal constructor(
     private val support: ModulithSupport,
-    private val resolver: IconResolver,
 ) : ProjectViewNodeDecorator {
-    constructor() : this(SpringModulithProjectViewSupport, IconResolver())
+    constructor() : this(SpringModulithProjectViewSupport)
 
     override fun decorate(node: ProjectViewNode<*>, data: PresentationData) {
         if (node !is PsiDirectoryNode) return
@@ -43,7 +42,7 @@ class SpringModulithFolderDecorator internal constructor(
         val currentIcon = data.getIcon(false)
         val lock = support.lockOf(currentIcon)
         if (lock != null) {
-            val base = resolver.resolve(directory.virtualFile, directory.project) ?: return
+            val base = IconResolver.resolve(directory.virtualFile, directory.project) ?: return
             data.setIcon(ModulithFolderIcon(base, lock))
             return
         }
@@ -52,6 +51,6 @@ class SpringModulithFolderDecorator internal constructor(
         // when the module really uses Modulith, so unrelated decorators keep their decisions.
         if (currentIcon != null) return
         if (!support.hasModulithLibrary(directory)) return
-        data.setIcon(resolver.resolve(directory.virtualFile, directory.project))
+        data.setIcon(IconResolver.resolve(directory.virtualFile, directory.project))
     }
 }

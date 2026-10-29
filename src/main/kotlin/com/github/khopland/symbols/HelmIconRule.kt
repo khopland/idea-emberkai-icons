@@ -30,7 +30,7 @@ internal class HelmIconRule : ContextIconRule {
         return null
     }
 
-    override fun folderIconKey(directory: VirtualFile): String? {
+    override fun folderIconKey(directory: VirtualFile, project: Project?): String? {
         if (hasChart(directory)) return "context.helm-folder"
         val parent = directory.parent
         return if (parent != null && directory.name.lowercase(Locale.ROOT) in CHART_DIRECTORIES && hasChart(parent)) {

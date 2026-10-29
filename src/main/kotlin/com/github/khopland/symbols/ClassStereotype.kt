@@ -113,8 +113,7 @@ internal interface ClassStereotypeSupport {
     val usesIconLayers: Boolean get() = true
 
     companion object {
-        // The constructor, unlike ExtensionPointName.create, compiles the same for every supported IDE.
-        val EP_NAME = ExtensionPointName<ClassStereotypeSupport>("com.github.khopland.symbols.classStereotypeSupport")
+        val EP_NAME = ExtensionPointName.create<ClassStereotypeSupport>("com.github.khopland.symbols.classStereotypeSupport")
     }
 }
 

@@ -19,11 +19,6 @@ internal object ProjectPathUtil {
         return FileUtil.pathsEqual(basePath, systemPath(directory.canonicalPath ?: directory.path))
     }
 
-    fun isUnderProject(file: VirtualFile, project: Project): Boolean {
-        val basePath = basePath(project) ?: return false
-        return FileUtil.isAncestor(basePath, systemPath(file.canonicalPath ?: file.path), false)
-    }
-
     fun relativePath(file: VirtualFile, project: Project): String? {
         val basePath = basePath(project) ?: return null
         val filePath = systemPath(file.canonicalPath ?: file.path)
@@ -53,12 +48,6 @@ internal object ProjectPathUtil {
         }
         return FileUtil.toSystemIndependentName(resolved)
     }
-
-    fun isSamePath(first: String, second: String): Boolean =
-        FileUtil.pathsEqual(canonicalPath(first), canonicalPath(second))
-
-    fun isAncestorPath(ancestor: String, file: String): Boolean =
-        FileUtil.isAncestor(canonicalPath(ancestor), canonicalPath(file), false)
 
     private fun systemPath(path: String): String = FileUtil.toSystemIndependentName(path)
 }

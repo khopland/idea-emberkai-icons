@@ -20,7 +20,7 @@ internal class KubernetesIconRule : ContextIconRule {
         }
     }
 
-    override fun folderIconKey(directory: VirtualFile): String? {
+    override fun folderIconKey(directory: VirtualFile, project: Project?): String? {
         if (hasKustomization(directory)) return "context.kustomize-folder"
         if (directory.name.lowercase(Locale.ROOT) !in LAYERS) return null
         var parent = directory.parent

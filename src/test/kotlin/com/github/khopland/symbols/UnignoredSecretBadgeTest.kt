@@ -82,7 +82,7 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
         useExposure { true }
         val keystore = myFixture.addFileToProject("release.jks", "data")
 
-        val resolution = IconResolver().resolveWithDetails(keystore.virtualFile, project)
+        val resolution = IconResolver.resolveWithDetails(keystore.virtualFile, project)
         assertTrue(resolution.icon is UnignoredSecretBadgeIcon)
         assertTrue(resolution.detail, resolution.detail.contains("without being ignored"))
         assertEquals(
@@ -92,7 +92,7 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
         val local = myFixture.addFileToProject(".env.local", "TOKEN=abc").virtualFile
         assertEquals(
             "Environment file · local · not ignored by VCS — may contain secrets",
-            IconDescriptions.describe(local, IconResolver().resolveWithDetails(local, project)),
+            IconDescriptions.describe(local, IconResolver.resolveWithDetails(local, project)),
         )
 
         settings.highContrastFolderIcons = true
@@ -100,7 +100,7 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
 
         settings.setEnabled(IconRuleCategory.UNIGNORED_SECRETS, false)
         assertFalse(provider.getIcon(keystore, 0) is UnignoredSecretBadgeIcon)
-        assertFalse(IconResolver().resolveWithDetails(keystore.virtualFile, project).detail.contains("warning badge"))
+        assertFalse(IconResolver.resolveWithDetails(keystore.virtualFile, project).detail.contains("warning badge"))
     }
 
     private fun useExposure(answer: (VirtualFile) -> Boolean): MutableSet<VirtualFile> {

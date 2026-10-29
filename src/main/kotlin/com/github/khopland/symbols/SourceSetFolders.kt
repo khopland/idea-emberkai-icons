@@ -5,7 +5,9 @@ import java.util.Locale
 import java.util.regex.Pattern
 
 /** Standard JVM and Multiplatform layout fallback, used only when no imported root role applies. */
-internal class SourceSetFolders {
+internal object SourceSetFolders {
+    private val SOURCE_SET: Pattern = Pattern.compile("(?:[a-z0-9_]+)?(?:main|test)")
+
     fun role(directory: VirtualFile): ProjectFolderIcons.Role? {
         if (isSourceSet(directory)) return ProjectFolderIcons.Role.CONTENT_ROOT
         var root = directory
@@ -35,9 +37,5 @@ internal class SourceSetFolders {
         val parent = directory.parent ?: return false
         return parent.name.equals("src", ignoreCase = true) &&
             SOURCE_SET.matcher(directory.name.lowercase(Locale.ROOT)).matches()
-    }
-
-    private companion object {
-        val SOURCE_SET: Pattern = Pattern.compile("(?:[a-z0-9_]+)?(?:main|test)")
     }
 }

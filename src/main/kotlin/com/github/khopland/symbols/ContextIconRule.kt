@@ -13,7 +13,5 @@ internal interface ContextIconRule {
     fun recognizesFile(file: VirtualFile, name: String, project: Project?): Boolean =
         fileIconKey(file, name, project) != null
 
-    fun folderIconKey(directory: VirtualFile): String? = null
-
-    fun folderIconKey(directory: VirtualFile, project: Project?): String? = folderIconKey(directory)
+    fun folderIconKey(directory: VirtualFile, project: Project?): String? = null
 }

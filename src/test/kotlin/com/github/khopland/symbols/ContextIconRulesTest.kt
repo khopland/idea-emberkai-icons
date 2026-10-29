@@ -87,11 +87,11 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
                 "emberkai/icons/kubernetes/${kind.lowercase()}.svg",
             )
         }
-        val explanation = IconResolver().resolveWithDetails(
+        val explanation = IconResolver.resolveWithDetails(
             myFixture.addFileToProject("explain.yaml", "apiVersion: v1\nkind: Secret").virtualFile, project,
         )
         assertEquals("context.kubernetes.secret", explanation.mappingKey)
-        assertEquals(IconRuleCategory.KUBERNETES.displayName, explanation.contextRule)
+        assertEquals(IconRuleCategory.KUBERNETES, explanation.contextRule)
         assertContentIcon(
             "knative.yaml", "apiVersion: serving.knative.dev/v1\nkind: Service",
             "emberkai/icons/kubernetes.svg",

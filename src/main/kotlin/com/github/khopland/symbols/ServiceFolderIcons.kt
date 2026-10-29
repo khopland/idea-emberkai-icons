@@ -4,12 +4,16 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
-import javax.swing.Icon
 
 /** Caches service-root detection and its palette entry on the directory VFS object. */
-internal class ServiceFolderIcons(private val mappings: IconMappings) {
-    fun icon(directory: VirtualFile, project: Project?): Icon? =
-        iconKey(directory, project)?.let(mappings::get)
+internal object ServiceFolderIcons {
+    private val DIRECTORY_CACHE = Key.create<CachedFolderIcon>("emberkai.serviceFolderIcon")
+    private val PALETTE_CACHE = Key.create<PaletteAssignments>("emberkai.serviceFolderPalette")
+    private const val NO_PARENT_STAMP = -1L
+    private val BUILD_MARKERS = arrayOf("build.gradle.kts", "build.gradle", "pom.xml", "package.json")
+    private val IGNORED_TREES = setOf(
+        ".git", ".idea", ".gradle", "build", "dist", "node_modules", "out", "target", "vendor", "venv", ".venv",
+    )
 
     fun iconKey(directory: VirtualFile, project: Project?): String? {
         if (project == null || project.isDisposed) return null
@@ -59,9 +63,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
     private fun isServiceRoot(directory: VirtualFile, project: Project, markerMask: Int): Boolean {
         if (markerMask == 0) return false
         val relativePath = ProjectPathUtil.relativePath(directory, project) ?: return false
-        if (relativePath.split('/').any { it.lowercase(Locale.ROOT) in IGNORED_TREES }) return false
-
-        return true
+        return relativePath.split('/').none { it.lowercase(Locale.ROOT) in IGNORED_TREES }
     }
 
     /** Directory modification stamps are commonly constant, so track the few relevant children directly. */
@@ -92,7 +94,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
         val palette = palette(parent, project, projectBasePath, parentModificationStamp, paletteChoice)
         palette.assignments.getOrPut(path) {
             val used = palette.assignments.values.toSet()
-            val colors = basePalette(paletteChoice)
+            val colors = paletteChoice.colors.map { it.iconKey }
             colors.firstOrNull { it !in used }
                 ?: colors[Math.floorMod(path.lowercase(Locale.ROOT).hashCode(), colors.size)]
         }
@@ -146,6 +148,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
         paletteChoice: FolderIconPalette,
     ): MutableMap<String, String> {
         val assignments = linkedMapOf<String, String>()
+        val palette = paletteChoice.colors
         parent.children.asSequence()
             .filter { it.isDirectory }
             .filter { sibling ->
@@ -153,8 +156,7 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
             }
             .sortedBy { it.path.lowercase(Locale.ROOT) }
             .forEachIndexed { index, sibling ->
-                val palette = basePalette(paletteChoice)
-                assignments[sibling.path] = palette[index % palette.size]
+                assignments[sibling.path] = palette[index % palette.size].iconKey
             }
         return assignments
     }
@@ -176,51 +178,10 @@ internal class ServiceFolderIcons(private val mappings: IconMappings) {
         val paletteChoice: FolderIconPalette,
         val assignments: MutableMap<String, String>,
     )
-
-    private companion object {
-        val DIRECTORY_CACHE = Key.create<CachedFolderIcon>("emberkai.serviceFolderIcon")
-        val PALETTE_CACHE = Key.create<PaletteAssignments>("emberkai.serviceFolderPalette")
-        const val NO_PARENT_STAMP = -1L
-        fun basePalette(choice: FolderIconPalette): Array<String> = when (choice) {
-            FolderIconPalette.EMBERKAI -> PALETTE
-            FolderIconPalette.ACCESSIBLE -> ACCESSIBLE_PALETTE
-        }
-
-        val BUILD_MARKERS = arrayOf("build.gradle.kts", "build.gradle", "pom.xml", "package.json")
-        val IGNORED_TREES = setOf(
-            ".git", ".idea", ".gradle", "build", "dist", "node_modules", "out", "target", "vendor", "venv", ".venv",
-        )
-        val PALETTE = arrayOf(
-            "folder.service.blue",
-            "folder.service.green",
-            "folder.service.orange",
-            "folder.service.pink",
-            "folder.service.purple",
-            "folder.service.red",
-            "folder.service.sky",
-            "folder.service.yellow",
-        )
-        val ACCESSIBLE_PALETTE = arrayOf(
-            "folder.service.blue",
-            "folder.service.orange",
-            "folder.service.yellow",
-            "folder.service.purple",
-            "folder.service.green",
-            "folder.service.red",
-            "folder.service.sky",
-            "folder.service.pink",
-        )
-    }
 }
 
 /** Shared style mapping for detected roots and the settings preview. */
 internal object ServiceFolderIconStyle {
-    private val emberkaiColorNames = listOf("blue", "green", "orange", "pink", "purple", "red", "sky", "yellow")
-    private val accessibleColorNames = listOf("blue", "orange", "yellow", "purple", "green", "red", "sky", "pink")
-
-    fun colorNames(paletteChoice: FolderIconPalette): List<String> =
-        if (paletteChoice == FolderIconPalette.ACCESSIBLE) accessibleColorNames else emberkaiColorNames
-
     fun apply(baseKey: String, settings: EmberkaiIconsSettings): String = styleKey(
         baseKey,
         settings.serviceFolderPalette,

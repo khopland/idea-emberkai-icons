@@ -12,7 +12,7 @@ import com.intellij.openapi.project.Project
 
 /**
  * Recomputes the active Spring profiles when the selected run configuration changes. Registered
- * from `java-active-profiles.xml`, so the Java run-configuration interfaces are always available.
+ * from `java-support.xml`, so the Java run-configuration interfaces are always available.
  */
 internal class ActiveSpringProfileListener(private val project: Project) : RunManagerListener {
     override fun stateLoaded(runManager: RunManager, isFirstLoadState: Boolean) = update(runManager)
@@ -23,7 +23,7 @@ internal class ActiveSpringProfileListener(private val project: Project) : RunMa
 
     override fun runConfigurationRemoved(settings: RunnerAndConfigurationSettings) = update()
 
-    private fun update(runManager: RunManager = project.getService(RunManager::class.java)) {
+    private fun update(runManager: RunManager = RunManager.getInstance(project)) {
         if (project.isDisposed) return
         val snapshot = runManager.selectedConfiguration?.let(ActiveSpringProfileReader::read)
         if (!ActiveSpringProfiles.getInstance(project).update(snapshot)) return

@@ -3,9 +3,7 @@ package com.github.khopland.symbols
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.BasicStroke
 import java.awt.Color
-import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.RenderingHints
 import java.awt.Shape
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Path2D
@@ -79,35 +77,28 @@ private enum class BadgeShape {
 
 /** Paints a small color-and-shape badge while preserving the resolver's base icon. */
 internal class EnvironmentVariantBadgeIcon(
-    internal val baseIcon: Icon,
+    baseIcon: Icon,
     internal val variant: EnvironmentVariant,
-) : Icon {
-    override fun getIconWidth(): Int = baseIcon.iconWidth
-
-    override fun getIconHeight(): Int = baseIcon.iconHeight
-
-    override fun paintIcon(component: java.awt.Component?, graphics: Graphics, x: Int, y: Int) {
-        baseIcon.paintIcon(component, graphics, x, y)
+) : BadgedIcon(baseIcon) {
+    override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = minOf(7f, iconWidth / 2f, iconHeight / 2f)
-        val badgeX = x + iconWidth - size - 1f
-        val badgeY = y + iconHeight - size - 1f
-        val shape = variant.badgeShape(badgeX, badgeY, size)
-        val copy = graphics.create() as Graphics2D
-        try {
-            copy.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            copy.color = Color.WHITE
-            copy.stroke = BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-            copy.draw(shape)
-            copy.color = Color(0x0F, 0x17, 0x2A)
-            copy.stroke = BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-            copy.draw(shape)
-            copy.color = variant.paintColor()
-            copy.fill(shape)
-            copy.color = Color(0x0F, 0x17, 0x2A)
-            copy.stroke = BasicStroke(0.75f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-            copy.draw(shape)
-        } finally {
-            copy.dispose()
-        }
+        val shape = variant.badgeShape(x + iconWidth - size - 1f, y + iconHeight - size - 1f, size)
+        g.color = Color.WHITE
+        g.stroke = BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(shape)
+        g.color = OUTLINE
+        g.stroke = BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(shape)
+        g.color = variant.paintColor()
+        g.fill(shape)
+        g.color = OUTLINE
+        g.stroke = BasicStroke(0.75f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(shape)
+    }
+
+    override fun withBase(base: Icon): BadgedIcon = EnvironmentVariantBadgeIcon(base, variant)
+
+    private companion object {
+        val OUTLINE = Color(0x0F, 0x17, 0x2A)
     }
 }

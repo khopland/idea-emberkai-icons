@@ -83,7 +83,8 @@ internal object ProjectIconOverrideFile {
         return result.joinToString("\n", postfix = "\n")
     }
 
-    private fun entry(key: String, value: String): String = "${escape(key, isKey = true)}=${escape(value, isKey = false)}"
+    /** One `key=value` line, escaped so [Properties] reads both back unchanged. */
+    fun entry(key: String, value: String): String = "${escape(key, isKey = true)}=${escape(value, isKey = false)}"
 
     private fun continues(line: String): Boolean {
         if (isComment(line)) return false

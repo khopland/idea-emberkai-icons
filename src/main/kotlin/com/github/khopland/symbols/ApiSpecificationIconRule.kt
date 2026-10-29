@@ -14,7 +14,7 @@ internal class ApiSpecificationIconRule : ContextIconRule {
             null
         }
 
-    override fun folderIconKey(directory: VirtualFile): String? {
+    override fun folderIconKey(directory: VirtualFile, project: Project?): String? {
         for (name in SPEC_NAMES) {
             val child = directory.findChild(name)
             if (child != null && !child.isDirectory) return "context.openapi-folder"

@@ -3,6 +3,7 @@ package com.github.khopland.symbols
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.Iconable
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.awt.GraphicsEnvironment
@@ -21,6 +22,9 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
             }
         }
     }
+
+    protected fun serviceFolderIcon(directory: VirtualFile): Icon? =
+        IconMappings().get(ServiceFolderIcons.iconKey(directory, project))
 
     protected fun assertFileIcon(name: String, path: String) {
         val file = myFixture.configureByText(name, "data")

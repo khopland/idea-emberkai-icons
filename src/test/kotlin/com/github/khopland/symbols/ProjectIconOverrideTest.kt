@@ -103,6 +103,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
         try {
             EmberkaiIconsSettings.export(state, file)
             val imported = EmberkaiIconsSettings.import(file)
+            assertEquals("every exported setting round-trips", state, imported)
             assertFalse(imported.colorServiceFolders)
             assertTrue(imported.moduleAwareColors)
             assertFalse(imported.semanticTooltips)
@@ -217,7 +218,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
 
     private fun resolve(file: VirtualFile): IconResolution =
         ReadAction.computeBlocking<IconResolution, RuntimeException> {
-            IconResolver().resolveWithDetails(file, project)
+            IconResolver.resolveWithDetails(file, project)
         }
 
     private fun writeOverrideFile(content: String) {

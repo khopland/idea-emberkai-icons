@@ -3,33 +3,21 @@ package com.github.khopland.symbols
 import com.intellij.ui.JBColor
 import java.awt.BasicStroke
 import java.awt.Color
-import java.awt.Component
-import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.RenderingHints
 import java.awt.geom.Arc2D
 import javax.swing.Icon
 
 /** Emberkai folder artwork with a small Spring Modulith lock badge in the lower-right corner. */
 internal class ModulithFolderIcon(
-    private val base: Icon,
+    baseIcon: Icon,
     internal val lock: ModulithLock,
-) : Icon {
-    override fun getIconWidth(): Int = base.iconWidth
-
-    override fun getIconHeight(): Int = base.iconHeight
-
-    override fun paintIcon(component: Component?, g: Graphics, x: Int, y: Int) {
-        base.paintIcon(component, g, x, y)
-        val graphics = g.create() as Graphics2D
-        try {
-            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            val size = (minOf(base.iconWidth, base.iconHeight) * 0.5f).coerceIn(7f, 9f)
-            paintLock(graphics, x + base.iconWidth - size, y + base.iconHeight - size, size)
-        } finally {
-            graphics.dispose()
-        }
+) : BadgedIcon(baseIcon) {
+    override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
+        val size = (minOf(iconWidth, iconHeight) * 0.5f).coerceIn(7f, 9f)
+        paintLock(g, x + iconWidth - size, y + iconHeight - size, size)
     }
+
+    override fun withBase(base: Icon): BadgedIcon = ModulithFolderIcon(base, lock)
 
     private fun paintLock(g: Graphics2D, x: Float, y: Float, size: Float) {
         val bodyX = x + size * 0.16f

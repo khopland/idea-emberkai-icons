@@ -36,42 +36,13 @@ internal class IconMappings {
         return MappedIcon(key, source, path, icon)
     }
 
-    fun contextual(file: VirtualFile, prefix: String, name: String): Icon? {
-        return contextualMatch(file, prefix, name)?.icon
-    }
+    fun contextualMatch(file: VirtualFile, prefix: String, name: String): MappedIcon? =
+        MappingKeys.contextual(file.parent, prefix, name, ::resolve)
 
-    fun contextualMatch(file: VirtualFile, prefix: String, name: String): MappedIcon? {
-        // A longer parent suffix wins without depending on the checkout path.
-        var parent = file.parent ?: return null
-        var context = parent.name.lowercase(Locale.ROOT) + "/" + name
-        var closest = resolve(prefix + context)
-        while (true) {
-            parent = parent.parent ?: break
-            context = parent.name.lowercase(Locale.ROOT) + "/" + context
-            val icon = resolve(prefix + context) ?: continue
-            closest = icon
-        }
-        return closest
-    }
+    fun contextualExtensionMatch(file: VirtualFile, name: String): MappedIcon? =
+        MappingKeys.contextualExtension(file.parent, name, ::resolve)
 
-    fun contextualExtension(file: VirtualFile, name: String): Icon? {
-        return contextualExtensionMatch(file, name)?.icon
-    }
-
-    fun contextualExtensionMatch(file: VirtualFile, name: String): MappedIcon? {
-        var current = name
-        while (true) {
-            val icon = contextualMatch(file, "extension.", current)
-            if (icon != null) return icon
-            val dot = current.indexOf('.')
-            if (dot < 0) return null
-            current = current.substring(dot + 1)
-        }
-    }
-
-    fun extension(name: String): Icon? {
-        return extensionMatch(name)?.icon
-    }
+    fun extensionMatch(name: String): MappedIcon? = MappingKeys.extension(name, ::resolve)
 
     /** Every bundled mapping key and artwork path, excluding project-local overrides. */
     fun catalog(): List<IconCatalogEntry> {
@@ -84,17 +55,36 @@ internal class IconMappings {
         }
         return entries.values.sortedBy { it.key.lowercase(Locale.ROOT) }
     }
+}
 
-    fun extensionMatch(name: String): MappedIcon? {
-        var current = name
-        while (true) {
-            val icon = resolve("extension.$current")
-            if (icon != null) return icon
-            val dot = current.indexOf('.')
-            if (dot < 0) return null
-            current = current.substring(dot + 1)
+/**
+ * The key lookup order shared by bundled mappings and project overrides. Contextual keys prefix a
+ * name with parent folders, such as `file.deploy/prod/values.yaml`; the longest matching suffix wins
+ * without depending on the checkout path. Compound extensions are tried before shorter ones, so
+ * `extension.gradle.kts` wins over `extension.kts`.
+ */
+internal object MappingKeys {
+    fun <T : Any> contextual(parent: VirtualFile?, prefix: String, name: String, lookup: (String) -> T?): T? {
+        var current = parent
+        var context = name
+        var longest: T? = null
+        while (current != null) {
+            context = current.name.lowercase(Locale.ROOT) + "/" + context
+            longest = lookup(prefix + context) ?: longest
+            current = current.parent
         }
+        return longest
     }
+
+    fun <T : Any> contextualExtension(parent: VirtualFile?, name: String, lookup: (String) -> T?): T? =
+        extensionSuffixes(name).firstNotNullOfOrNull { contextual(parent, "extension.", it, lookup) }
+
+    fun <T : Any> extension(name: String, lookup: (String) -> T?): T? =
+        extensionSuffixes(name).firstNotNullOfOrNull { lookup("extension.$it") }
+
+    /** `app.gradle.kts` yields itself, `gradle.kts`, and `kts`. */
+    fun extensionSuffixes(name: String): Sequence<String> =
+        generateSequence(name) { it.substringAfter('.', "").ifEmpty { null } }
 }
 
 internal enum class MappingSource(val displayName: String) {

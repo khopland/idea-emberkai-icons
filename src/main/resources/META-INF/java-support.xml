@@ -5,4 +5,7 @@
             class="com.github.khopland.symbols.ActiveSpringProfileListener"
             topic="com.intellij.execution.RunManagerListener"/>
     </projectListeners>
+    <extensions defaultExtensionNs="com.github.khopland.symbols">
+        <classStereotypeSupport implementation="com.github.khopland.symbols.JavaClassStereotypeSupport"/>
+    </extensions>
 </idea-plugin>

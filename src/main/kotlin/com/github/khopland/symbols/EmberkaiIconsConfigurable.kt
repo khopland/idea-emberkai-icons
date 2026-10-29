@@ -1,5 +1,6 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.EmberkaiIconsSettings.State
 import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
 import com.intellij.ide.impl.ProjectUtil
@@ -38,20 +39,15 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
+import kotlin.reflect.KMutableProperty1
 
 class EmberkaiIconsConfigurable : Configurable {
     private var previewPanel: JPanel? = null
-    private var preserveNativeIcons: JCheckBox? = null
-    private var colorServiceFolders: JCheckBox? = null
-    private var moduleAwareColors: JCheckBox? = null
-    private var semanticTooltips: JCheckBox? = null
     private var folderPalette: JComboBox<FolderIconPalette>? = null
-    private var highContrast: JCheckBox? = null
-    private var monochrome: JCheckBox? = null
-    private var reducedFolderColor: JCheckBox? = null
     private var filterField: JBTextField? = null
     private var statusLabel: JLabel? = null
-    private val categoryBoxes = linkedMapOf<IconRuleCategory, JCheckBox>()
+    /** Every boolean setting's checkbox, keyed by the state field it edits. */
+    private val flagBoxes = linkedMapOf<KMutableProperty1<State, Boolean>, JCheckBox>()
     private val searchableRows = mutableListOf<SearchableRow>()
 
     override fun getDisplayName(): String = "Emberkai Icons"
@@ -74,25 +70,17 @@ class EmberkaiIconsConfigurable : Configurable {
         statusLabel = JLabel(" ").apply { alignmentX = Component.LEFT_ALIGNMENT }
 
         root.add(sectionTitle("Icon behavior"))
-        preserveNativeIcons = checkBox("Keep IntelliJ's native Java and Kotlin file icons").also {
-            it.addActionListener { updatePreview() }
-        }
-        colorServiceFolders = checkBox("Color service folders by build or package manifest").also {
-            it.addActionListener { updatePreview() }
-        }
-        moduleAwareColors = checkBox("Use module-aware accent colors and folder badges").also { checkbox ->
-            checkbox.toolTipText =
-                "Assign a stable color to every IntelliJ module and carry it into source roots and packages."
-            checkbox.addActionListener { updatePreview() }
-        }
-        semanticTooltips = checkBox("Describe recognized files and folders in Project view tooltips").also { checkbox ->
-            checkbox.toolTipText =
-                "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. Screen readers announce it as the node description."
-        }
-        addSearchable(root, preserveNativeIcons!!, "Keep IntelliJ's native Java and Kotlin file icons")
-        addSearchable(root, colorServiceFolders!!, "Color service folders by build or package manifest")
-        addSearchable(root, moduleAwareColors!!, "Use module-aware accent colors and folder badges")
-        addSearchable(root, semanticTooltips!!, "Describe recognized files and folders in Project view tooltips")
+        addFlag(root, State::preserveNativeJavaKotlinIcons, "Keep IntelliJ's native Java and Kotlin file icons")
+        addFlag(root, State::colorServiceFolders, "Color service folders by build or package manifest")
+        addFlag(
+            root, State::moduleAwareColors, "Use module-aware accent colors and folder badges",
+            "Assign a stable color to every IntelliJ module and carry it into source roots and packages.",
+        )
+        addFlag(
+            root, State::semanticTooltips, "Describe recognized files and folders in Project view tooltips",
+            "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. " +
+                "Screen readers announce it as the node description.",
+        )
 
         root.add(sectionTitle("Folder accessibility"))
         folderPalette = JComboBox(DefaultComboBoxModel(FolderIconPalette.entries.toTypedArray())).apply {
@@ -109,18 +97,9 @@ class EmberkaiIconsConfigurable : Configurable {
         }
         val paletteRow = labeledControl("Service-folder palette", folderPalette!!)
         addSearchable(root, paletteRow, "Service-folder palette")
-        highContrast = checkBox("Use high-contrast, shape-coded service-folder markers").also { checkbox ->
-            checkbox.addActionListener { updatePreview() }
-        }
-        monochrome = checkBox("Use monochrome service-folder icons").also { checkbox ->
-            checkbox.addActionListener { updatePreview() }
-        }
-        reducedFolderColor = checkBox("Reduce service-folder color").also { checkbox ->
-            checkbox.addActionListener { updatePreview() }
-        }
-        addSearchable(root, highContrast!!, "Use high-contrast, shape-coded service-folder markers")
-        addSearchable(root, monochrome!!, "Use monochrome service-folder icons")
-        addSearchable(root, reducedFolderColor!!, "Reduce service-folder color")
+        addFlag(root, State::highContrastFolderIcons, "Use high-contrast, shape-coded service-folder markers")
+        addFlag(root, State::monochromeFolderIcons, "Use monochrome service-folder icons")
+        addFlag(root, State::reducedFolderColor, "Reduce service-folder color")
         root.add(Box.createVerticalStrut(8))
 
         root.add(sectionTitle("Live preview"))
@@ -142,10 +121,7 @@ class EmberkaiIconsConfigurable : Configurable {
             alignmentX = Component.LEFT_ALIGNMENT
         })
         for (category in IconRuleCategory.entries) {
-            val checkbox = checkBox(category.displayName)
-            categoryBoxes[category] = checkbox
-            checkbox.addActionListener { updatePreview() }
-            addSearchable(root, checkbox, category.displayName)
+            addFlag(root, EmberkaiIconsSettings.flag(category), category.displayName)
         }
 
         root.add(sectionTitle("Project icon overrides"))
@@ -184,20 +160,7 @@ class EmberkaiIconsConfigurable : Configurable {
         return root
     }
 
-    override fun isModified(): Boolean {
-        val settings = EmberkaiIconsSettings.getInstance()
-        return preserveNativeIcons?.isSelected != settings.preserveNativeJavaKotlinIcons ||
-            colorServiceFolders?.isSelected != settings.colorServiceFolders ||
-            moduleAwareColors?.isSelected != settings.moduleAwareColors ||
-            semanticTooltips?.isSelected != settings.semanticTooltips ||
-            selectedPalette() != settings.serviceFolderPalette ||
-            highContrast?.isSelected != settings.highContrastFolderIcons ||
-            monochrome?.isSelected != settings.monochromeFolderIcons ||
-            reducedFolderColor?.isSelected != settings.reducedFolderColor ||
-            IconRuleCategory.entries.any { category ->
-                categoryBoxes[category]?.isSelected != settings.isEnabled(category)
-            }
-    }
+    override fun isModified(): Boolean = formState() != EmberkaiIconsSettings.getInstance().state
 
     override fun apply() {
         val changed = isModified()
@@ -210,52 +173,41 @@ class EmberkaiIconsConfigurable : Configurable {
     }
 
     /** Shows [state] in the form without applying it; Apply or Cancel decides. */
-    private fun loadForm(state: EmberkaiIconsSettings.State) {
-        preserveNativeIcons?.isSelected = state.preserveNativeJavaKotlinIcons
-        colorServiceFolders?.isSelected = state.colorServiceFolders
-        moduleAwareColors?.isSelected = state.moduleAwareColors
-        semanticTooltips?.isSelected = state.semanticTooltips
+    private fun loadForm(state: State) {
+        flagBoxes.forEach { (flag, box) -> box.isSelected = flag.get(state) }
         folderPalette?.selectedItem = FolderIconPalette.fromId(state.serviceFolderPalette)
-        highContrast?.isSelected = state.highContrastFolderIcons
-        monochrome?.isSelected = state.monochromeFolderIcons
-        reducedFolderColor?.isSelected = state.reducedFolderColor
-        for (category in IconRuleCategory.entries) {
-            categoryBoxes[category]?.isSelected = state.isEnabled(category)
-        }
         updatePreview()
     }
 
-    private fun formState(): EmberkaiIconsSettings.State = EmberkaiIconsSettings.getInstance().state.also { state ->
-        preserveNativeIcons?.let { state.preserveNativeJavaKotlinIcons = it.isSelected }
-        colorServiceFolders?.let { state.colorServiceFolders = it.isSelected }
-        moduleAwareColors?.let { state.moduleAwareColors = it.isSelected }
-        semanticTooltips?.let { state.semanticTooltips = it.isSelected }
+    private fun formState(): State = EmberkaiIconsSettings.getInstance().state.also { state ->
+        flagBoxes.forEach { (flag, box) -> flag.set(state, box.isSelected) }
         selectedPalette()?.let { state.serviceFolderPalette = it.name }
-        highContrast?.let { state.highContrastFolderIcons = it.isSelected }
-        monochrome?.let { state.monochromeFolderIcons = it.isSelected }
-        reducedFolderColor?.let { state.reducedFolderColor = it.isSelected }
-        for (category in IconRuleCategory.entries) {
-            categoryBoxes[category]?.let { state.setEnabled(category, it.isSelected) }
-        }
     }
 
     override fun disposeUIResources() {
         previewPanel = null
-        preserveNativeIcons = null
-        colorServiceFolders = null
-        moduleAwareColors = null
-        semanticTooltips = null
         folderPalette = null
-        highContrast = null
-        monochrome = null
-        reducedFolderColor = null
         filterField = null
         statusLabel = null
-        categoryBoxes.clear()
+        flagBoxes.clear()
         searchableRows.clear()
     }
 
     private fun selectedPalette(): FolderIconPalette? = folderPalette?.selectedItem as? FolderIconPalette
+
+    /** The form value of [flag], or [default] before the form exists. */
+    private fun isChecked(flag: KMutableProperty1<State, Boolean>, default: Boolean): Boolean =
+        flagBoxes[flag]?.isSelected ?: default
+
+    private fun isEnabled(category: IconRuleCategory): Boolean = isChecked(EmberkaiIconsSettings.flag(category), true)
+
+    private fun addFlag(root: JPanel, flag: KMutableProperty1<State, Boolean>, text: String, tooltip: String? = null) {
+        val checkbox = checkBox(text)
+        checkbox.toolTipText = tooltip
+        checkbox.addActionListener { updatePreview() }
+        flagBoxes[flag] = checkbox
+        addSearchable(root, checkbox, text)
+    }
 
     private fun addSearchable(root: JPanel, component: JComponent, text: String) {
         component.alignmentX = Component.LEFT_ALIGNMENT
@@ -343,10 +295,10 @@ class EmberkaiIconsConfigurable : Configurable {
         val mappings = IconMappings()
         val settings = PreviewSettings(
             palette = selectedPalette() ?: FolderIconPalette.EMBERKAI,
-            highContrast = highContrast?.isSelected == true,
-            monochrome = monochrome?.isSelected == true,
-            reducedFolderColor = reducedFolderColor?.isSelected == true,
-            moduleAware = moduleAwareColors?.isSelected == true,
+            highContrast = isChecked(State::highContrastFolderIcons, false),
+            monochrome = isChecked(State::monochromeFolderIcons, false),
+            reducedFolderColor = isChecked(State::reducedFolderColor, false),
+            moduleAware = isChecked(State::moduleAwareColors, false),
         )
         val nodes = DefaultMutableTreeNode(PreviewItem("sample-project", mappings.get("folder")))
         val src = DefaultMutableTreeNode(PreviewItem("src", mappings.get("folder")))
@@ -359,11 +311,10 @@ class EmberkaiIconsConfigurable : Configurable {
             }
         }
         val packageNode = DefaultMutableTreeNode(PreviewItem("com.example", packageIcon))
-        val nativeJava = preserveNativeIcons?.isSelected != false
         val javaIcon = when {
-            !nativeJava -> mappings.get("extension.java")
-            categoryBoxes[IconRuleCategory.STEREOTYPE_BADGES]?.isSelected != false ->
-                LayeredIcon(AllIcons.Nodes.Class, ClassStereotype.APPLICATION.icon)
+            !isChecked(State::preserveNativeJavaKotlinIcons, true) -> mappings.get("extension.java")
+            isEnabled(IconRuleCategory.STEREOTYPE_BADGES) ->
+                LayeredIcon.layeredIcon(arrayOf(AllIcons.Nodes.Class, ClassStereotype.APPLICATION.icon))
             else -> AllIcons.Nodes.Class
         }
         packageNode.add(DefaultMutableTreeNode(PreviewItem("Application.java", javaIcon)))
@@ -373,11 +324,11 @@ class EmberkaiIconsConfigurable : Configurable {
         nodes.add(src)
 
         nodes.add(DefaultMutableTreeNode(PreviewItem("build.gradle.kts", mappings.get("extension.gradle.kts"))))
-        val helm = categoryBoxes[IconRuleCategory.HELM]?.isSelected != false
+        val helm = isEnabled(IconRuleCategory.HELM)
         nodes.add(DefaultMutableTreeNode(PreviewItem("Chart.yaml", mappings.get(if (helm) "context.helm" else "extension.yaml"))))
-        val kubernetes = categoryBoxes[IconRuleCategory.KUBERNETES]?.isSelected != false
+        val kubernetes = isEnabled(IconRuleCategory.KUBERNETES)
         nodes.add(DefaultMutableTreeNode(PreviewItem("deployment.yaml", mappings.get(if (kubernetes) "context.kubernetes.deployment" else "extension.yaml"))))
-        val serviceIcon = if (colorServiceFolders?.isSelected != false) {
+        val serviceIcon = if (isChecked(State::colorServiceFolders, true)) {
             mappings.get(previewServiceIconKey(settings))
         } else {
             mappings.get("folder")
@@ -418,8 +369,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val color = if (settings.moduleAware) {
             ModuleAccentColor.defaultFor("preview-service", settings.palette)
         } else {
-            ModuleAccentColor.fromId(ServiceFolderIconStyle.colorNames(settings.palette).first())
-                ?: ModuleAccentColor.BLUE
+            settings.palette.colors.first()
         }
         return ServiceFolderIconStyle.styleKey(
             baseKey = color.iconKey,

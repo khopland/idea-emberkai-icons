@@ -24,7 +24,7 @@ internal class AnsibleIconRule : ContextIconRule {
         }
     }
 
-    override fun folderIconKey(directory: VirtualFile): String? {
+    override fun folderIconKey(directory: VirtualFile, project: Project?): String? {
         val name = directory.name.lowercase(Locale.ROOT)
         if (name == "ansible") return "context.ansible-folder"
         if (name !in ANSIBLE_SUBDIRECTORIES) return null

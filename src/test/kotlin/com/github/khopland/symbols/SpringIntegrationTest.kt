@@ -28,10 +28,10 @@ internal class SpringIntegrationTest : IconProviderTestCase() {
     }
 
     fun testSpringDomDescriptionDetection() {
-        assertTrue(SpringDomIconSupport.isSpringDescription("com.intellij.spring.dom.SpringDomFileDescription"))
-        assertTrue(SpringDomIconSupport.isSpringDescription("com.intellij.spring.boot.SomeDescription"))
-        assertFalse(SpringDomIconSupport.isSpringDescription("com.intellij.util.xml.DomFileDescription"))
-        assertFalse(SpringDomIconSupport.isSpringDescription("com.example.spring.MyDescription"))
+        assertTrue(SpringXmlConfigDetector.isSpringDescription("com.intellij.spring.dom.SpringDomFileDescription"))
+        assertTrue(SpringXmlConfigDetector.isSpringDescription("com.intellij.spring.boot.SomeDescription"))
+        assertFalse(SpringXmlConfigDetector.isSpringDescription("com.intellij.util.xml.DomFileDescription"))
+        assertFalse(SpringXmlConfigDetector.isSpringDescription("com.example.spring.MyDescription"))
     }
 
     fun testPlainXmlKeepsEmberkaiArtwork() {
@@ -119,7 +119,7 @@ internal class SpringIntegrationTest : IconProviderTestCase() {
     }
 
     private fun decorator(support: ModulithSupport): SpringModulithFolderDecorator =
-        SpringModulithFolderDecorator(support, IconResolver())
+        SpringModulithFolderDecorator(support)
 
     private fun packageNode(): PsiDirectoryNode {
         val source = myFixture.tempDirFixture.findOrCreateDir("src")

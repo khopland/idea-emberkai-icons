@@ -8,7 +8,7 @@ internal data class IconResolution(
     val mappingKey: String? = null,
     val mappingSource: MappingSource? = null,
     val resourcePath: String? = null,
-    val contextRule: String? = null,
+    val contextRule: IconRuleCategory? = null,
     val projectRole: String? = null,
     val environmentVariant: EnvironmentVariant? = null,
     val moduleAccent: ModuleAccent? = null,

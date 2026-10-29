@@ -1,5 +1,6 @@
 package com.github.khopland.symbols
 
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.project.Project
@@ -43,16 +44,8 @@ internal data class CoverageAuditFinding(
                 .replace(Regex("[^a-z0-9._-]+"), "-")
                 .trim('-', '.')
                 .ifEmpty { "custom" }
-            return "${escapePropertyKey(suggestedMappingKey)}=/emberkai/icons/$slug-icon.svg"
+            return ProjectIconOverrideFile.entry(suggestedMappingKey, "/emberkai/icons/$slug-icon.svg")
         }
-
-    private fun escapePropertyKey(key: String): String = key
-        .replace("\\", "\\\\")
-        .replace(" ", "\\ ")
-        .replace("=", "\\=")
-        .replace(":", "\\:")
-        .replace("#", "\\#")
-        .replace("!", "\\!")
 }
 
 internal data class CoverageAuditGroup(
@@ -96,12 +89,11 @@ internal object IconCoverageAudit {
         wholeProject: Boolean = false,
     ): CoverageAuditResult {
         val fileIndex = ProjectFileIndex.getInstance(project)
-        val resolver = IconResolver()
         val pendingDirectories = ArrayDeque<VirtualFile>()
         val visitedDirectories = hashSetOf<String>()
         val groups = linkedMapOf<GroupKey, MutableGroup>()
         val scanRoots = if (wholeProject) {
-            computeReadAction<List<VirtualFile>> {
+            runReadActionBlocking<List<VirtualFile>> {
                 buildList {
                     add(root)
                     ModuleManager.getInstance(project).modules.forEach { module ->
@@ -142,8 +134,8 @@ internal object IconCoverageAudit {
                     indicator.text2 = "$scannedFiles files scanned · $totalFindings candidates"
                 }
 
-                val resolution = computeReadAction<IconResolution> {
-                    resolver.resolveWithDetails(child, project)
+                val resolution = runReadActionBlocking<IconResolution> {
+                    IconResolver.resolveWithDetails(child, project)
                 }
                 val kind = findingKind(resolution) ?: continue
                 val path = ProjectPathUtil.relativePath(child, project) ?: child.path
@@ -194,7 +186,7 @@ internal object IconCoverageAudit {
     }
 
     private fun isProjectContent(fileIndex: ProjectFileIndex, file: VirtualFile): Boolean =
-        computeReadAction<Boolean> {
+        runReadActionBlocking<Boolean> {
             fileIndex.isInContent(file) && !fileIndex.isExcluded(file) && !fileIndex.isInLibrary(file)
         }
 

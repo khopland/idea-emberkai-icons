@@ -4,9 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.BasicStroke
 import java.awt.Color
-import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.RenderingHints
 import java.awt.geom.Ellipse2D
 import java.awt.geom.Line2D
 import java.awt.geom.Path2D
@@ -53,41 +51,32 @@ internal interface SecretFileExposure {
 
 /** Paints a stop-sign badge with an exclamation mark while preserving the resolver's base icon. */
 internal class UnignoredSecretBadgeIcon(
-    internal val baseIcon: Icon,
+    baseIcon: Icon,
     internal val highContrast: Boolean,
-) : Icon {
-    override fun getIconWidth(): Int = baseIcon.iconWidth
-
-    override fun getIconHeight(): Int = baseIcon.iconHeight
-
-    override fun paintIcon(component: java.awt.Component?, graphics: Graphics, x: Int, y: Int) {
-        baseIcon.paintIcon(component, graphics, x, y)
+) : BadgedIcon(baseIcon) {
+    override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         // Top-right keeps the badge clear of environment badges in the bottom-right corner.
         val size = minOf(8f, iconWidth / 2f, iconHeight / 2f)
         val badgeX = x + iconWidth - size - 0.5f
         val badgeY = y + 0.5f
         val shape = octagon(badgeX, badgeY, size)
-        val copy = graphics.create() as Graphics2D
-        try {
-            copy.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
-            copy.color = Color.WHITE
-            copy.stroke = BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-            copy.draw(shape)
-            copy.color = OUTLINE
-            copy.stroke = BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-            copy.draw(shape)
-            copy.color = if (highContrast) OUTLINE else WARNING
-            copy.fill(shape)
-            copy.color = Color.WHITE
-            val centerX = badgeX + size / 2
-            copy.stroke = BasicStroke(size * 0.18f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-            copy.draw(Line2D.Float(centerX, badgeY + size * 0.24f, centerX, badgeY + size * 0.56f))
-            val dot = size * 0.18f
-            copy.fill(Ellipse2D.Float(centerX - dot / 2, badgeY + size * 0.72f, dot, dot))
-        } finally {
-            copy.dispose()
-        }
+        g.color = Color.WHITE
+        g.stroke = BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(shape)
+        g.color = OUTLINE
+        g.stroke = BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(shape)
+        g.color = if (highContrast) OUTLINE else WARNING
+        g.fill(shape)
+        g.color = Color.WHITE
+        val centerX = badgeX + size / 2
+        g.stroke = BasicStroke(size * 0.18f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
+        g.draw(Line2D.Float(centerX, badgeY + size * 0.24f, centerX, badgeY + size * 0.56f))
+        val dot = size * 0.18f
+        g.fill(Ellipse2D.Float(centerX - dot / 2, badgeY + size * 0.72f, dot, dot))
     }
+
+    override fun withBase(base: Icon): BadgedIcon = UnignoredSecretBadgeIcon(base, highContrast)
 
     private fun octagon(x: Float, y: Float, size: Float): Path2D.Float {
         val inset = size * 0.29f

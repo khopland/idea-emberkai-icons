@@ -1,0 +1,45 @@
+package com.github.khopland.symbols
+
+import com.intellij.openapi.progress.EmptyProgressIndicator
+
+internal class IconCoverageAuditTest : IconProviderTestCase() {
+    fun testAuditGroupsGenericAndUnmappedFilesAndSkipsDependencies() {
+        val unmapped = myFixture.addFileToProject("audit/notes.zzqq", "data").virtualFile
+        myFixture.addFileToProject("audit/Info.plist", "<plist/>")
+        myFixture.addFileToProject("audit/Dockerfile", "FROM scratch")
+        myFixture.addFileToProject("audit/node_modules/dep/other.zzqq", "data")
+
+        val result = IconCoverageAudit.run(project, unmapped.parent, EmptyProgressIndicator())
+
+        assertEquals("node_modules is not scanned", 3, result.scannedFiles)
+        assertEquals(2, result.totalFindings)
+        assertEquals(0, result.omittedFindings)
+        val findings = result.groups.flatMap { it.findings }.associateBy { it.file.name }
+        assertEquals(setOf("Info.plist", "notes.zzqq"), findings.keys)
+        assertEquals(CoverageFindingKind.GENERIC_ICON, findings.getValue("Info.plist").kind)
+        assertEquals(CoverageFindingKind.NO_MAPPING, findings.getValue("notes.zzqq").kind)
+        assertTrue(result.groups.first().label.startsWith("Generic .plist"))
+    }
+
+    fun testSuggestedMappingsUseParentFolderContextAndEscapeKeys() {
+        val file = myFixture.addFileToProject("deploy/My Tool.cfg", "data").virtualFile
+        fun finding(extension: String?, relativePath: String, parent: String) = CoverageAuditFinding(
+            file = file,
+            relativePath = relativePath,
+            kind = CoverageFindingKind.NO_MAPPING,
+            extension = extension,
+            parentDirectory = parent,
+            mappingKey = null,
+            mappingSource = null,
+            resourcePath = null,
+        )
+
+        assertEquals("extension.cfg", finding("cfg", "My Tool.cfg", ".").suggestedMappingKey)
+        assertEquals("extension.deploy/cfg", finding("cfg", "deploy/My Tool.cfg", "deploy").suggestedMappingKey)
+        assertEquals("file.deploy/my tool", finding(null, "deploy/My Tool", "deploy").suggestedMappingKey)
+        assertEquals(
+            "file.deploy/my\\ tool=/emberkai/icons/my-tool.cfg-icon.svg",
+            finding(null, "deploy/My Tool", "deploy").suggestedMapping,
+        )
+    }
+}

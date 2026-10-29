@@ -22,7 +22,7 @@ internal class JvmArchitectureFolderIconRule : ContextIconRule {
     private fun isJavaOrKotlinPackage(directory: VirtualFile, project: Project?): Boolean {
         if (project == null || project.isDisposed) return false
         val sourceRoot = ProjectFileIndex.getInstance(project).getSourceRootForFile(directory) ?: return false
-        return when (ProjectFolderIcons().role(sourceRoot, project)) {
+        return when (ProjectFolderIcons.role(sourceRoot, project)) {
             ProjectFolderIcons.Role.SOURCE, ProjectFolderIcons.Role.TEST_SOURCE -> true
             else -> false
         }

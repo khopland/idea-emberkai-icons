@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
@@ -22,7 +23,7 @@ import javax.swing.Icon
 import javax.swing.JList
 
 /** Lets a user pin the accent color for the module that owns the selected folder. */
-internal class AssignModuleAccentAction : AnAction("Assign Module Accent Colorâ€¦"), DumbAware {
+internal class AssignModuleAccentAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
@@ -57,7 +58,7 @@ internal class AssignModuleAccentAction : AnAction("Assign Module Accent Colorâ€
 }
 
 /** Removes every pinned module accent so colors return to their module-name defaults. */
-internal class ResetAllModuleAccentColorsAction : AnAction("Reset All Module Accent Colors"), DumbAware {
+internal class ResetAllModuleAccentColorsAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     override fun update(event: AnActionEvent) {
@@ -124,6 +125,6 @@ private class AccentSwatch(private val color: Color) : Icon {
 }
 
 private fun moduleFor(project: Project, file: VirtualFile): Module? =
-    computeReadAction<Module?> {
+    runReadActionBlocking<Module?> {
         ProjectFileIndex.getInstance(project).getModuleForFile(file)
     }

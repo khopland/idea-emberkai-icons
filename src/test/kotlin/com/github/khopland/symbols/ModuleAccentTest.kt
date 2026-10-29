@@ -33,8 +33,8 @@ internal class ModuleAccentTest : IconProviderTestCase() {
 
         val index = Math.floorMod("project-api".hashCode(), 8)
         assertEquals(
-            ServiceFolderIconStyle.colorNames(FolderIconPalette.ACCESSIBLE)[index],
-            ModuleAccentColor.defaultFor("project-api", FolderIconPalette.ACCESSIBLE).id,
+            FolderIconPalette.ACCESSIBLE.colors[index],
+            ModuleAccentColor.defaultFor("project-api", FolderIconPalette.ACCESSIBLE),
         )
     }
 
@@ -75,10 +75,9 @@ internal class ModuleAccentTest : IconProviderTestCase() {
         val moduleName = ProjectFileIndex.getInstance(project).getModuleForFile(alpha)?.name
         assertNotNull(moduleName)
         val store = ModuleAccentStore.getInstance(project)
-        val icons = ServiceFolderIcons(IconMappings())
 
-        val alphaKey = icons.iconKey(alpha, project)
-        val betaKey = icons.iconKey(beta, project)
+        val alphaKey = ServiceFolderIcons.iconKey(alpha, project)
+        val betaKey = ServiceFolderIcons.iconKey(beta, project)
         assertNotNull(alphaKey)
         assertEquals("sibling roots in one module share the module color", alphaKey, betaKey)
         assertEquals(
@@ -90,8 +89,8 @@ internal class ModuleAccentTest : IconProviderTestCase() {
         )
 
         store.setOverride(moduleName, ModuleAccentColor.RED)
-        assertEquals("folder.service.red", icons.iconKey(alpha, project))
-        assertResourceIcon("symbols/icons/folders/folder-red.svg", icons.icon(alpha, project))
+        assertEquals("folder.service.red", ServiceFolderIcons.iconKey(alpha, project))
+        assertResourceIcon("symbols/icons/folders/folder-red.svg", serviceFolderIcon(alpha))
     }
 
     fun testModuleAccentBadgeDecoratesSourcePackagesAndUsesOverrides() {
