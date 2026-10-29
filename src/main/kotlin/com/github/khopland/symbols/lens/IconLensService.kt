@@ -47,8 +47,9 @@ internal class LensSnapshot(
 /**
  * Holds the project's active lens. The lens is a view mode, not a setting, so it is not persisted
  * and every project starts without one. Membership is computed in the background when a lens is
- * selected and again after VFS changes in project content; the Project view decorator only reads
- * the finished snapshot, and dims nothing while it is being computed.
+ * selected, again after VFS changes in project content, and when a lens reports that its membership
+ * changed; the Project view decorator only reads the finished snapshot, and dims nothing while the
+ * first one is being computed or the lens is not ready.
  */
 @Service(Service.Level.PROJECT)
 internal class IconLensService(private val project: Project) : Disposable {
@@ -80,6 +81,7 @@ internal class IconLensService(private val project: Project) : Disposable {
     /** Must be called from the EDT. The returned promise completes once the Project view shows [lens]. */
     fun select(lens: Lens?): CancellablePromise<*>? {
         if (lens == active) return null
+        active?.released(project)
         active = lens
         snapshot = null
         recomputeAlarm.cancelAllRequests()
@@ -92,15 +94,23 @@ internal class IconLensService(private val project: Project) : Disposable {
 
     private fun recompute(): CancellablePromise<*>? {
         val lens = active ?: return null
-        return ReadAction.nonBlocking<LensSnapshot> { LensSnapshot.collect(project, lens) }
+        return ReadAction.nonBlocking<LensSnapshot?> { if (lens.isReady(project)) LensSnapshot.collect(project, lens) else null }
             .expireWith(this)
             .coalesceBy(this)
             .finishOnUiThread(ModalityState.any()) { result ->
-                if (active != result.lens) return@finishOnUiThread
+                // Not ready yet: the lens calls membershipChanged once its state has loaded.
+                if (result == null || active != result.lens) return@finishOnUiThread
                 snapshot = result
                 refreshProjectView()
             }
             .submit(AppExecutorUtil.getAppExecutorService())
+    }
+
+    /** Recomputes [lens] if it is still active, after state behind its membership changed. Any thread. */
+    fun membershipChanged(lens: Lens) {
+        if (active != lens) return
+        recomputeAlarm.cancelAllRequests()
+        recomputeAlarm.addRequest({ if (active == lens) recompute() }, 0)
     }
 
     private fun affectsContent(event: VFileEvent): Boolean {
