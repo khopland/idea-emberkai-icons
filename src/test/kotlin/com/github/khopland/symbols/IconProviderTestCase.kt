@@ -1,5 +1,10 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.badges.EnvironmentVariantBadgeIcon
+import com.github.khopland.symbols.core.IconMappings
+import com.github.khopland.symbols.core.SymbolsIconProvider
+import com.github.khopland.symbols.folders.ServiceFolderIcons
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.Iconable

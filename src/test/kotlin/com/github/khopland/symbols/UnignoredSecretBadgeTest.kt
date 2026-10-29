@@ -1,5 +1,16 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.badges.EnvironmentVariantBadgeIcon
+import com.github.khopland.symbols.badges.SecretFileExposure
+import com.github.khopland.symbols.badges.SecretFileNames
+import com.github.khopland.symbols.badges.UnignoredSecretBadgeIcon
+import com.github.khopland.symbols.badges.VcsSecretFileExposure
+import com.github.khopland.symbols.core.IconDescriptions
+import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.registerOrReplaceServiceInstance
 

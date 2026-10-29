@@ -1,5 +1,11 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.ProjectPathUtil
+import com.github.khopland.symbols.settings.EmberkaiIconsConfigurable
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.isEnabled
+import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.LocalFileSystem

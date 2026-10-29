@@ -46,7 +46,7 @@
     <depends optional="true" config-file="kotlin-stereotypes.xml">org.jetbrains.kotlin</depends>
     <extensionPoints>
         <extensionPoint qualifiedName="com.github.khopland.symbols.classStereotypeSupport"
-                        interface="com.github.khopland.symbols.ClassStereotypeSupport"
+                        interface="com.github.khopland.symbols.stereotypes.ClassStereotypeSupport"
                         dynamic="true"/>
     </extensionPoints>
     <!-- The Kotlin stereotype support reads only stub-backed PSI, which both Kotlin plugin modes provide. -->
@@ -56,14 +56,14 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"
-            instance="com.github.khopland.symbols.EmberkaiIconsConfigurable"
-            id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
+            instance="com.github.khopland.symbols.settings.EmberkaiIconsConfigurable"
+            id="com.github.khopland.symbols.settings.EmberkaiIconsConfigurable"
             displayName="Emberkai Icons"/>
-        <iconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
-        <fileIconProvider implementation="com.github.khopland.symbols.SymbolsIconProvider" order="first"/>
-        <projectViewNodeDecorator implementation="com.github.khopland.symbols.SemanticTooltipDecorator"/>
-        <customScopesProvider implementation="com.github.khopland.symbols.EmberkaiScopesProvider"/>
-        <iconLayerProvider implementation="com.github.khopland.symbols.ClassStereotypeLayerProvider"/>
+        <iconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
+        <fileIconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.symbols.core.SemanticTooltipDecorator"/>
+        <customScopesProvider implementation="com.github.khopland.symbols.settings.EmberkaiScopesProvider"/>
+        <iconLayerProvider implementation="com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider"/>
         <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
@@ -72,85 +72,85 @@
                text="Emberkai Icons"
                popup="true">
             <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
-                    class="com.github.khopland.symbols.ToggleServiceFolderColorsAction"
+                    class="com.github.khopland.symbols.settings.ToggleServiceFolderColorsAction"
                     text="Color service folders"
                     description="Color folders that contain a Gradle, Maven, or Node package manifest"/>
             <action id="com.github.khopland.symbols.ToggleModuleAwareColors"
-                    class="com.github.khopland.symbols.ToggleModuleAwareColorsAction"
+                    class="com.github.khopland.symbols.settings.ToggleModuleAwareColorsAction"
                     text="Module-aware accent colors"
                     description="Give every IntelliJ module a stable folder accent color"/>
             <action id="com.github.khopland.symbols.ToggleHighContrastFolders"
-                    class="com.github.khopland.symbols.ToggleHighContrastFoldersAction"
+                    class="com.github.khopland.symbols.settings.ToggleHighContrastFoldersAction"
                     text="High-contrast folder markers"
                     description="Use shape-coded high-contrast folder markers"/>
             <action id="com.github.khopland.symbols.ToggleMonochromeFolders"
-                    class="com.github.khopland.symbols.ToggleMonochromeFoldersAction"
+                    class="com.github.khopland.symbols.settings.ToggleMonochromeFoldersAction"
                     text="Monochrome service folders"
                     description="Draw service folders without color"/>
             <action id="com.github.khopland.symbols.ToggleReducedFolderColor"
-                    class="com.github.khopland.symbols.ToggleReducedFolderColorAction"
+                    class="com.github.khopland.symbols.settings.ToggleReducedFolderColorAction"
                     text="Reduce service-folder color"
                     description="Use softer service-folder colors"/>
             <action id="com.github.khopland.symbols.ToggleArchitectureFolders"
-                    class="com.github.khopland.symbols.ToggleArchitectureFoldersAction"
+                    class="com.github.khopland.symbols.settings.ToggleArchitectureFoldersAction"
                     text="JVM architecture folders"
                     description="Show distinct icons for controller, service, repository, and similar packages"/>
             <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
-                    class="com.github.khopland.symbols.ToggleStereotypeBadgesAction"
+                    class="com.github.khopland.symbols.settings.ToggleStereotypeBadgesAction"
                     text="Spring stereotype badges"
                     description="Badge native class icons for Spring controllers, services, repositories, configuration, and JPA entities"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"
-                class="com.github.khopland.symbols.ExplainIconAction"
+                class="com.github.khopland.symbols.audit.ExplainIconAction"
                 text="Explain This Icon"
                 description="Show which Emberkai rule or mapping selected this icon">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AssignModuleAccentColor"
-                class="com.github.khopland.symbols.AssignModuleAccentAction"
+                class="com.github.khopland.symbols.accents.AssignModuleAccentAction"
                 text="Assign Module Accent Color…"
                 description="Pin a folder accent color for the module that owns this directory">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.ResetAllModuleAccentColors"
-                class="com.github.khopland.symbols.ResetAllModuleAccentColorsAction"
+                class="com.github.khopland.symbols.accents.ResetAllModuleAccentColorsAction"
                 text="Reset All Module Accent Colors"
                 description="Return every module to its automatic accent color">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AuditProjectIconCoverage"
-                class="com.github.khopland.symbols.AuditProjectIconCoverageAction"
+                class="com.github.khopland.symbols.audit.AuditProjectIconCoverageAction"
                 text="Audit Project Icon Coverage"
                 description="Find files that use generic or unmapped icons">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AuditDirectoryIconCoverage"
-                class="com.github.khopland.symbols.AuditDirectoryIconCoverageAction"
+                class="com.github.khopland.symbols.audit.AuditDirectoryIconCoverageAction"
                 text="Audit Icon Coverage"
                 description="Find generic or unmapped icons under this directory">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.OverrideIcon"
-                class="com.github.khopland.symbols.OverrideIconAction"
+                class="com.github.khopland.symbols.overrides.OverrideIconAction"
                 text="Override This Icon…"
                 description="Create a project-local icon override for this file or folder">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.OpenIconOverrides"
-                class="com.github.khopland.symbols.OpenIconOverridesAction"
+                class="com.github.khopland.symbols.overrides.OpenIconOverridesAction"
                 text="Open Icon Overrides File"
                 description="Open or create .idea/emberkai-icons.properties">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.ReloadIconOverrides"
-                class="com.github.khopland.symbols.ReloadIconOverridesAction"
+                class="com.github.khopland.symbols.overrides.ReloadIconOverridesAction"
                 text="Reload Icon Overrides"
                 description="Reload project-local icon overrides">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.BrowseIconCatalog"
-                class="com.github.khopland.symbols.BrowseIconCatalogAction"
+                class="com.github.khopland.symbols.overrides.BrowseIconCatalogAction"
                 text="Browse Bundled Icons"
                 description="Search every bundled icon and copy its mapping key or path">
             <add-to-group group-id="ToolsMenu" anchor="last"/>

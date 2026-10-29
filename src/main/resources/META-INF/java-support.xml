@@ -2,10 +2,10 @@
     <projectListeners>
         <!-- Java run configurations carry the VM options, arguments, and environment Spring reads. -->
         <listener
-            class="com.github.khopland.symbols.ActiveSpringProfileListener"
+            class="com.github.khopland.symbols.spring.ActiveSpringProfileListener"
             topic="com.intellij.execution.RunManagerListener"/>
     </projectListeners>
     <extensions defaultExtensionNs="com.github.khopland.symbols">
-        <classStereotypeSupport implementation="com.github.khopland.symbols.JavaClassStereotypeSupport"/>
+        <classStereotypeSupport implementation="com.github.khopland.symbols.stereotypes.JavaClassStereotypeSupport"/>
     </extensions>
 </idea-plugin>

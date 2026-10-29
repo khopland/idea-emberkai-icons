@@ -1,13 +1,20 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.accents.ModuleAccentColor
+import com.github.khopland.symbols.accents.ModuleAccentIcon
+import com.github.khopland.symbols.accents.ModuleAccentStore
+import com.github.khopland.symbols.folders.FolderIconPalette
+import com.github.khopland.symbols.folders.ServiceFolderIconStyle
+import com.github.khopland.symbols.folders.ServiceFolderIcons
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.PsiTestUtil
-import org.jetbrains.jps.model.java.JavaSourceRootType
 import java.nio.file.Files
 import java.nio.file.Paths
+import org.jetbrains.jps.model.java.JavaSourceRootType
 
 internal class ModuleAccentTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings

@@ -1,5 +1,7 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.core.SymbolsIconProvider
 import com.intellij.ide.FileIconProvider
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -7,10 +9,10 @@ import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.IconLoader
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.PsiTestUtil
-import org.jetbrains.jps.model.java.JavaResourceRootType
-import org.jetbrains.jps.model.java.JavaSourceRootType
 import java.util.Locale
 import java.util.ResourceBundle
+import org.jetbrains.jps.model.java.JavaResourceRootType
+import org.jetbrains.jps.model.java.JavaSourceRootType
 
 internal class SymbolsIconProviderTest : IconProviderTestCase() {
     fun testExactFileNameTakesPriority() {

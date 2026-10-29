@@ -1,14 +1,18 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.FileContentCache
+import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.SymbolsIconProvider
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.psi.PsiFile
 import com.intellij.testFramework.PsiTestUtil
-import org.jetbrains.jps.model.java.JavaResourceRootType
 import java.awt.GraphicsEnvironment
 import java.awt.image.BufferedImage
+import org.jetbrains.jps.model.java.JavaResourceRootType
 
 internal class ContextIconRulesTest : IconProviderTestCase() {
     fun testFlywayVersionedAndRepeatableMigrations() {

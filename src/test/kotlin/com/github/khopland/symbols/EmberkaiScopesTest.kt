@@ -1,5 +1,10 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.EmberkaiScope
+import com.github.khopland.symbols.settings.EmberkaiScopesProvider
+import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.psi.search.scope.packageSet.CustomScopesProvider
 import com.intellij.psi.search.scope.packageSet.NamedScope
 import com.intellij.psi.search.scope.packageSet.PackageSetBase

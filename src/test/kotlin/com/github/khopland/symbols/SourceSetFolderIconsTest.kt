@@ -1,5 +1,6 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.folders.ProjectFolderIcons
 import com.intellij.testFramework.PsiTestUtil
 import org.jetbrains.jps.model.JpsElementFactory
 import org.jetbrains.jps.model.ex.JpsElementTypeBase

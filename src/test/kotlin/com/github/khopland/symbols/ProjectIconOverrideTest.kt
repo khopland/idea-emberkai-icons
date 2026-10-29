@@ -1,5 +1,19 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.IconDescriptions
+import com.github.khopland.symbols.core.IconMappings
+import com.github.khopland.symbols.core.IconPrecedence
+import com.github.khopland.symbols.core.IconResolution
+import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.MappingSource
+import com.github.khopland.symbols.folders.FolderIconPalette
+import com.github.khopland.symbols.overrides.IconOverrideKeySuggestions
+import com.github.khopland.symbols.overrides.ProjectIconOverrideFile
+import com.github.khopland.symbols.overrides.ProjectIconOverrideStore
+import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.isEnabled
+import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
