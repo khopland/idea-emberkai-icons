@@ -57,7 +57,7 @@
         <applicationConfigurable
             parentId="appearance"
             instance="com.github.khopland.symbols.settings.EmberkaiIconsConfigurable"
-            id="com.github.khopland.symbols.settings.EmberkaiIconsConfigurable"
+            id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
             displayName="Emberkai Icons"/>
         <iconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
