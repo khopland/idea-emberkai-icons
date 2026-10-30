@@ -22,4 +22,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     RUNNING_SERVICES("Running-service markers"),
     LOCKFILE_DRIFT("Lockfile drift badges"),
     GENERATED_FILES("Generated file markers"),
+    PRODUCTION_EDITOR_WARNINGS("Production editor warnings"),
 }
