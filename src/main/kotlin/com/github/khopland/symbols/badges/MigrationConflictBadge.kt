@@ -169,7 +169,7 @@ internal class FlywayMigrationCacheListener : BulkFileListener {
  * Paints an amber warning triangle in the bottom-left corner, the one corner no other Emberkai
  * badge uses, so it stacks with environment, secret, and live-profile badges.
  */
-internal class MigrationConflictBadgeIcon(
+internal abstract class WarningTriangleBadgeIcon(
     baseIcon: Icon,
     internal val highContrast: Boolean,
 ) : BadgedIcon(baseIcon) {
@@ -199,10 +199,14 @@ internal class MigrationConflictBadgeIcon(
         g.fill(Ellipse2D.Float(centerX - dot / 2, top + size * 0.76f, dot, dot))
     }
 
-    override fun withBase(base: Icon): BadgedIcon = MigrationConflictBadgeIcon(base, highContrast)
-
     private companion object {
         val WARNING = Color(0xB4, 0x53, 0x09)
         val OUTLINE = Color(0x0F, 0x17, 0x2A)
     }
+}
+
+/** Duplicate or out-of-order Flyway versions. */
+internal class MigrationConflictBadgeIcon(baseIcon: Icon, highContrast: Boolean) :
+    WarningTriangleBadgeIcon(baseIcon, highContrast) {
+    override fun withBase(base: Icon): BadgedIcon = MigrationConflictBadgeIcon(base, highContrast)
 }

@@ -20,4 +20,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     STEREOTYPE_BADGES("Class stereotype badges"),
     MIGRATION_CONFLICTS("Migration version conflict badges"),
     RUNNING_SERVICES("Running-service markers"),
+    LOCKFILE_DRIFT("Lockfile drift badges"),
 }

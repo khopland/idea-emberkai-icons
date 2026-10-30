@@ -23,6 +23,8 @@ internal data class IconResolution(
     val migrationConflict: String? = null,
     /** This branch's migration whose version is not after the default branch's latest, when that badge is shown. */
     val migrationOutOfOrder: OutOfOrderMigration? = null,
+    /** What is out of date in a Chart.lock, when the lockfile drift badge is shown. */
+    val lockDrift: List<String> = emptyList(),
     /** Live run and debug sessions owned by this module folder, when the running marker is shown. */
     val runningSessions: List<RunningServices.Session> = emptyList(),
     val precedence: IconPrecedence,
