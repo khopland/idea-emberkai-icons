@@ -2,9 +2,11 @@ package com.github.khopland.symbols
 
 import com.github.khopland.symbols.badges.FlywayMigrations
 import com.github.khopland.symbols.badges.MigrationConflictBadgeIcon
+import com.github.khopland.symbols.badges.MigrationConflictFact
 import com.github.khopland.symbols.core.IconDescriptions
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.fact
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.openapi.application.runWriteAction
@@ -53,11 +55,11 @@ internal class MigrationConflictBadgeTest : IconProviderTestCase() {
         assertFalse("Another folder is a separate location", provider.getIcon(fine, 0) is MigrationConflictBadgeIcon)
 
         val resolution = IconResolver.resolveWithDetails(first.virtualFile, project)
-        assertEquals("3", resolution.migrationConflict)
+        assertEquals("3", resolution.fact<MigrationConflictFact>()?.version)
         assertTrue(resolution.detail, "V3 is also used by V3_0__add_orders.sql" in resolution.detail)
         assertEquals(
             "Flyway versioned migration · duplicate version V3",
-            IconDescriptions.describe(first.virtualFile, resolution, project),
+            IconDescriptions.describe(first.virtualFile, resolution),
         )
     }
 
@@ -72,7 +74,7 @@ internal class MigrationConflictBadgeTest : IconProviderTestCase() {
         assertTrue(provider.getIcon(folder, 0, project) is MigrationConflictBadgeIcon)
         assertEquals(
             "Database migrations folder · 4 versioned · latest V10 · 1 version conflict",
-            IconDescriptions.describe(folder, IconResolver.resolveWithDetails(folder, project), project),
+            IconDescriptions.describe(folder, IconResolver.resolveWithDetails(folder, project)),
         )
     }
 
@@ -87,7 +89,7 @@ internal class MigrationConflictBadgeTest : IconProviderTestCase() {
         assertFalse(provider.getIcon(first.parent, 0, project) is MigrationConflictBadgeIcon)
         assertEquals(
             "Database migrations folder · 2 versioned · latest V5",
-            IconDescriptions.describe(first.parent, IconResolver.resolveWithDetails(first.parent, project), project),
+            IconDescriptions.describe(first.parent, IconResolver.resolveWithDetails(first.parent, project)),
         )
     }
 

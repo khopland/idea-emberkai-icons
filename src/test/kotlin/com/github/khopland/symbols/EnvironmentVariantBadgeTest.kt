@@ -119,10 +119,10 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
 
         val resolution = IconResolver.resolveWithDetails(patch.virtualFile, project)
         assertTrue(resolution.detail, "inherits it from the overlays/production/ environment folder" in resolution.detail)
-        assertEquals("Environment configuration · production", IconDescriptions.describe(patch.virtualFile, resolution, project))
+        assertEquals("Environment configuration · production", IconDescriptions.describe(patch.virtualFile, resolution))
         assertEquals(
             "Environment folder · production",
-            IconDescriptions.describe(folder, IconResolver.resolveWithDetails(folder, project), project),
+            IconDescriptions.describe(folder, IconResolver.resolveWithDetails(folder, project)),
         )
         assertTrue(EmberkaiScope.PRODUCTION_CONFIG.contains(patch.virtualFile, project))
 
