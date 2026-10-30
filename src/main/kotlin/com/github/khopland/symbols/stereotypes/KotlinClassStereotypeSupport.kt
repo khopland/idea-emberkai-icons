@@ -16,7 +16,6 @@ import com.intellij.psi.util.CachedValuesManager
 import com.intellij.ui.LayeredIcon
 import javax.swing.Icon
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtTypeAlias
@@ -65,13 +64,15 @@ internal class KotlinClassStereotypeSupport : ClassStereotypeSupport {
         val annotations = declaration.annotationEntries.mapNotNull { entry ->
             entry.typeReference?.typeElement?.let(::typeName)
         }
-        val supertypes = if (declaration is KtClass && declaration.isInterface()) {
-            declaration.superTypeListEntries.mapNotNull { entry -> entry.typeReference?.typeElement?.let(::typeName) }
-        } else {
-            emptyList()
+        val supertypes = declaration.superTypeListEntries.mapNotNull { entry ->
+            entry.typeReference?.typeElement?.let(::typeName)
         }
-        if (annotations.isEmpty() && supertypes.isEmpty()) return null
-        return ClassStereotype.match(annotations, supertypes, imports(file))
+        val methodAnnotations = declaration.body?.functions.orEmpty().flatMap { function ->
+            val name = function.name ?: return@flatMap emptyList()
+            function.annotationEntries.mapNotNull { entry -> entry.typeReference?.typeElement?.let(::typeName)?.let { it to name } }
+        }
+        if (annotations.isEmpty() && supertypes.isEmpty() && methodAnnotations.isEmpty()) return null
+        return ClassStereotype.match(annotations, supertypes, imports(file), methodAnnotations)
     }
 
     private fun typeName(type: KtTypeElement): String? {

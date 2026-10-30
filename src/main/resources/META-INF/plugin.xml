@@ -40,7 +40,7 @@
         <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>
-        or <b>Infrastructure</b>, to keep matching files in full color and dim the rest of the Project view.
+        <b>Infrastructure</b>, or <b>Entry points</b>, to keep matching files in full color and dim the rest of the Project view.
         <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.</p>
         <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
         <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.</p>
@@ -120,8 +120,8 @@
                     description="Show distinct icons for controller, service, repository, and similar packages"/>
             <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
                     class="com.github.khopland.symbols.settings.ToggleStereotypeBadgesAction"
-                    text="Spring stereotype badges"
-                    description="Badge native class icons for Spring controllers, services, repositories, configuration, and JPA entities"/>
+                    text="Class stereotype badges"
+                    description="Badge native class icons for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, and entities"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"

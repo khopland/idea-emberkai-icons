@@ -8,6 +8,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiTypeParameter
+import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
@@ -40,13 +41,17 @@ internal class JavaClassStereotypeSupport : ClassStereotypeSupport {
     private fun compute(psiClass: PsiClass, file: PsiJavaFile): StereotypeMatch? {
         val annotations = psiClass.modifierList?.annotations.orEmpty()
             .mapNotNull { it.nameReferenceElement?.text }
-        val supertypes = if (psiClass.isInterface) {
-            psiClass.extendsList?.referenceElements.orEmpty().map { it.text.substringBefore('<') }
-        } else {
-            emptyList()
+        // Reference elements would load the file's AST; stub types keep the names as written.
+        val supertypes = (psiClass.extendsListTypes + psiClass.implementsListTypes)
+            .map { (it as? PsiClassReferenceType)?.reference?.text ?: it.className }
+            .map { it.substringBefore('<') }
+        val methodAnnotations = psiClass.methods.flatMap { method ->
+            method.modifierList.annotations.mapNotNull { annotation ->
+                annotation.nameReferenceElement?.text?.let { it to method.name }
+            }
         }
-        if (annotations.isEmpty() && supertypes.isEmpty()) return null
-        return ClassStereotype.match(annotations, supertypes, imports(file))
+        if (annotations.isEmpty() && supertypes.isEmpty() && methodAnnotations.isEmpty()) return null
+        return ClassStereotype.match(annotations, supertypes, imports(file), methodAnnotations)
     }
 
     private fun imports(file: PsiJavaFile): SourceImports {
