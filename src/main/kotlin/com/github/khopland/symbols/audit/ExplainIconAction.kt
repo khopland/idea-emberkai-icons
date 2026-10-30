@@ -199,7 +199,10 @@ private class ExplainIconDialog(
         ownership?.let {
             addRow(
                 "Code owners",
-                "${SemanticTooltipDecorator.describeOwners(it.owners)} — ${it.codeOwnersFile.name} line ${it.rule.line}: ${it.rule.pattern}",
+                "${SemanticTooltipDecorator.describeOwners(it.owners)} — ${it.codeOwnersFile.name} " +
+                    it.rules.joinToString("; ") { rule ->
+                        "line ${rule.line}: ${rule.pattern}" + (rule.section?.let { section -> " [$section]" } ?: "")
+                    },
             )
         }
     }

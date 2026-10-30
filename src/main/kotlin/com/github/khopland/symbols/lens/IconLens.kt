@@ -58,6 +58,13 @@ internal enum class IconLens(
     }
 }
 
+/** Files that a CODEOWNERS file governs without giving them an owner. */
+internal data object UnownedLens : Lens {
+    override val displayName: String get() = "No owner"
+
+    override fun contains(file: VirtualFile, project: Project): Boolean = !file.isDirectory && CodeOwners.isUnowned(file)
+}
+
 /** Files whose CODEOWNERS line names [owner]. */
 internal data class OwnerLens(val owner: String) : Lens {
     override val displayName: String get() = "Owned by $owner"

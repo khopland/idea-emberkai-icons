@@ -35,7 +35,9 @@ class IconLensActionGroup : ActionGroup(), DumbAware {
         }
         val owners = project?.let(::projectOwners).orEmpty()
         if (owners.isNotEmpty()) {
-            val ownerGroup = DefaultActionGroup("Owned By", owners.map { SelectIconLensAction(OwnerLens(it)) }).apply {
+            val ownerActions = listOf(SelectIconLensAction(UnownedLens), Separator.create()) +
+                owners.map { SelectIconLensAction(OwnerLens(it)) }
+            val ownerGroup = DefaultActionGroup("Owned By", ownerActions).apply {
                 isPopup = true
             }
             children += Separator.create()
@@ -55,11 +57,13 @@ class IconLensActionGroup : ActionGroup(), DumbAware {
 internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
     when (lens) {
         null -> "No Lens"
+        UnownedLens -> "No Owner"
         is OwnerLens -> lens.owner
         else -> lens.displayName
     },
     when (lens) {
         null -> "Show every file in full color"
+        UnownedLens -> "Keep files that CODEOWNERS gives no owner in full color and dim the rest of the Project view"
         is OwnerLens -> "Keep files owned by ${lens.owner} in full color and dim the rest of the Project view"
         ChangedOnBranchLens ->
             "Keep files changed since this branch left the default branch, including uncommitted ones, " +
