@@ -1,6 +1,5 @@
 package com.github.khopland.symbols
 
-import com.github.khopland.symbols.core.SemanticTooltipDecorator
 import com.github.khopland.symbols.lens.LensSnapshot
 import com.github.khopland.symbols.lens.OwnerLens
 import com.github.khopland.symbols.lens.UnownedLens
@@ -9,6 +8,7 @@ import com.github.khopland.symbols.ownership.CodeOwnersRule
 import com.github.khopland.symbols.ownership.UnmatchedCodeOwnersPatternInspection
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.EmberkaiScopesProvider
+import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
@@ -34,6 +34,21 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         } finally {
             super.tearDown()
         }
+    }
+
+    fun testOwnershipOfPathCoversDeletedFilesAndUngovernedRepositories() {
+        val root = myFixture.addFileToProject("README.md", "").virtualFile.parent
+        assertNull("No CODEOWNERS governs the path", runReadAction { CodeOwners.ownershipOfPath(root, "gone/Old.kt") })
+
+        myFixture.addFileToProject("CODEOWNERS", "/services/ @org/services\n/services/legacy/\n")
+        myFixture.addFileToProject("services/Api.kt", "")
+        val deleted = runReadAction { CodeOwners.ownershipOfPath(root, "services/removed/deep/Old.kt") }
+        assertEquals("A deleted file is matched from its nearest existing folder", listOf("@org/services"), deleted?.owners)
+        val unowned = runReadAction { CodeOwners.ownershipOfPath(root, "services/legacy/Old.kt") }
+        assertNotNull(unowned)
+        assertTrue("A line without owners leaves the path unowned", unowned!!.owners.isEmpty())
+        val unmatched = runReadAction { CodeOwners.ownershipOfPath(root, "README.md") }
+        assertTrue("Governed but unmatched is unowned, not ungoverned", unmatched!!.owners.isEmpty())
     }
 
     /** Examples from GitHub's CODEOWNERS documentation. */

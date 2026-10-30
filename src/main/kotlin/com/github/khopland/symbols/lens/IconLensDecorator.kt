@@ -1,6 +1,6 @@
 package com.github.khopland.symbols.lens
 
-import com.github.khopland.symbols.core.SemanticTooltipDecorator
+import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator

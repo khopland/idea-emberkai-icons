@@ -2,7 +2,6 @@ package com.github.khopland.symbols
 
 import com.github.khopland.symbols.audit.StereotypeRow
 import com.github.khopland.symbols.core.IconRuleCategory
-import com.github.khopland.symbols.core.SemanticTooltipDecorator
 import com.github.khopland.symbols.lens.IconLens
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.EmberkaiScope
@@ -10,6 +9,7 @@ import com.github.khopland.symbols.settings.setEnabled
 import com.github.khopland.symbols.stereotypes.ClassStereotype
 import com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider
 import com.github.khopland.symbols.stereotypes.ClassStereotypes
+import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.ClassTreeNode
@@ -25,9 +25,9 @@ import com.intellij.ui.DeferredIcon
 import com.intellij.ui.IconManager
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.RowIcon
-import javax.swing.Icon
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
+import javax.swing.Icon
 
 internal class ClassStereotypeTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings

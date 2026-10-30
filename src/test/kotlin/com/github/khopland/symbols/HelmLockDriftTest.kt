@@ -4,9 +4,11 @@ import com.github.khopland.symbols.badges.HelmDependency
 import com.github.khopland.symbols.badges.HelmLockDrift
 import com.github.khopland.symbols.badges.HelmVersionRange
 import com.github.khopland.symbols.badges.LockDriftBadgeIcon
+import com.github.khopland.symbols.badges.LockDriftFact
 import com.github.khopland.symbols.core.IconDescriptions
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.fact
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.setEnabled
 
@@ -147,9 +149,9 @@ internal class HelmLockDriftTest : IconProviderTestCase() {
         assertResourceIcon("emberkai/icons/helm.svg", badge!!.baseIcon)
 
         val resolution = IconResolver.resolveWithDetails(lock.virtualFile, project)
-        assertEquals(listOf("postgresql is locked at 12.12.10, outside ^13.0.0", "redis is not locked"), resolution.lockDrift)
+        assertEquals(listOf("postgresql is locked at 12.12.10, outside ^13.0.0", "redis is not locked"), resolution.fact<LockDriftFact>()?.problems)
         assertTrue(resolution.detail, "Run helm dependency update" in resolution.detail)
-        assertEquals("Helm chart lock · out of date with Chart.yaml", IconDescriptions.describe(lock.virtualFile, resolution, project))
+        assertEquals("Helm chart lock · out of date with Chart.yaml", IconDescriptions.describe(lock.virtualFile, resolution))
 
         settings.setEnabled(IconRuleCategory.LOCKFILE_DRIFT, false)
         assertFalse(provider.getIcon(lock, 0) is LockDriftBadgeIcon)
@@ -163,7 +165,7 @@ internal class HelmLockDriftTest : IconProviderTestCase() {
                 "- name: redis\n  repository: $REPO\n  version: 18.6.1\ndigest: sha256:abc\n",
         )
         assertFalse(provider.getIcon(lock, 0) is LockDriftBadgeIcon)
-        assertTrue(IconResolver.resolveWithDetails(lock.virtualFile, project).lockDrift.isEmpty())
+        assertNull(IconResolver.resolveWithDetails(lock.virtualFile, project).fact<LockDriftFact>())
 
         val loose = myFixture.addFileToProject("misc/Chart.lock", "dependencies:\n- name: redis\n  version: 1.0.0\n")
         assertFalse("No Chart.yaml beside it", provider.getIcon(loose, 0) is LockDriftBadgeIcon)

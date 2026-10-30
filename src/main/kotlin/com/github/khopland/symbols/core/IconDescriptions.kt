@@ -1,7 +1,5 @@
 package com.github.khopland.symbols.core
 
-import com.github.khopland.symbols.badges.FlywayMigrations
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 
@@ -66,64 +64,16 @@ internal object IconDescriptions {
         "file..github/dependabot.yaml" to "Dependabot configuration",
     )
 
-    /** Labels for environment variants whose base icon is an ordinary mapping. */
-    private val VARIANT_LABELS = listOf(
-        "application" to "Configuration profile",
-        "bootstrap" to "Configuration profile",
-        "docker-compose" to "Docker Compose file",
-        "values" to "Values file",
-        ".env" to "Environment file",
-    )
-
     private const val SERVICE_ROOT = "Service root"
-    private const val ENVIRONMENT_FOLDER = "Environment folder"
-    private const val ENVIRONMENT_CONFIGURATION = "Environment configuration"
     private const val PROJECT_OVERRIDE = "Project icon override"
     private const val SEPARATOR = " · "
-    private const val SECRET_WARNING = "not ignored by VCS — may contain secrets"
 
-    fun describe(file: VirtualFile, resolution: IconResolution, project: Project?): String? {
+    fun describe(file: VirtualFile, resolution: IconResolution): String? {
         val name = file.name.lowercase(Locale.ROOT)
-        val variant = resolution.environmentVariant
-        val base = label(file, name, resolution)
-            ?: variant?.let { VARIANT_LABELS.firstOrNull { (prefix, _) -> name.startsWith(prefix) }?.second }
-            ?: variant?.let { if (file.isDirectory) ENVIRONMENT_FOLDER else ENVIRONMENT_CONFIGURATION }
-        val parts = listOfNotNull(
-            base,
-            variant?.displayName,
-            resolution.activeProfileConfiguration?.let { "active in '$it'" },
-            resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
-            resolution.migrationConflict?.let { "duplicate version V$it" },
-            resolution.migrationOutOfOrder?.let { "out of order: ${it.baseRef} is at V${it.baseLatest}" },
-            resolution.lockDrift.takeIf { it.isNotEmpty() }?.let { "out of date with Chart.yaml" },
-            resolution.runningSessions.takeIf { it.isNotEmpty() }?.joinToString(", ") { it.describe() },
-            migrationFolderSummary(file, resolution, project),
-            if (resolution.secretExposed) SECRET_WARNING else null,
-        )
+        val base = label(file, name, resolution) ?: resolution.facts.firstNotNullOfOrNull { it.baseLabel(file) }
+        val parts = listOfNotNull(base) + resolution.facts.sortedBy { it.tooltipOrder }.mapNotNull { it.label }
         if (parts.isEmpty()) return null
         return parts.joinToString(SEPARATOR).replaceFirstChar { it.uppercase(Locale.ROOT) }
-    }
-
-    /** Migration folders summarize their Flyway versions, such as "12 versioned · latest V12 · 1 version conflict". */
-    private fun migrationFolderSummary(file: VirtualFile, resolution: IconResolution, project: Project?): String? {
-        if (resolution.mappingKey != "context.migration-folder") return null
-        val summary = FlywayMigrations.summary(file) ?: return null
-        val conflicts = summary.conflicts.size
-        val outOfOrder = FlywayMigrations.outOfOrderIn(file, project).size
-        return listOfNotNull(
-            "${summary.versionedCount} versioned",
-            summary.latestVersion?.let { "latest V$it" },
-            when (conflicts) {
-                0 -> null
-                1 -> "1 version conflict"
-                else -> "$conflicts version conflicts"
-            },
-            when (outOfOrder) {
-                0 -> null
-                1 -> "1 out of order"
-                else -> "$outOfOrder out of order"
-            },
-        ).joinToString(SEPARATOR)
     }
 
     private fun label(file: VirtualFile, name: String, resolution: IconResolution): String? {

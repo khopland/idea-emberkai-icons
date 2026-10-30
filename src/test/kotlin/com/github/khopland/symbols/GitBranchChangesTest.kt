@@ -3,9 +3,13 @@ package com.github.khopland.symbols
 import com.github.khopland.symbols.badges.FlywayMigrations
 import com.github.khopland.symbols.badges.MigrationBranchBase
 import com.github.khopland.symbols.badges.OutOfOrderMigration
+import com.github.khopland.symbols.git.GitQueries
 import com.github.khopland.symbols.lens.BranchChanges
 import com.github.khopland.symbols.lens.ChangedOnBranchLens
 import com.github.khopland.symbols.lens.IconLensService
+import com.github.khopland.symbols.ownership.BranchReviewers
+import com.github.khopland.symbols.ownership.ChangedPath
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.vcs.ProjectLevelVcsManager
 import com.intellij.openapi.vcs.VcsDirectoryMapping
 import com.intellij.openapi.vcs.changes.ChangeListManagerImpl
@@ -73,6 +77,30 @@ internal class GitBranchChangesTest : HeavyPlatformTestCase() {
         // Leaving the lens forgets the comparison instead of tracking the repository in the background.
         service.select(null)
         assertNull(BranchChanges.getInstance(project)!!.changedFiles())
+    }
+
+    fun testReviewersAreTheOwnersOfEveryChangedPathIncludingDeletedOnes() {
+        write("CODEOWNERS", "* @org/all\n/committed.txt @org/payments\nnew.txt\n")
+        git("rm", "-q", "untouched.txt")
+        git("commit", "-q", "-m", "remove")
+        VfsUtil.markDirtyAndRefresh(false, true, true, LocalFileSystem.getInstance().refreshAndFindFileByNioFile(repo)!!)
+
+        val repository = GitRepositoryManager.getInstance(project).repositories.single()
+        val diff = GitQueries.branchDiff(project, repository)
+        assertEquals("main", diff.baseRef)
+        assertEquals(setOf("CODEOWNERS", "committed.txt", "edited.txt", "new.txt", "untouched.txt"), diff.paths.toSet())
+
+        val reviewers = runReadAction { BranchReviewers.of(diff.paths.map { ChangedPath(diff.root, it) }) }
+        assertEquals(listOf("@org/all", "@org/payments"), reviewers.owners.map { it.first })
+        assertEquals(
+            "The deleted file still needs its owner's review",
+            listOf("CODEOWNERS", "edited.txt", "untouched.txt"),
+            reviewers.owners.first().second.map { it.path },
+        )
+        assertEquals(listOf("committed.txt"), reviewers.owners.last().second.map { it.path })
+        assertEquals(listOf("new.txt"), reviewers.unowned.map { it.path })
+        assertTrue(reviewers.ungoverned.isEmpty())
+        assertEquals(5, reviewers.changedCount)
     }
 
     fun testMigrationAddedBelowTheDefaultBranchLatestIsOutOfOrder() {

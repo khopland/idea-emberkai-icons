@@ -1,9 +1,6 @@
 package com.github.khopland.symbols.core
 
-import com.github.khopland.symbols.accents.ModuleAccent
-import com.github.khopland.symbols.badges.EnvironmentVariant
-import com.github.khopland.symbols.badges.OutOfOrderMigration
-import com.github.khopland.symbols.run.RunningServices
+import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 
 /** The icon chosen for a file together with the rule and mapping that produced it. */
@@ -14,22 +11,28 @@ internal data class IconResolution(
     val resourcePath: String? = null,
     val contextRule: IconRuleCategory? = null,
     val projectRole: String? = null,
-    val environmentVariant: EnvironmentVariant? = null,
-    val moduleAccent: ModuleAccent? = null,
-    val secretExposed: Boolean = false,
-    /** Run configuration that activates this Spring profile file, when the live marker is shown. */
-    val activeProfileConfiguration: String? = null,
-    /** The Flyway version this migration shares with a sibling, when the conflict badge is shown. */
-    val migrationConflict: String? = null,
-    /** This branch's migration whose version is not after the default branch's latest, when that badge is shown. */
-    val migrationOutOfOrder: OutOfOrderMigration? = null,
-    /** What is out of date in a Chart.lock, when the lockfile drift badge is shown. */
-    val lockDrift: List<String> = emptyList(),
-    /** Live run and debug sessions owned by this module folder, when the running marker is shown. */
-    val runningSessions: List<RunningServices.Session> = emptyList(),
+    /** What decorators recognized, such as an environment variant or a live run session. */
+    val facts: List<IconFact> = emptyList(),
     val precedence: IconPrecedence,
     val detail: String,
 )
+
+/** The first fact of type [T] a decorator recorded, if any. */
+internal inline fun <reified T : IconFact> IconResolution.fact(): T? = facts.firstNotNullOfOrNull { it as? T }
+
+/**
+ * Something an [IconDecorator] recognized about a file or folder. Project view tooltips list each
+ * fact's [label] in [tooltipOrder], lowest first, after the base description.
+ */
+internal interface IconFact {
+    /** A short tooltip phrase, such as "production" or "module accent: payments". */
+    val label: String?
+
+    val tooltipOrder: Int
+
+    /** Describes the file itself when no mapping label does, such as "Environment file". */
+    fun baseLabel(file: VirtualFile): String? = null
+}
 
 internal enum class IconPrecedence(val displayName: String) {
     NATIVE_POLICY("Native IDE icon"),

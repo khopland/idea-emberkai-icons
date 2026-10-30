@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListListener
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.AppExecutorUtil
-import git4idea.commands.GitCommand
 import git4idea.repo.GitRepository
 import git4idea.repo.GitRepositoryChangeListener
 import git4idea.repo.GitRepositoryManager
@@ -73,14 +72,8 @@ internal class GitBranchChanges(private val project: Project) : BranchChanges, D
     }
 
     private fun changedFiles(repository: GitRepository): List<VirtualFile> {
-        val root = repository.root
-        val base = GitQueries.defaultBranch(project, repository)
-        val mergeBase = base?.let { GitQueries.run(project, root, GitCommand.MERGE_BASE, "HEAD", it)?.firstOrNull() }
-        // Diffing the working tree against the merge base covers commits and uncommitted edits at once.
-        // Without a default branch, or before the first commit, this falls back to uncommitted changes.
-        val diff = GitQueries.run(project, root, GitCommand.DIFF, "--name-only", "--no-renames", "--no-ext-diff", mergeBase ?: "HEAD", "--")
-        val untracked = GitQueries.run(project, root, GitCommand.LS_FILES, "--others", "--exclude-standard")
-        return (diff.orEmpty() + untracked.orEmpty()).filter { it.isNotBlank() }.mapNotNull { root.findFileByRelativePath(it) }
+        val diff = GitQueries.branchDiff(project, repository)
+        return diff.paths.mapNotNull { diff.root.findFileByRelativePath(it) }
     }
 
     private companion object {

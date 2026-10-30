@@ -216,7 +216,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
     fun testOverriddenFilesAreDescribedInTooltips() {
         writeOverrideFile("extension.custom=/symbols/icons/files/github.svg\n")
         val file = myFixture.addFileToProject("a.custom", "x").virtualFile
-        assertEquals("Project icon override", IconDescriptions.describe(file, resolve(file), project))
+        assertEquals("Project icon override", IconDescriptions.describe(file, resolve(file)))
     }
 
     fun testKeySuggestionsOnlyAcceptKeysThatMatchTheFile() {
