@@ -43,6 +43,7 @@ internal enum class IconLens(
     ),
     INFRASTRUCTURE("Infrastructure", setOf(EmberkaiScope.INFRASTRUCTURE, EmberkaiScope.KUBERNETES)),
     API_CONTRACTS("API contracts", setOf(EmberkaiScope.API_CONTRACTS)),
+    ENTRY_POINTS("Entry points", setOf(EmberkaiScope.ENTRY_POINTS)),
     CI_PIPELINES("CI pipelines", setOf(EmberkaiScope.CI_PIPELINES)),
     MIGRATIONS("Database migrations", setOf(EmberkaiScope.MIGRATIONS)),
     SPRING_CONFIGURATION("Spring configuration", setOf(EmberkaiScope.SPRING_CONFIGURATION)),

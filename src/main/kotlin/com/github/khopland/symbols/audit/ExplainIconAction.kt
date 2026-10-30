@@ -252,11 +252,11 @@ private class ExplainIconDialog(
 /** The class stereotype behind a source file's badge; present only for Java and Kotlin sources. */
 internal data class StereotypeRow(val match: StereotypeMatch?) {
     fun describe(): String {
-        val match = match ?: return "None; the file's class has no recognized Spring or JPA annotation, or is a final Java class"
+        val match = match ?: return "None; the file's class has no recognized Spring, Quarkus, Micronaut, or JPA annotation, or is a final Java class"
         val state = if (EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) {
             "shown on the native class icon"
         } else {
-            "hidden because Spring stereotype badges are off"
+            "hidden because class stereotype badges are off"
         }
         return "${match.stereotype.displayName} from ${match.evidence}; $state"
     }

@@ -3,7 +3,9 @@ package com.github.khopland.symbols
 import com.github.khopland.symbols.audit.StereotypeRow
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.SemanticTooltipDecorator
+import com.github.khopland.symbols.lens.IconLens
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
+import com.github.khopland.symbols.settings.EmberkaiScope
 import com.github.khopland.symbols.settings.setEnabled
 import com.github.khopland.symbols.stereotypes.ClassStereotype
 import com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider
@@ -64,6 +66,111 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
                 "import org.springframework.context.annotation.Configuration;",
             "@Configuration @SpringBootApplication",
         )
+    }
+
+    fun testQuarkusAndMicronautRoles() {
+        assertJava(ClassStereotype.WEB, "import jakarta.ws.rs.Path;", "@Path(\"/orders\")")
+        assertJava(ClassStereotype.WEB, "import io.micronaut.http.annotation.Controller;", "@Controller(\"/orders\")")
+        assertJava(ClassStereotype.SERVICE, "import jakarta.enterprise.context.ApplicationScoped;", "@ApplicationScoped")
+        assertJava(ClassStereotype.REPOSITORY, "import io.micronaut.data.jdbc.annotation.JdbcRepository;", "@JdbcRepository")
+        assertJava(ClassStereotype.ENTITY, "import io.micronaut.data.annotation.MappedEntity;", "@MappedEntity")
+        assertJava(ClassStereotype.CLIENT, "import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;", "@RegisterRestClient")
+        assertJava(ClassStereotype.LISTENER, "import io.micronaut.configuration.kafka.annotation.KafkaListener;", "@KafkaListener")
+
+        val panache = javaFile(
+            "OrderRepository",
+            "import io.quarkus.hibernate.orm.panache.PanacheRepository;",
+            "public class OrderRepository implements PanacheRepository<Order> {}",
+        )
+        assertEquals(ClassStereotype.REPOSITORY, ClassStereotypes.fileStereotype(panache)?.stereotype)
+    }
+
+    fun testEntryPointsAreReadFromMethodsAndOutrankTheClassRole() {
+        val scheduled = javaFile(
+            "Cleanup",
+            "import org.springframework.scheduling.annotation.Scheduled;\nimport org.springframework.stereotype.Service;",
+            "@Service public class Cleanup {\n  @Scheduled(cron = \"0 0 * * * *\") public void purge() {}\n}",
+        )
+        assertEquals(ClassStereotype.SCHEDULED, ClassStereotypes.fileStereotype(scheduled)?.stereotype)
+        assertEquals("@Scheduled on purge()", ClassStereotypes.fileStereotype(scheduled)?.evidence)
+
+        val listener = javaFile(
+            "OrderEvents",
+            "import org.springframework.kafka.annotation.KafkaListener;\nimport org.springframework.jms.annotation.*;",
+            "public class OrderEvents {\n  @KafkaListener(topics = \"orders\") void onOrder(String o) {}\n  @JmsListener(destination = \"q\") void onJms(String m) {}\n}",
+        )
+        assertEquals(ClassStereotype.LISTENER, ClassStereotypes.fileStereotype(listener)?.stereotype)
+
+        val exchange = javaFile(
+            "OrdersClient",
+            "import org.springframework.web.service.annotation.GetExchange;",
+            "public interface OrdersClient {\n  @GetExchange(\"/orders\") String orders();\n}",
+        )
+        assertEquals(ClassStereotype.CLIENT, ClassStereotypes.fileStereotype(exchange)?.stereotype)
+        assertEquals("@GetExchange on orders()", ClassStereotypes.fileStereotype(exchange)?.evidence)
+
+        val feign = kotlinFile(
+            "PaymentsClient",
+            "import org.springframework.cloud.openfeign.FeignClient",
+            "@FeignClient(\"payments\")\ninterface PaymentsClient",
+        )
+        assertEquals(ClassStereotype.CLIENT, ClassStereotypes.fileStereotype(feign)?.stereotype)
+
+        val incoming = kotlinFile(
+            "PriceConsumer",
+            "import org.eclipse.microprofile.reactive.messaging.Incoming\nimport jakarta.enterprise.context.ApplicationScoped",
+            "@ApplicationScoped\nclass PriceConsumer {\n    @Incoming(\"prices\")\n    fun consume(price: Double) = Unit\n}",
+        )
+        assertEquals(ClassStereotype.LISTENER, ClassStereotypes.fileStereotype(incoming)?.stereotype)
+        assertEquals("@Incoming on consume()", ClassStereotypes.fileStereotype(incoming)?.evidence)
+    }
+
+    fun testMethodAnnotationsNeedTheirImportsToo() {
+        val lookalike = javaFile(
+            "Jobs",
+            "import com.acme.Scheduled;",
+            "public class Jobs {\n  @Scheduled void run() {}\n}",
+        )
+        assertNull(ClassStereotypes.fileStereotype(lookalike))
+        val events = javaFile(
+            "Events",
+            "import org.springframework.context.event.EventListener;",
+            "public class Events {\n  @EventListener void on(Object e) {}\n}",
+        )
+        assertNull("In-process events are not entry points", ClassStereotypes.fileStereotype(events))
+        val classOnly = javaFile(
+            "Scheduler",
+            "import org.springframework.scheduling.annotation.Scheduled;",
+            "@Scheduled public class Scheduler {}",
+        )
+        assertNull("@Scheduled counts only on methods", ClassStereotypes.fileStereotype(classOnly))
+    }
+
+    fun testEntryPointScopeAndLens() {
+        val controller = javaFile(
+            "Orders", "import org.springframework.web.bind.annotation.RestController;", "@RestController public class Orders {}",
+        ).virtualFile
+        val listener = kotlinFile(
+            "Prices",
+            "import org.springframework.kafka.annotation.KafkaListener",
+            "class Prices {\n    @KafkaListener(topics = [\"prices\"])\n    fun on(p: String) = Unit\n}",
+        ).virtualFile
+        val service = javaFile("Billing", "import org.springframework.stereotype.Service;", "@Service public class Billing {}").virtualFile
+        val client = javaFile(
+            "Remote", "import org.springframework.cloud.openfeign.FeignClient;", "@FeignClient(\"r\") public interface Remote {}",
+        ).virtualFile
+        val readme = myFixture.addFileToProject("README.md", "# readme").virtualFile
+
+        for (file in listOf(controller, listener)) {
+            assertTrue(file.name, EmberkaiScope.ENTRY_POINTS.contains(file, project))
+            assertTrue(file.name, IconLens.ENTRY_POINTS.contains(file, project))
+        }
+        for (file in listOf(service, client, readme)) {
+            assertFalse(file.name, EmberkaiScope.ENTRY_POINTS.contains(file, project))
+        }
+
+        settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, false)
+        assertTrue("Scopes ignore the badge setting", EmberkaiScope.ENTRY_POINTS.contains(controller, project))
     }
 
     fun testSpringDataRepositoryInterfacesNeedNoAnnotation() {
@@ -167,6 +274,28 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         ) as KtFile
         assertEquals(ClassStereotype.REPOSITORY, ClassStereotypes.badgeFor(kotlin)?.stereotype)
         assertNull("Kotlin AST was loaded", (kotlin as PsiFileImpl).treeElement)
+
+    }
+
+    fun testJavaMethodAnnotationsAreReadFromStubs() {
+        val javaJob = freshFile(
+            "src/main/java/com/example/Job.java",
+            "package com.example;\nimport org.springframework.scheduling.annotation.Scheduled;\n" +
+                "public class Job {\n  @Scheduled(fixedRate = 1000) public void tick() {}\n}",
+        ) as PsiJavaFile
+        assertEquals(ClassStereotype.SCHEDULED, ClassStereotypes.badgeFor(javaJob.classes.single())?.stereotype)
+        assertNull("Java AST was loaded for method annotations", (javaJob as PsiFileImpl).treeElement)
+    }
+
+    // Each fresh Kotlin file needs its own test: later files in one fixture arrive with a tree already loaded.
+    fun testKotlinMethodAnnotationsAreReadFromStubs() {
+        val kotlinJob = freshFile(
+            "src/main/kotlin/com/example/KJob.kt",
+            "package com.example\nimport org.springframework.scheduling.annotation.Scheduled\n" +
+                "class KJob {\n    @Scheduled(fixedRate = 1000)\n    fun tick() = Unit\n}",
+        ) as KtFile
+        assertEquals(ClassStereotype.SCHEDULED, ClassStereotypes.badgeFor(kotlinJob)?.stereotype)
+        assertNull("Kotlin AST was loaded for method annotations", (kotlinJob as PsiFileImpl).treeElement)
     }
 
     fun testCachedStereotypeFollowsEdits() {
