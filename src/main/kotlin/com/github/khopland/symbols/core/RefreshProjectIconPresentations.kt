@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.EditorNotifications
 
 internal object RefreshProjectIconPresentations {
     fun refresh() {
@@ -17,6 +18,7 @@ internal object RefreshProjectIconPresentations {
         ProjectView.getInstance(project).refresh()
         val editors = FileEditorManager.getInstance(project)
         editors.openFiles.forEach(editors::updateFilePresentation)
+        EditorNotifications.getInstance(project).updateAllNotifications()
     }
 
     /** Repaints only [directories]' Project view nodes, falling back to a full refresh without a pane. */

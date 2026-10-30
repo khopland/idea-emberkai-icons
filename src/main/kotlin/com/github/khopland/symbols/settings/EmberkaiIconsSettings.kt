@@ -48,6 +48,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var runningServices: Boolean = true,
         var lockfileDrift: Boolean = true,
         var generatedFiles: Boolean = true,
+        var productionEditorWarnings: Boolean = true,
     )
 
     /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
@@ -140,6 +141,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.RUNNING_SERVICES -> State::runningServices
             IconRuleCategory.LOCKFILE_DRIFT -> State::lockfileDrift
             IconRuleCategory.GENERATED_FILES -> State::generatedFiles
+            IconRuleCategory.PRODUCTION_EDITOR_WARNINGS -> State::productionEditorWarnings
         }
 
         /** Writes [state] as a portable properties file. */
