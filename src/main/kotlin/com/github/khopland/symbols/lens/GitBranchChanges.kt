@@ -1,13 +1,12 @@
 package com.github.khopland.symbols.lens
 
+import com.github.khopland.symbols.git.GitQueries
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.ChangeListListener
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.AppExecutorUtil
-import git4idea.commands.Git
 import git4idea.commands.GitCommand
-import git4idea.commands.GitLineHandler
 import git4idea.repo.GitRepository
 import git4idea.repo.GitRepositoryChangeListener
 import git4idea.repo.GitRepositoryManager
@@ -75,28 +74,13 @@ internal class GitBranchChanges(private val project: Project) : BranchChanges, D
 
     private fun changedFiles(repository: GitRepository): List<VirtualFile> {
         val root = repository.root
-        val branches = repository.branches
-        val base = BranchBase.choose(
-            originHead = git(root, GitCommand.REV_PARSE, "--abbrev-ref", "origin/HEAD")?.firstOrNull(),
-            remoteBranches = branches.remoteBranches.mapTo(HashSet()) { it.name },
-            localBranches = branches.localBranches.mapTo(HashSet()) { it.name },
-        )
-        val mergeBase = base?.let { git(root, GitCommand.MERGE_BASE, "HEAD", it)?.firstOrNull() }
+        val base = GitQueries.defaultBranch(project, repository)
+        val mergeBase = base?.let { GitQueries.run(project, root, GitCommand.MERGE_BASE, "HEAD", it)?.firstOrNull() }
         // Diffing the working tree against the merge base covers commits and uncommitted edits at once.
         // Without a default branch, or before the first commit, this falls back to uncommitted changes.
-        val diff = git(root, GitCommand.DIFF, "--name-only", "--no-renames", "--no-ext-diff", mergeBase ?: "HEAD", "--")
-        val untracked = git(root, GitCommand.LS_FILES, "--others", "--exclude-standard")
+        val diff = GitQueries.run(project, root, GitCommand.DIFF, "--name-only", "--no-renames", "--no-ext-diff", mergeBase ?: "HEAD", "--")
+        val untracked = GitQueries.run(project, root, GitCommand.LS_FILES, "--others", "--exclude-standard")
         return (diff.orEmpty() + untracked.orEmpty()).filter { it.isNotBlank() }.mapNotNull { root.findFileByRelativePath(it) }
-    }
-
-    private fun git(root: VirtualFile, command: GitCommand, vararg parameters: String): List<String>? {
-        val handler = GitLineHandler(project, root, command).apply {
-            setSilent(true)
-            setStdoutSuppressed(true)
-            addParameters(*parameters)
-        }
-        val result = Git.getInstance().runCommand(handler)
-        return if (result.success()) result.output else null
     }
 
     private companion object {

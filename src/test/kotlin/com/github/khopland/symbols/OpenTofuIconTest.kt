@@ -50,7 +50,7 @@ internal class OpenTofuIconTest : IconProviderTestCase() {
         assertCustomFolderIcon("infra/terraform", "folders/folder-opentofu.svg")
 
         val main = myFixture.findFileInTempDir("infra/main.tf")!!
-        assertEquals("OpenTofu configuration", IconDescriptions.describe(main, IconResolver.resolveWithDetails(main, project)))
+        assertEquals("OpenTofu configuration", IconDescriptions.describe(main, IconResolver.resolveWithDetails(main, project), project))
     }
 
     fun testSiblingTofuFileMarksItsFolder() {

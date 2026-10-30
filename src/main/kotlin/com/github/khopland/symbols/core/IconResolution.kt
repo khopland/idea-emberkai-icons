@@ -2,6 +2,7 @@ package com.github.khopland.symbols.core
 
 import com.github.khopland.symbols.accents.ModuleAccent
 import com.github.khopland.symbols.badges.EnvironmentVariant
+import com.github.khopland.symbols.badges.OutOfOrderMigration
 import com.github.khopland.symbols.run.RunningServices
 import javax.swing.Icon
 
@@ -20,6 +21,8 @@ internal data class IconResolution(
     val activeProfileConfiguration: String? = null,
     /** The Flyway version this migration shares with a sibling, when the conflict badge is shown. */
     val migrationConflict: String? = null,
+    /** This branch's migration whose version is not after the default branch's latest, when that badge is shown. */
+    val migrationOutOfOrder: OutOfOrderMigration? = null,
     /** Live run and debug sessions owned by this module folder, when the running marker is shown. */
     val runningSessions: List<RunningServices.Session> = emptyList(),
     val precedence: IconPrecedence,

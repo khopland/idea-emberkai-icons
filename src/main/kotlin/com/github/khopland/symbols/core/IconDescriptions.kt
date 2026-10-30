@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.core
 
 import com.github.khopland.symbols.badges.FlywayMigrations
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.util.Locale
 
@@ -81,7 +82,7 @@ internal object IconDescriptions {
     private const val SEPARATOR = " · "
     private const val SECRET_WARNING = "not ignored by VCS — may contain secrets"
 
-    fun describe(file: VirtualFile, resolution: IconResolution): String? {
+    fun describe(file: VirtualFile, resolution: IconResolution, project: Project?): String? {
         val name = file.name.lowercase(Locale.ROOT)
         val variant = resolution.environmentVariant
         val base = label(file, name, resolution)
@@ -93,8 +94,9 @@ internal object IconDescriptions {
             resolution.activeProfileConfiguration?.let { "active in '$it'" },
             resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
             resolution.migrationConflict?.let { "duplicate version V$it" },
+            resolution.migrationOutOfOrder?.let { "out of order: ${it.baseRef} is at V${it.baseLatest}" },
             resolution.runningSessions.takeIf { it.isNotEmpty() }?.joinToString(", ") { it.describe() },
-            migrationFolderSummary(file, resolution),
+            migrationFolderSummary(file, resolution, project),
             if (resolution.secretExposed) SECRET_WARNING else null,
         )
         if (parts.isEmpty()) return null
@@ -102,10 +104,11 @@ internal object IconDescriptions {
     }
 
     /** Migration folders summarize their Flyway versions, such as "12 versioned · latest V12 · 1 version conflict". */
-    private fun migrationFolderSummary(file: VirtualFile, resolution: IconResolution): String? {
+    private fun migrationFolderSummary(file: VirtualFile, resolution: IconResolution, project: Project?): String? {
         if (resolution.mappingKey != "context.migration-folder") return null
         val summary = FlywayMigrations.summary(file) ?: return null
         val conflicts = summary.conflicts.size
+        val outOfOrder = FlywayMigrations.outOfOrderIn(file, project).size
         return listOfNotNull(
             "${summary.versionedCount} versioned",
             summary.latestVersion?.let { "latest V$it" },
@@ -113,6 +116,11 @@ internal object IconDescriptions {
                 0 -> null
                 1 -> "1 version conflict"
                 else -> "$conflicts version conflicts"
+            },
+            when (outOfOrder) {
+                0 -> null
+                1 -> "1 out of order"
+                else -> "$outOfOrder out of order"
             },
         ).joinToString(SEPARATOR)
     }

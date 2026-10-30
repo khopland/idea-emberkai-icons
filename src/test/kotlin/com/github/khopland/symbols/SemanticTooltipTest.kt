@@ -118,5 +118,5 @@ internal class SemanticTooltipTest : IconProviderTestCase() {
     }
 
     private fun describe(file: VirtualFile): String? =
-        IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project))
+        IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project), project)
 }

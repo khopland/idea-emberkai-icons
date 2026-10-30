@@ -374,7 +374,7 @@ internal class MarketplaceScreenshots : IconProviderTestCase() {
     }
 
     private fun describe(file: VirtualFile): String =
-        checkNotNull(IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project))) { file.path }
+        checkNotNull(IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project), project)) { file.path }
 
     private fun file(path: String): VirtualFile =
         checkNotNull(LocalFileSystem.getInstance().refreshAndFindFileByNioFile(root.resolve(path))) { path }

@@ -4,5 +4,9 @@
         <projectService
             serviceInterface="com.github.khopland.symbols.lens.BranchChanges"
             serviceImplementation="com.github.khopland.symbols.lens.GitBranchChanges"/>
+        <!-- Without Git, migrations get duplicate-version warnings only, not out-of-order ones. -->
+        <projectService
+            serviceInterface="com.github.khopland.symbols.badges.MigrationBranchBase"
+            serviceImplementation="com.github.khopland.symbols.badges.GitMigrationBranchBase"/>
     </extensions>
 </idea-plugin>
