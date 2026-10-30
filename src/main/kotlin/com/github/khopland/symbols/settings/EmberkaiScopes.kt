@@ -3,6 +3,7 @@ package com.github.khopland.symbols.settings
 import com.github.khopland.symbols.badges.EnvironmentVariant
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.generated.GeneratedFiles
 import com.github.khopland.symbols.ownership.CodeOwners
 import com.github.khopland.symbols.ownership.CodeOwnersRule
 import com.github.khopland.symbols.stereotypes.ClassStereotypes
@@ -28,6 +29,7 @@ internal enum class EmberkaiScope(val displayName: String, private val categorie
     SPRING_CONFIGURATION("Spring configuration", setOf(IconRuleCategory.SPRING_BOOT)),
     PRODUCTION_CONFIG("Production config", emptySet()),
     ENTRY_POINTS("Entry points", emptySet()),
+    GENERATED("Generated files", emptySet()),
     ;
 
     val scopeName: String get() = "Emberkai: $displayName"
@@ -36,6 +38,7 @@ internal enum class EmberkaiScope(val displayName: String, private val categorie
         if (file.isDirectory || !file.isValid || project.isDisposed) return false
         if (this == PRODUCTION_CONFIG) return EnvironmentVariant.fromFile(file) == EnvironmentVariant.PRODUCTION
         if (this == ENTRY_POINTS) return ClassStereotypes.isEntryPoint(file, project)
+        if (this == GENERATED) return runReadActionBlocking { GeneratedFiles.reason(file, project) } != null
         // Rules read VFS children and cached documents; Find in Files may call from a pooled thread.
         return runReadActionBlocking { IconResolver.recognizedCategory(file, project) } in categories
     }

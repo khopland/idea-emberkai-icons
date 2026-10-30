@@ -21,4 +21,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     MIGRATION_CONFLICTS("Migration version conflict badges"),
     RUNNING_SERVICES("Running-service markers"),
     LOCKFILE_DRIFT("Lockfile drift badges"),
+    GENERATED_FILES("Generated file markers"),
 }
