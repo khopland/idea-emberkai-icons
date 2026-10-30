@@ -81,6 +81,8 @@
         <fileIconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.core.SemanticTooltipDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.lens.IconLensDecorator"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.symbols.generated.GeneratedFileDecorator"/>
+        <generatedSourcesFilter implementation="com.github.khopland.symbols.generated.EmberkaiGeneratedSourcesFilter"/>
         <customScopesProvider implementation="com.github.khopland.symbols.settings.EmberkaiScopesProvider"/>
         <iconLayerProvider implementation="com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider"/>
         <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
