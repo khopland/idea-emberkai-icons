@@ -14,6 +14,15 @@ import com.intellij.openapi.vfs.VirtualFile
 internal interface Lens {
     val displayName: String
 
+    /**
+     * False while membership depends on state that is still loading, such as a Git comparison. The
+     * Project view dims nothing until the lens is ready.
+     */
+    fun isReady(project: Project): Boolean = true
+
+    /** Called on the EDT when this lens stops being the active one; drops state kept for it. */
+    fun released(project: Project) = Unit
+
     /** Folders are never members; they stay highlighted when they contain a member. */
     fun contains(file: VirtualFile, project: Project): Boolean
 }
@@ -54,4 +63,21 @@ internal data class OwnerLens(val owner: String) : Lens {
 
     override fun contains(file: VirtualFile, project: Project): Boolean =
         !file.isDirectory && CodeOwners.ownership(file)?.owners?.contains(owner) == true
+}
+
+/**
+ * Files that differ from where this branch left the default branch, including uncommitted and
+ * unversioned files. Membership comes from [BranchChanges], which is only available with Git.
+ */
+internal data object ChangedOnBranchLens : Lens {
+    override val displayName: String get() = "Changed on this branch"
+
+    override fun isReady(project: Project): Boolean = BranchChanges.getInstance(project)?.changedFiles() != null
+
+    override fun released(project: Project) {
+        BranchChanges.getInstance(project)?.forget()
+    }
+
+    override fun contains(file: VirtualFile, project: Project): Boolean =
+        !file.isDirectory && BranchChanges.getInstance(project)?.changedFiles()?.contains(file) == true
 }

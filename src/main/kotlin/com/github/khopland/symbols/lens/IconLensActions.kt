@@ -13,8 +13,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 
 /**
- * View > Emberkai Icons > Lens: one radio-style entry per lens, plus No Lens, and an Owned by
- * submenu with every owner named in the project's CODEOWNERS file.
+ * View > Emberkai Icons > Lens: one radio-style entry per lens, plus No Lens, Changed on this branch
+ * when Git is available, and an Owned by submenu with every owner named in the project's CODEOWNERS
+ * file.
  */
 class IconLensActionGroup : ActionGroup(), DumbAware {
     private val fixed: List<AnAction> = listOf(
@@ -23,13 +24,24 @@ class IconLensActionGroup : ActionGroup(), DumbAware {
         *IconLens.entries.map(::SelectIconLensAction).toTypedArray(),
     )
 
+    private val changedOnBranch = SelectIconLensAction(ChangedOnBranchLens)
+
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
-        val owners = event?.project?.let(::projectOwners).orEmpty()
-        if (owners.isEmpty()) return fixed.toTypedArray()
-        val ownerGroup = DefaultActionGroup("Owned By", owners.map { SelectIconLensAction(OwnerLens(it)) }).apply {
-            isPopup = true
+        val project = event?.project
+        val children = fixed.toMutableList()
+        if (project != null && BranchChanges.getInstance(project) != null) {
+            children += Separator.create()
+            children += changedOnBranch
         }
-        return (fixed + Separator.create() + ownerGroup).toTypedArray()
+        val owners = project?.let(::projectOwners).orEmpty()
+        if (owners.isNotEmpty()) {
+            val ownerGroup = DefaultActionGroup("Owned By", owners.map { SelectIconLensAction(OwnerLens(it)) }).apply {
+                isPopup = true
+            }
+            children += Separator.create()
+            children += ownerGroup
+        }
+        return children.toTypedArray()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -49,6 +61,9 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
     when (lens) {
         null -> "Show every file in full color"
         is OwnerLens -> "Keep files owned by ${lens.owner} in full color and dim the rest of the Project view"
+        ChangedOnBranchLens ->
+            "Keep files changed since this branch left the default branch, including uncommitted ones, " +
+                "in full color and dim the rest of the Project view"
         else -> "Keep ${lens.displayName.lowercase()} files in full color and dim the rest of the Project view"
     },
     null,

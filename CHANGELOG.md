@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added the **Changed on this branch** lens (**View > Emberkai Icons > Lens**): files that differ from where the branch left the default branch, including uncommitted edits and untracked files, keep full color, and the rest of the Project view is dimmed. The base is `upstream/main`, the branch `origin/HEAD` points at, `origin/main`, or local `main` (or `master`), per Git repository. Git runs in the background only while the lens is active, and the lens follows commits, checkouts, fetches, and edits. Requires the Git plugin.
+
 ## [0.5.0] - 2026-10-29
 
 - Added Project view lenses (**View > Emberkai Icons > Lens**): files that answer one question, such as **Production blast radius**, **Infrastructure**, or **API contracts**, keep full color along with the folders that contain them, and everything else is dimmed, including native Java and Kotlin icons. Lenses use the Emberkai scopes, are computed in the background, and are not saved between sessions.
