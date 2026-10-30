@@ -42,7 +42,8 @@
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
         <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>
         <b>Infrastructure</b>, or <b>Entry points</b>, to keep matching files in full color and dim the rest of the Project view.
-        <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.</p>
+        <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.
+        <b>Hotspots</b> highlights the files changed in the most commits over the last 90 days.</p>
         <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
         <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.
         <b>Tools | Find Reviewers for This Branch</b> lists the owners of every file the current branch changes.</p>

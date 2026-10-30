@@ -4,6 +4,9 @@
         <projectService
             serviceInterface="com.github.khopland.symbols.lens.BranchChanges"
             serviceImplementation="com.github.khopland.symbols.lens.GitBranchChanges"/>
+        <projectService
+            serviceInterface="com.github.khopland.symbols.lens.Hotspots"
+            serviceImplementation="com.github.khopland.symbols.lens.GitHotspots"/>
         <!-- Without Git, migrations get duplicate-version warnings only, not out-of-order ones. -->
         <projectService
             serviceInterface="com.github.khopland.symbols.badges.MigrationBranchBase"

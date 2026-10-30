@@ -25,6 +25,7 @@ class IconLensActionGroup : ActionGroup(), DumbAware {
     )
 
     private val changedOnBranch = SelectIconLensAction(ChangedOnBranchLens)
+    private val hotspots = SelectIconLensAction(HotspotsLens)
 
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
         val project = event?.project
@@ -33,6 +34,7 @@ class IconLensActionGroup : ActionGroup(), DumbAware {
             children += Separator.create()
             children += changedOnBranch
         }
+        if (project != null && Hotspots.getInstance(project) != null) children += hotspots
         val owners = project?.let(::projectOwners).orEmpty()
         if (owners.isNotEmpty()) {
             val ownerActions = listOf(SelectIconLensAction(UnownedLens), Separator.create()) +
@@ -67,6 +69,9 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
         is OwnerLens -> "Keep files owned by ${lens.owner} in full color and dim the rest of the Project view"
         ChangedOnBranchLens ->
             "Keep files changed since this branch left the default branch, including uncommitted ones, " +
+                "in full color and dim the rest of the Project view"
+        HotspotsLens ->
+            "Keep the ${Hotspots.LIMIT} files changed in the most commits over the last ${Hotspots.DAYS} days " +
                 "in full color and dim the rest of the Project view"
         else -> "Keep ${lens.displayName.lowercase()} files in full color and dim the rest of the Project view"
     },

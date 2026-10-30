@@ -89,3 +89,20 @@ internal data object ChangedOnBranchLens : Lens {
     override fun contains(file: VirtualFile, project: Project): Boolean =
         !file.isDirectory && BranchChanges.getInstance(project)?.changedFiles()?.contains(file) == true
 }
+
+/**
+ * The files changed in the most commits over the last [Hotspots.DAYS] days: where an unfamiliar
+ * codebase is moving, and where changes most often collide. Membership comes from [Hotspots].
+ */
+internal data object HotspotsLens : Lens {
+    override val displayName: String get() = "Hotspots"
+
+    override fun isReady(project: Project): Boolean = Hotspots.getInstance(project)?.files() != null
+
+    override fun released(project: Project) {
+        Hotspots.getInstance(project)?.forget()
+    }
+
+    override fun contains(file: VirtualFile, project: Project): Boolean =
+        !file.isDirectory && Hotspots.getInstance(project)?.files()?.contains(file) == true
+}
