@@ -95,6 +95,7 @@ internal object IconDescriptions {
             resolution.moduleAccent?.let { "module accent: ${it.moduleName}" },
             resolution.migrationConflict?.let { "duplicate version V$it" },
             resolution.migrationOutOfOrder?.let { "out of order: ${it.baseRef} is at V${it.baseLatest}" },
+            resolution.lockDrift.takeIf { it.isNotEmpty() }?.let { "out of date with Chart.yaml" },
             resolution.runningSessions.takeIf { it.isNotEmpty() }?.joinToString(", ") { it.describe() },
             migrationFolderSummary(file, resolution, project),
             if (resolution.secretExposed) SECRET_WARNING else null,

@@ -5,6 +5,8 @@ import com.github.khopland.symbols.accents.ModuleAccentStore
 import com.github.khopland.symbols.badges.EnvironmentVariant
 import com.github.khopland.symbols.badges.EnvironmentVariantBadgeIcon
 import com.github.khopland.symbols.badges.FlywayMigrations
+import com.github.khopland.symbols.badges.HelmLockDrift
+import com.github.khopland.symbols.badges.LockDriftBadgeIcon
 import com.github.khopland.symbols.badges.MigrationConflictBadgeIcon
 import com.github.khopland.symbols.badges.SecretFileExposure
 import com.github.khopland.symbols.badges.SecretFileNames
@@ -68,7 +70,7 @@ internal object IconResolver {
         val resolution = fileIcon(file, name, project)
         if (resolution.precedence == IconPrecedence.NATIVE_POLICY) return resolution
         val badged = applySecretBadge(applyEnvironmentBadge(resolution, file), file, project)
-        return applyMigrationConflict(applyActiveProfile(badged, name, project), file, project)
+        return applyLockDrift(applyMigrationConflict(applyActiveProfile(badged, name, project), file, project), file)
     }
 
     /**
@@ -125,6 +127,20 @@ internal object IconResolver {
             detail = "${resolution.detail} A warning badge marks a migration this branch added at V${migration.version}, " +
                 "but ${migration.baseRef} already has migrations up to V${migration.baseLatest} in this folder. " +
                 "Once those have run, Flyway rejects it as out of order; renumber it above V${migration.baseLatest}.",
+        )
+    }
+
+    /** Warns about a Chart.lock that `helm dependency build` would reject as out of sync with Chart.yaml. */
+    private fun applyLockDrift(resolution: IconResolution, file: VirtualFile): IconResolution {
+        val settings = EmberkaiIconsSettings.getInstance()
+        if (!settings.isEnabled(IconRuleCategory.LOCKFILE_DRIFT)) return resolution
+        val problems = HelmLockDrift.problems(file).takeIf { it.isNotEmpty() } ?: return resolution
+        val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
+        return resolution.copy(
+            icon = LockDriftBadgeIcon(baseIcon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
+            lockDrift = problems,
+            detail = "${resolution.detail} A warning badge marks a lock file that no longer matches Chart.yaml: " +
+                "${problems.joinToString("; ")}. Run helm dependency update to refresh it.",
         )
     }
 
