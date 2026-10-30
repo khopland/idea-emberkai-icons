@@ -1,5 +1,8 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.FlywayMigrations
+import com.github.khopland.symbols.badges.MigrationBranchBase
+import com.github.khopland.symbols.badges.OutOfOrderMigration
 import com.github.khopland.symbols.lens.BranchChanges
 import com.github.khopland.symbols.lens.ChangedOnBranchLens
 import com.github.khopland.symbols.lens.IconLensService
@@ -70,6 +73,38 @@ internal class GitBranchChangesTest : HeavyPlatformTestCase() {
         // Leaving the lens forgets the comparison instead of tracking the repository in the background.
         service.select(null)
         assertNull(BranchChanges.getInstance(project)!!.changedFiles())
+    }
+
+    fun testMigrationAddedBelowTheDefaultBranchLatestIsOutOfOrder() {
+        Files.createDirectories(repo.resolve("db/migration"))
+        git("checkout", "-q", "main")
+        write("db/migration/V1__init.sql", "select 1")
+        git("add", ".")
+        git("commit", "-q", "-m", "init")
+        git("checkout", "-q", "-b", "orders")
+        write("db/migration/V2__orders.sql", "select 2")
+        git("add", ".")
+        git("commit", "-q", "-m", "orders")
+        // Meanwhile the default branch moves past V2.
+        git("checkout", "-q", "main")
+        write("db/migration/V2__payments.sql", "select 2")
+        write("db/migration/V3__audit.sql", "select 3")
+        git("add", ".")
+        git("commit", "-q", "-m", "payments")
+        git("checkout", "-q", "orders")
+        val folder = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(repo.resolve("db/migration"))!!
+        VfsUtil.markDirtyAndRefresh(false, true, true, folder)
+
+        val base = MigrationBranchBase.getInstance(project)!!
+        PlatformTestUtil.waitWithEventsDispatching("default branch migrations", { base.migrationsOnBase(folder) != null }, 30)
+        val main = base.migrationsOnBase(folder)!!
+        assertEquals("main", main.ref)
+        assertEquals("3", main.latestVersion)
+        assertEquals(setOf("V1__init.sql", "V2__payments.sql", "V3__audit.sql"), main.fileNames)
+
+        val orders = folder.findChild("V2__orders.sql")!!
+        assertEquals(OutOfOrderMigration("2", "3", "main"), FlywayMigrations.outOfOrder(orders, project))
+        assertNull(FlywayMigrations.outOfOrder(folder.findChild("V1__init.sql")!!, project))
     }
 
     private fun write(name: String, text: String) {

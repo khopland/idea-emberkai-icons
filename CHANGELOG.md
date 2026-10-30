@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Added the **Changed on this branch** lens (**View > Emberkai Icons > Lens**): files that differ from where the branch left the default branch, including uncommitted edits and untracked files, keep full color, and the rest of the Project view is dimmed. The base is `upstream/main`, the branch `origin/HEAD` points at, `origin/main`, or local `main` (or `master`), per Git repository. Git runs in the background only while the lens is active, and the lens follows commits, checkouts, fetches, and edits. Requires the Git plugin.
+- Added out-of-order migration warnings: a Flyway versioned migration this branch added at or below the latest version the default branch has in the same folder, such as `V2__orders.sql` after `main` gained `V3__audit.sql`, gets the amber migration warning badge, and so does its folder. Flyway would reject it once the default branch's migrations have run. Tooltips and **Explain This Icon** name the default branch and its latest version. Requires the Git plugin and follows the **Migration version conflict badges** setting.
 
 ## [0.5.0] - 2026-10-29
 

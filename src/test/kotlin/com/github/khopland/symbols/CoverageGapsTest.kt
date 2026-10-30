@@ -73,7 +73,7 @@ internal class CoverageGapsTest : IconProviderTestCase() {
         val conf = myFixture.addFileToProject("svc/src/main/resources/application.conf", "ktor {}").virtualFile
         val resolution = IconResolver.resolveWithDetails(conf, project)
         assertEquals(IconRuleCategory.JVM_FRAMEWORKS, resolution.contextRule)
-        assertEquals("Ktor configuration", IconDescriptions.describe(conf, resolution))
+        assertEquals("Ktor configuration", IconDescriptions.describe(conf, resolution, project))
 
         settings.setEnabled(IconRuleCategory.JVM_FRAMEWORKS, false)
         assertNull(IconResolver.resolveWithDetails(conf, project).contextRule)
@@ -131,6 +131,7 @@ internal class CoverageGapsTest : IconProviderTestCase() {
             IconDescriptions.describe(
                 myFixture.findFileInTempDir("deploy/dev.yaml")!!,
                 IconResolver.resolveWithDetails(myFixture.findFileInTempDir("deploy/dev.yaml")!!, project),
+                project,
             ),
         )
     }

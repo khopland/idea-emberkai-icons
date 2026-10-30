@@ -98,12 +98,12 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
         assertTrue(resolution.detail, resolution.detail.contains("without being ignored"))
         assertEquals(
             "Not ignored by VCS — may contain secrets",
-            IconDescriptions.describe(keystore.virtualFile, resolution),
+            IconDescriptions.describe(keystore.virtualFile, resolution, project),
         )
         val local = myFixture.addFileToProject(".env.local", "TOKEN=abc").virtualFile
         assertEquals(
             "Environment file · local · not ignored by VCS — may contain secrets",
-            IconDescriptions.describe(local, IconResolver.resolveWithDetails(local, project)),
+            IconDescriptions.describe(local, IconResolver.resolveWithDetails(local, project), project),
         )
 
         settings.highContrastFolderIcons = true

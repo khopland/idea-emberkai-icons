@@ -40,7 +40,7 @@ class SemanticTooltipDecorator : ProjectViewNodeDecorator {
         if (node !is PsiFileNode && node !is PsiDirectoryNode) return null
         val project = node.project ?: return null
         val file = node.virtualFile?.takeIf { it.isValid } ?: return null
-        return IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project))
+        return IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project), project)
     }
 
     internal companion object {

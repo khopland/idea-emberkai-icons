@@ -68,7 +68,7 @@ internal object IconResolver {
         val resolution = fileIcon(file, name, project)
         if (resolution.precedence == IconPrecedence.NATIVE_POLICY) return resolution
         val badged = applySecretBadge(applyEnvironmentBadge(resolution, file), file, project)
-        return applyMigrationConflict(applyActiveProfile(badged, name, project), file)
+        return applyMigrationConflict(applyActiveProfile(badged, name, project), file, project)
     }
 
     /**
@@ -96,30 +96,61 @@ internal object IconResolver {
         )
     }
 
-    /** Warns about a Flyway version that a sibling migration also uses; Flyway refuses to run either. */
-    private fun applyMigrationConflict(resolution: IconResolution, file: VirtualFile): IconResolution {
+    /**
+     * Warns about a Flyway version that a sibling migration also uses, which Flyway refuses to run, or
+     * about a migration this branch added below the default branch's latest version, which Flyway
+     * rejects as out of order once that branch's migrations have run.
+     */
+    private fun applyMigrationConflict(resolution: IconResolution, file: VirtualFile, project: Project?): IconResolution {
         val settings = EmberkaiIconsSettings.getInstance()
         if (!settings.isEnabled(IconRuleCategory.MIGRATION_CONFLICTS)) return resolution
-        val (version, others) = FlywayMigrations.conflict(file) ?: return resolution
+        val conflict = FlywayMigrations.conflict(file)
+        val outOfOrder = if (conflict == null) FlywayMigrations.outOfOrder(file, project) else null
+        if (conflict == null && outOfOrder == null) return resolution
         val baseIcon = resolution.icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon ?: return resolution
+        val icon = MigrationConflictBadgeIcon(baseIcon, settings.highContrastFolderIcons || settings.monochromeFolderIcons)
+        if (conflict != null) {
+            val (version, others) = conflict
+            return resolution.copy(
+                icon = icon,
+                migrationConflict = version,
+                detail = "${resolution.detail} A warning badge marks a duplicate Flyway version: V$version is also used by " +
+                    "${others.joinToString()}. Flyway fails validation until one of them is renumbered.",
+            )
+        }
+        val migration = outOfOrder!!
         return resolution.copy(
-            icon = MigrationConflictBadgeIcon(baseIcon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
-            migrationConflict = version,
-            detail = "${resolution.detail} A warning badge marks a duplicate Flyway version: V$version is also used by " +
-                "${others.joinToString()}. Flyway fails validation until one of them is renumbered.",
+            icon = icon,
+            migrationOutOfOrder = migration,
+            detail = "${resolution.detail} A warning badge marks a migration this branch added at V${migration.version}, " +
+                "but ${migration.baseRef} already has migrations up to V${migration.baseLatest} in this folder. " +
+                "Once those have run, Flyway rejects it as out of order; renumber it above V${migration.baseLatest}.",
         )
     }
 
-    /** A folder with duplicate Flyway versions carries the warning so it is visible while collapsed. */
-    private fun applyFolderMigrationConflict(resolution: IconResolution, directory: VirtualFile): IconResolution {
+    /** A folder with duplicate or out-of-order Flyway versions carries the warning so it is visible while collapsed. */
+    private fun applyFolderMigrationConflict(
+        resolution: IconResolution,
+        directory: VirtualFile,
+        project: Project?,
+    ): IconResolution {
         val icon = resolution.icon ?: return resolution
         val settings = EmberkaiIconsSettings.getInstance()
         if (!settings.isEnabled(IconRuleCategory.MIGRATION_CONFLICTS)) return resolution
-        val conflicts = FlywayMigrations.summary(directory)?.conflicts?.takeIf { it.isNotEmpty() } ?: return resolution
+        val summary = FlywayMigrations.summary(directory) ?: return resolution
+        val outOfOrder = FlywayMigrations.outOfOrderIn(directory, project)
+        if (summary.conflicts.isEmpty() && outOfOrder.isEmpty()) return resolution
+        val problems = listOfNotNull(
+            summary.conflicts.takeIf { it.isNotEmpty() }
+                ?.let { "duplicate Flyway versions in this folder: " + it.keys.joinToString { version -> "V$version" } },
+            outOfOrder.takeIf { it.isNotEmpty() }?.let {
+                "migrations this branch added at or below V${it.values.first().baseLatest}, the latest on " +
+                    "${it.values.first().baseRef}: ${it.keys.sorted().joinToString()}"
+            },
+        )
         return resolution.copy(
             icon = MigrationConflictBadgeIcon(icon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
-            detail = "${resolution.detail} A warning badge marks duplicate Flyway versions in this folder: " +
-                conflicts.keys.joinToString { "V$it" } + ".",
+            detail = "${resolution.detail} A warning badge marks ${problems.joinToString("; and ")}.",
         )
     }
 
@@ -180,6 +211,7 @@ internal object IconResolver {
                 applyFolderMigrationConflict(
                     applyFolderEnvironmentBadge(baseFolderIcon(directory, name, project), directory),
                     directory,
+                    project,
                 ),
                 directory,
                 project,

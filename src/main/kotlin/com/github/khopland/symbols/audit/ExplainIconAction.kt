@@ -188,7 +188,7 @@ private class ExplainIconDialog(
         } else {
             "Did not take precedence"
         }
-        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
+        IconDescriptions.describe(file, resolution, project)?.let { addRow("Recognized as", it) }
         addRow("Resolution", "${resolution.precedence.displayName}: ${resolution.detail}")
         addRow("Mapping key", mapping)
         addRow("Mapping source", source)

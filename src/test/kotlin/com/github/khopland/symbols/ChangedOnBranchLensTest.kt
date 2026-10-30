@@ -1,6 +1,6 @@
 package com.github.khopland.symbols
 
-import com.github.khopland.symbols.lens.BranchBase
+import com.github.khopland.symbols.git.BranchBase
 import com.github.khopland.symbols.lens.BranchChanges
 import com.github.khopland.symbols.lens.ChangedOnBranchLens
 import com.github.khopland.symbols.lens.GitBranchChanges

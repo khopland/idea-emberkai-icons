@@ -57,7 +57,7 @@ internal class MigrationConflictBadgeTest : IconProviderTestCase() {
         assertTrue(resolution.detail, "V3 is also used by V3_0__add_orders.sql" in resolution.detail)
         assertEquals(
             "Flyway versioned migration · duplicate version V3",
-            IconDescriptions.describe(first.virtualFile, resolution),
+            IconDescriptions.describe(first.virtualFile, resolution, project),
         )
     }
 
@@ -72,7 +72,7 @@ internal class MigrationConflictBadgeTest : IconProviderTestCase() {
         assertTrue(provider.getIcon(folder, 0, project) is MigrationConflictBadgeIcon)
         assertEquals(
             "Database migrations folder · 4 versioned · latest V10 · 1 version conflict",
-            IconDescriptions.describe(folder, IconResolver.resolveWithDetails(folder, project)),
+            IconDescriptions.describe(folder, IconResolver.resolveWithDetails(folder, project), project),
         )
     }
 
@@ -87,7 +87,7 @@ internal class MigrationConflictBadgeTest : IconProviderTestCase() {
         assertFalse(provider.getIcon(first.parent, 0, project) is MigrationConflictBadgeIcon)
         assertEquals(
             "Database migrations folder · 2 versioned · latest V5",
-            IconDescriptions.describe(first.parent, IconResolver.resolveWithDetails(first.parent, project)),
+            IconDescriptions.describe(first.parent, IconResolver.resolveWithDetails(first.parent, project), project),
         )
     }
 
