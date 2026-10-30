@@ -184,7 +184,7 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
         val snapshot = snapshot()
         if (snapshot.values.isEmpty()) return null
         val lowerName = name.lowercase(Locale.ROOT)
-        val parent = file.parent.takeIf { snapshot.hasContextualKeys }
+        val parent = file.parent
         val lookup = { key: String -> match(snapshot, key) }
         return MappingKeys.contextual(parent, "file.", lowerName, snapshot.contextDepth("file."), lookup)
             ?: lookup("file.$lowerName")
@@ -196,8 +196,7 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
         val snapshot = snapshot()
         if (snapshot.values.isEmpty()) return null
         val lowerName = name.lowercase(Locale.ROOT)
-        val parent = directory.parent.takeIf { snapshot.hasContextualKeys }
-        return MappingKeys.contextual(parent, "folder.", lowerName, snapshot.contextDepth("folder.")) {
+        return MappingKeys.contextual(directory.parent, "folder.", lowerName, snapshot.contextDepth("folder.")) {
             match(snapshot, it)
         } ?: match(snapshot, "folder.$lowerName")
     }
@@ -333,12 +332,8 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
      * to null so lookups fall through to bundled mappings instead of failing.
      */
     private inner class Snapshot(val values: Map<String, String>, private val iconsDirectory: String?) {
-        val hasContextualKeys = values.keys.any { '/' in it }
-
         /** Deepest key per prefix, so a lookup stops walking parents where no override can match. */
-        private val contextDepths: Map<String, Int> = values.keys
-            .groupingBy { it.substringBefore('.') + "." }
-            .fold(0) { depth, key -> maxOf(depth, key.count { it == '/' }) }
+        private val contextDepths = MappingKeys.contextDepths(values.keys)
 
         fun contextDepth(prefix: String): Int = contextDepths[prefix] ?: 0
 

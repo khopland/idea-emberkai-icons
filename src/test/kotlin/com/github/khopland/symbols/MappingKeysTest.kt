@@ -27,4 +27,12 @@ internal class MappingKeysTest : BasePlatformTestCase() {
 
         assertEquals("file.b/c/values.yaml", match)
     }
+
+    fun testContextDepthsKeepTheDeepestKeyPerPrefix() {
+        val depths = MappingKeys.contextDepths(
+            listOf("extension..github/workflows/yml", "extension.yml", "file.deploy/values.yaml", "folder"),
+        )
+
+        assertEquals(mapOf("extension." to 2, "file." to 1, "folder." to 0), depths)
+    }
 }

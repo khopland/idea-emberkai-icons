@@ -43,7 +43,6 @@ import javax.swing.Icon
 
 /** Defines icon precedence; add new tool detectors to contextRules in priority order. */
 internal object IconResolver {
-    private val mappings = IconMappings()
     private val architectureRule = JvmArchitectureFolderIconRule()
     private val contextRules = listOf(
         CiConfigIconRule(),
@@ -251,7 +250,7 @@ internal object IconResolver {
         if (projectRole == ProjectFolderIcons.Role.CONTENT_ROOT &&
             EmberkaiIconsSettings.getInstance().colorServiceFolders
         ) {
-            mappings.resolve(ServiceFolderIcons.iconKey(directory, project))?.let {
+            IconMappings.resolve(ServiceFolderIcons.iconKey(directory, project))?.let {
                 return it.toResolution(
                     precedence = IconPrecedence.PROJECT_ROLE,
                     projectRole = "Service root color",
@@ -262,7 +261,7 @@ internal object IconResolver {
         val role = projectRole ?: SourceSetFolders.role(directory)
         if (role != null) return roleResolution(role, "The project layout")
 
-        mappings.contextualMatch(directory, "folder.", name)?.let {
+        IconMappings.contextualMatch(directory, "folder.", name)?.let {
             return it.toResolution(
                 precedence = IconPrecedence.MAPPING,
                 detail = "A path-specific folder mapping matched.",
@@ -272,7 +271,7 @@ internal object IconResolver {
         for (rule in contextRules) {
             if (!settings.isEnabled(rule.category)) continue
             val key = rule.folderIconKey(directory, project) ?: continue
-            val mapping = mappings.resolve(key) ?: continue
+            val mapping = IconMappings.resolve(key) ?: continue
             return mapping.toResolution(
                 precedence = IconPrecedence.CONTEXT_RULE,
                 contextRule = rule.category,
@@ -280,17 +279,17 @@ internal object IconResolver {
             )
         }
         if (settings.colorServiceFolders) {
-            mappings.resolve(ServiceFolderIcons.iconKey(directory, project))?.let {
+            IconMappings.resolve(ServiceFolderIcons.iconKey(directory, project))?.let {
                 return it.toResolution(
                     precedence = IconPrecedence.MAPPING,
                     detail = "The folder is a detected service root and received a palette color.",
                 )
             }
         }
-        mappings.resolve("folder.$name")?.let {
+        IconMappings.resolve("folder.$name")?.let {
             return it.toResolution(IconPrecedence.MAPPING, detail = "A folder-name mapping matched.")
         }
-        mappings.resolve("folder")?.let {
+        IconMappings.resolve("folder")?.let {
             return it.toResolution(IconPrecedence.FALLBACK, detail = "No more specific folder rule matched.")
         }
         return IconResolution(
@@ -303,7 +302,7 @@ internal object IconResolver {
     /** [source] names who assigned the role, such as the project root model or the source-set layout. */
     private fun roleResolution(role: ProjectFolderIcons.Role, source: String): IconResolution {
         val detail = "$source assigns the ${role.displayName()} role"
-        return mappings.resolve(role.iconKey)?.toResolution(
+        return IconMappings.resolve(role.iconKey)?.toResolution(
             precedence = IconPrecedence.PROJECT_ROLE,
             projectRole = role.displayName(),
             detail = "$detail.",
@@ -365,27 +364,27 @@ internal object IconResolver {
             springXmlResolution(file, project)?.let { return it }
         }
 
-        mappings.contextualMatch(file, "file.", name)?.let {
+        IconMappings.contextualMatch(file, "file.", name)?.let {
             return it.toResolution(IconPrecedence.MAPPING, detail = "A path-specific file mapping matched.")
         }
-        mappings.resolve("file.$name")?.let {
+        IconMappings.resolve("file.$name")?.let {
             return it.toResolution(IconPrecedence.MAPPING, detail = "A file-name mapping matched.")
         }
-        mappings.contextualExtensionMatch(file, name)?.let {
+        IconMappings.contextualExtensionMatch(file, name)?.let {
             return it.toResolution(IconPrecedence.MAPPING, detail = "A path-specific extension mapping matched.")
         }
         val settings = EmberkaiIconsSettings.getInstance()
         for (rule in contextRules) {
             if (!settings.isEnabled(rule.category)) continue
             val key = rule.fileIconKey(file, name, project) ?: continue
-            val mapping = mappings.resolve(key) ?: continue
+            val mapping = IconMappings.resolve(key) ?: continue
             return mapping.toResolution(
                 precedence = IconPrecedence.CONTEXT_RULE,
                 contextRule = rule.category,
                 detail = "The ${rule.category.displayName} context rule matched this file.",
             )
         }
-        mappings.extensionMatch(name)?.let {
+        IconMappings.extensionMatch(name)?.let {
             return it.toResolution(IconPrecedence.FALLBACK, detail = "No more specific file rule matched.")
         }
         return IconResolution(
@@ -401,7 +400,7 @@ internal object IconResolver {
         if (DumbService.isDumb(project)) return null
         val detector = SpringXmlConfigDetector.getInstance() ?: return null
         if (!detector.isSpringConfig(file, project)) return null
-        return mappings.resolve("context.spring")?.toResolution(
+        return IconMappings.resolve("context.spring")?.toResolution(
             precedence = IconPrecedence.CONTEXT_RULE,
             contextRule = IconRuleCategory.SPRING_BOOT,
             detail = "The Spring XML DOM description selected the Spring icon.",
@@ -436,7 +435,7 @@ internal object IconResolver {
 
     private fun architectureResolution(directory: VirtualFile, project: Project?): IconResolution? {
         if (!EmberkaiIconsSettings.getInstance().isEnabled(architectureRule.category)) return null
-        val mapping = mappings.resolve(architectureRule.folderIconKey(directory, project)) ?: return null
+        val mapping = IconMappings.resolve(architectureRule.folderIconKey(directory, project)) ?: return null
         return mapping.toResolution(
             precedence = IconPrecedence.CONTEXT_RULE,
             contextRule = architectureRule.category,

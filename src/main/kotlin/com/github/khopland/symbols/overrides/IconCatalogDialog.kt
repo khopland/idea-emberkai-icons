@@ -36,7 +36,7 @@ internal class IconCatalogDialog(
     private val selectable: Boolean,
     private val onSelect: ((IconCatalogEntry) -> Unit)? = null,
 ) : DialogWrapper(project) {
-    private val allEntries = IconMappings().catalog()
+    private val allEntries = IconMappings.catalog()
     private val iconCache = mutableMapOf<String, Icon?>()
     private val model = DefaultListModel<IconCatalogEntry>()
     private val filter = JBTextField().apply {

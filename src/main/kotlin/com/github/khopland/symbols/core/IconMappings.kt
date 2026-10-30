@@ -9,52 +9,37 @@ import javax.swing.Icon
 /**
  * Loads artwork and gives local mappings precedence over the upstream bundle.
  *
- * Both bundles are read into maps once. A [ResourceBundle] lookup is a hash lookup plus fallback
- * work, and the Project view asks for an icon for every node it draws, so the hot path stays on
- * plain maps. Icons load on first use, so the intermediate matches the contextual search discards
- * never touch [IconLoader].
+ * Both bundles are read into one map of [MappedIcon]s once, shared by the resolver, the settings
+ * preview and the catalog. A [ResourceBundle] lookup is a hash lookup plus fallback work, and the
+ * Project view asks for an icon for every node it draws, so the hot path stays on a plain map that
+ * allocates nothing. Each icon loads on first use and is then reused.
  */
-internal class IconMappings {
-    private val upstream = load("symbols.icons")
-    private val custom = load("emberkai.icons")
-
-    /** Deepest contextual key per prefix, so the parent walk stops where a match can still exist. */
-    private val contextDepths: Map<String, Int> = buildMap {
-        for (key in upstream.keys + custom.keys) {
-            merge(key.substringBefore('.') + ".", key.count { it == '/' }, ::maxOf)
+internal object IconMappings {
+    private val icons: Map<String, MappedIcon> = buildMap {
+        load("symbols.icons").forEach { (key, path) ->
+            put(key, MappedIcon(key, MappingSource.UPSTREAM, "/symbols/icons/$path"))
         }
+        load("emberkai.icons").forEach { (key, path) -> put(key, MappedIcon(key, MappingSource.CUSTOM, path)) }
     }
+
+    private val contextDepths = MappingKeys.contextDepths(icons.keys)
 
     fun get(key: String?): Icon? = resolve(key)?.icon
 
-    fun resolve(key: String?): MappedIcon? {
-        if (key == null) return null
-        custom[key]?.let { return MappedIcon(key, MappingSource.CUSTOM, it) }
-        upstream[key]?.let { return MappedIcon(key, MappingSource.UPSTREAM, "/symbols/icons/$it") }
-        return null
-    }
+    fun resolve(key: String?): MappedIcon? = key?.let(icons::get)
 
     fun contextualMatch(file: VirtualFile, prefix: String, name: String): MappedIcon? =
-        MappingKeys.contextual(file.parent, prefix, name, contextDepth(prefix), ::resolve)
+        MappingKeys.contextual(file.parent, prefix, name, contextDepths[prefix] ?: 0, ::resolve)
 
     fun contextualExtensionMatch(file: VirtualFile, name: String): MappedIcon? =
-        MappingKeys.contextualExtension(file.parent, name, contextDepth("extension."), ::resolve)
+        MappingKeys.contextualExtension(file.parent, name, contextDepths["extension."] ?: 0, ::resolve)
 
     fun extensionMatch(name: String): MappedIcon? = MappingKeys.extension(name, ::resolve)
 
     /** Every bundled mapping key and artwork path, excluding project-local overrides. */
-    fun catalog(): List<IconCatalogEntry> {
-        val entries = linkedMapOf<String, IconCatalogEntry>()
-        upstream.forEach { (key, path) ->
-            entries[key] = IconCatalogEntry(key, MappingSource.UPSTREAM, "/symbols/icons/$path")
-        }
-        custom.forEach { (key, path) ->
-            entries[key] = IconCatalogEntry(key, MappingSource.CUSTOM, path)
-        }
-        return entries.values.sortedBy { it.key.lowercase(Locale.ROOT) }
-    }
-
-    private fun contextDepth(prefix: String): Int = contextDepths[prefix] ?: 0
+    fun catalog(): List<IconCatalogEntry> = icons.values
+        .map { IconCatalogEntry(it.key, it.source, it.resourcePath) }
+        .sortedBy { it.key.lowercase(Locale.ROOT) }
 
     private fun load(bundle: String): Map<String, String> {
         val resource = ResourceBundle.getBundle(bundle, Locale.ROOT, SymbolsIconProvider::class.java.classLoader)
@@ -68,16 +53,20 @@ internal class IconMappings {
  * without depending on the checkout path. Compound extensions are tried before shorter ones, so
  * `extension.gradle.kts` wins over `extension.kts`.
  *
- * [maxDepth] bounds the parent walk: bundled keys are at most two folders deep, so a file in a deep
- * tree no longer builds and looks up a key for every ancestor up to the filesystem root. Callers
- * with user-defined keys pass the deepest depth among their keys.
+ * `maxDepth` bounds the parent walk, so a file in a deep tree does not build and look up a key for
+ * every ancestor up to the filesystem root. Callers derive it from their keys with [contextDepths].
  */
 internal object MappingKeys {
+    /** Folder depth of the deepest key per prefix, such as `file.` or `extension.`. */
+    fun contextDepths(keys: Iterable<String>): Map<String, Int> = keys
+        .groupingBy { it.substringBefore('.') + "." }
+        .fold(0) { depth, key -> maxOf(depth, key.count { it == '/' }) }
+
     fun <T : Any> contextual(
         parent: VirtualFile?,
         prefix: String,
         name: String,
-        maxDepth: Int = Int.MAX_VALUE,
+        maxDepth: Int,
         lookup: (String) -> T?,
     ): T? {
         var current = parent
@@ -96,7 +85,7 @@ internal object MappingKeys {
     fun <T : Any> contextualExtension(
         parent: VirtualFile?,
         name: String,
-        maxDepth: Int = Int.MAX_VALUE,
+        maxDepth: Int,
         lookup: (String) -> T?,
     ): T? = extensionSuffixes(name).firstNotNullOfOrNull { contextual(parent, "extension.", it, maxDepth, lookup) }
 
@@ -114,8 +103,8 @@ internal enum class MappingSource(val displayName: String) {
     PROJECT_OVERRIDE("Project icon override"),
 }
 
-/** A mapping match; [icon] is loaded on first use so discarded contextual matches stay cheap. */
-internal class MappedIcon(
+/** A mapping match; [icon] is loaded on first use and then kept. */
+internal data class MappedIcon(
     val key: String,
     val source: MappingSource,
     val resourcePath: String,
