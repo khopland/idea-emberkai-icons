@@ -16,7 +16,8 @@ internal object NativeIconPolicy {
     private val SOURCE_EXTENSIONS = names("file.extensions")
     private val TOOL_SCRIPT_SUFFIXES = names("file.toolScriptSuffixes")
     private val FOLDER_NAMES = names("folder.names")
-    private val FOLDER_TREES = names("folder.trees")
+    // Case-insensitive, so the ancestor walk needs no lowercased copy of each folder name.
+    private val FOLDER_TREES = names("folder.trees").toSortedSet(String.CASE_INSENSITIVE_ORDER)
 
     fun isSource(file: VirtualFile): Boolean {
         val extension = file.extension ?: return false
@@ -31,7 +32,7 @@ internal object NativeIconPolicy {
         if (name in FOLDER_NAMES) return true
         var parent = directory.parent
         while (parent != null) {
-            if (parent.name.lowercase(Locale.ROOT) in FOLDER_TREES) return true
+            if (parent.name in FOLDER_TREES) return true
             parent = parent.parent
         }
         if (project == null || project.isDisposed) return false

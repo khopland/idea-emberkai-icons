@@ -98,7 +98,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
 
     fun testCatalogContainsBundledKeysWithoutProjectOverrides() {
         writeOverrideFile("extension.custom=/symbols/icons/files/github.svg\n")
-        val catalog = IconMappings().catalog()
+        val catalog = IconMappings.catalog()
         assertTrue(catalog.any { it.key == "extension.yaml" })
         assertTrue(catalog.none { it.key == "extension.custom" })
         assertNotNull(catalog.first { it.key == "extension.yaml" }.icon)

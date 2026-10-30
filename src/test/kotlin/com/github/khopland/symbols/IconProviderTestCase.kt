@@ -29,7 +29,7 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
     }
 
     protected fun serviceFolderIcon(directory: VirtualFile): Icon? =
-        IconMappings().get(ServiceFolderIcons.iconKey(directory, project))
+        IconMappings.get(ServiceFolderIcons.iconKey(directory, project))
 
     protected fun assertFileIcon(name: String, path: String) {
         val file = myFixture.configureByText(name, "data")

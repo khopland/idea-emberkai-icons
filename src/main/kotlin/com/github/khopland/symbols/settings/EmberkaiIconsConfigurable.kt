@@ -306,7 +306,6 @@ class EmberkaiIconsConfigurable : Configurable {
 
     private fun updatePreview() {
         val panel = previewPanel ?: return
-        val mappings = IconMappings()
         val settings = PreviewSettings(
             palette = selectedPalette() ?: FolderIconPalette.EMBERKAI,
             highContrast = isChecked(State::highContrastFolderIcons, false),
@@ -314,10 +313,10 @@ class EmberkaiIconsConfigurable : Configurable {
             reducedFolderColor = isChecked(State::reducedFolderColor, false),
             moduleAware = isChecked(State::moduleAwareColors, false),
         )
-        val nodes = DefaultMutableTreeNode(PreviewItem("sample-project", mappings.get("folder")))
-        val src = DefaultMutableTreeNode(PreviewItem("src", mappings.get("folder")))
-        val main = DefaultMutableTreeNode(PreviewItem("main", mappings.get("folder.role.source")))
-        val packageIcon = mappings.get("folder.role.package")?.let {
+        val nodes = DefaultMutableTreeNode(PreviewItem("sample-project", IconMappings.get("folder")))
+        val src = DefaultMutableTreeNode(PreviewItem("src", IconMappings.get("folder")))
+        val main = DefaultMutableTreeNode(PreviewItem("main", IconMappings.get("folder.role.source")))
+        val packageIcon = IconMappings.get("folder.role.package")?.let {
             if (settings.moduleAware) {
                 ModuleAccentIcon(it, ModuleAccentColor.defaultFor("preview-module", settings.palette))
             } else {
@@ -326,7 +325,7 @@ class EmberkaiIconsConfigurable : Configurable {
         }
         val packageNode = DefaultMutableTreeNode(PreviewItem("com.example", packageIcon))
         val javaIcon = when {
-            !isChecked(State::preserveNativeJavaKotlinIcons, true) -> mappings.get("extension.java")
+            !isChecked(State::preserveNativeJavaKotlinIcons, true) -> IconMappings.get("extension.java")
             isEnabled(IconRuleCategory.STEREOTYPE_BADGES) ->
                 LayeredIcon.layeredIcon(arrayOf(AllIcons.Nodes.Class, ClassStereotype.APPLICATION.icon))
             else -> AllIcons.Nodes.Class
@@ -334,18 +333,18 @@ class EmberkaiIconsConfigurable : Configurable {
         packageNode.add(DefaultMutableTreeNode(PreviewItem("Application.java", javaIcon)))
         main.add(packageNode)
         src.add(main)
-        src.add(DefaultMutableTreeNode(PreviewItem("test", mappings.get("folder.role.test-source"))))
+        src.add(DefaultMutableTreeNode(PreviewItem("test", IconMappings.get("folder.role.test-source"))))
         nodes.add(src)
 
-        nodes.add(DefaultMutableTreeNode(PreviewItem("build.gradle.kts", mappings.get("extension.gradle.kts"))))
+        nodes.add(DefaultMutableTreeNode(PreviewItem("build.gradle.kts", IconMappings.get("extension.gradle.kts"))))
         val helm = isEnabled(IconRuleCategory.HELM)
-        nodes.add(DefaultMutableTreeNode(PreviewItem("Chart.yaml", mappings.get(if (helm) "context.helm" else "extension.yaml"))))
+        nodes.add(DefaultMutableTreeNode(PreviewItem("Chart.yaml", IconMappings.get(if (helm) "context.helm" else "extension.yaml"))))
         val kubernetes = isEnabled(IconRuleCategory.KUBERNETES)
-        nodes.add(DefaultMutableTreeNode(PreviewItem("deployment.yaml", mappings.get(if (kubernetes) "context.kubernetes.deployment" else "extension.yaml"))))
+        nodes.add(DefaultMutableTreeNode(PreviewItem("deployment.yaml", IconMappings.get(if (kubernetes) "context.kubernetes.deployment" else "extension.yaml"))))
         val serviceIcon = if (isChecked(State::colorServiceFolders, true)) {
-            mappings.get(previewServiceIconKey(settings))
+            IconMappings.get(previewServiceIconKey(settings))
         } else {
-            mappings.get("folder")
+            IconMappings.get("folder")
         }
         nodes.add(DefaultMutableTreeNode(PreviewItem("service-api", serviceIcon)))
 
