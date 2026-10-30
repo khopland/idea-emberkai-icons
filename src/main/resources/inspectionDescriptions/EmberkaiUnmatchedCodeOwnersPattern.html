@@ -1,0 +1,9 @@
+<html>
+<body>
+Reports CODEOWNERS lines whose pattern matches no file or folder in the repository, usually because the path was moved or
+deleted. Such a line no longer requests any review, and its owners silently stop being asked.
+<p>Also reports a CODEOWNERS file that is ignored because one in an earlier location takes precedence:
+<code>.github/CODEOWNERS</code>, then <code>CODEOWNERS</code>, then <code>docs/CODEOWNERS</code>.</p>
+<p>Excluded folders such as <code>build/</code> and <code>node_modules/</code> count as paths but are not searched.</p>
+</body>
+</html>

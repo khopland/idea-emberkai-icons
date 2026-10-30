@@ -17,6 +17,8 @@ internal class CodeOwnersRule private constructor(
     val owners: List<String>,
     /** One-based line number in the CODEOWNERS file. */
     val line: Int,
+    /** The GitLab section the line belongs to, or null before the first section header. */
+    val section: String?,
     private val self: Regex,
     private val directoryOnly: Boolean,
     private val includesDescendants: Boolean,
@@ -39,7 +41,7 @@ internal class CodeOwnersRule private constructor(
     }
 
     companion object {
-        fun compile(pattern: String, owners: List<String>, line: Int): CodeOwnersRule? {
+        fun compile(pattern: String, owners: List<String>, line: Int, section: String? = null): CodeOwnersRule? {
             val directoryOnly = pattern.endsWith("/")
             var body = pattern.trimEnd('/')
             if (body.isEmpty()) return null
@@ -48,7 +50,7 @@ internal class CodeOwnersRule private constructor(
             val last = body.substringAfterLast('/')
             val regex = (if (anchored) "" else "(?:.*/)?") + glob(body)
             return CodeOwnersRule(
-                pattern, owners, line, Regex(regex),
+                pattern, owners, line, section, Regex(regex),
                 directoryOnly = directoryOnly,
                 includesDescendants = '*' !in last && '?' !in last,
             )
@@ -75,24 +77,31 @@ internal class CodeOwnersRule private constructor(
     }
 }
 
-/** The owners of a file or folder and the CODEOWNERS line that assigned them. */
+/**
+ * The owners of a file or folder and the CODEOWNERS lines that assigned them: one line, or with
+ * GitLab sections, the last matching line of each section, whose owners are combined.
+ */
 internal class Ownership(
     val owners: List<String>,
-    val rule: CodeOwnersRule,
+    val rules: List<CodeOwnersRule>,
     val codeOwnersFile: VirtualFile,
 )
 
 /**
  * Reads CODEOWNERS the way GitHub does: the first of `.github/CODEOWNERS`, `CODEOWNERS`, and
  * `docs/CODEOWNERS` in the repository root (GitLab's `.gitlab/CODEOWNERS` is also accepted), and
- * the last matching line wins. GitLab section headers are skipped, so their rules read as one list.
- * Parsed rules are cached by modification stamp, including unsaved edits.
+ * the last matching line wins. GitLab sections such as `[Backend] @org/backend` are read as GitLab
+ * does: lines without owners take the section's default owners, and every section contributes its
+ * own last matching line, so a path can have owners from several sections. Parsed rules are cached
+ * by modification stamp, including unsaved edits.
  */
 internal object CodeOwners {
     private val LOCATIONS = listOf(".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS", ".gitlab/CODEOWNERS")
     private val LOCATION_FOLDERS = setOf(".github", "docs", ".gitlab")
     private val RULES: Key<FileContentCache.Inspection<List<CodeOwnersRule>>> = Key.create("emberkai.codeOwners")
     private val SEPARATOR = Regex("(?<!\\\\)\\s+")
+    private val SECTION = Regex("""^\^?\[([^\]]+)\](?:\[\d+\])?\s*(.*)$""")
+    internal val LOCATION_NAMES = LOCATIONS
 
     /** The CODEOWNERS file for a repository rooted at [root]. */
     fun fileAt(root: VirtualFile): VirtualFile? = LOCATIONS.firstNotNullOfOrNull { location ->
@@ -110,10 +119,24 @@ internal object CodeOwners {
      * to the nearest folder with a CODEOWNERS file and stops at a Git repository root.
      */
     fun ownership(file: VirtualFile): Ownership? {
+        val (root, codeOwners) = governing(file) ?: return null
+        return match(file, root, codeOwners)
+    }
+
+    /**
+     * Whether a CODEOWNERS file governs [file] but gives it no owner, because no line matches or
+     * the matching line names none.
+     */
+    fun isUnowned(file: VirtualFile): Boolean {
+        val (root, codeOwners) = governing(file) ?: return false
+        return match(file, root, codeOwners)?.owners.isNullOrEmpty()
+    }
+
+    /** The repository root and CODEOWNERS file that govern [file], stopping at a Git repository root. */
+    fun governing(file: VirtualFile): Pair<VirtualFile, VirtualFile>? {
         var directory: VirtualFile? = if (file.isDirectory) file else file.parent
         while (directory != null) {
-            val root = repositoryRoot(directory)
-            if (root != null) return match(file, root.first, root.second)
+            repositoryRoot(directory)?.let { return it }
             if (directory.findChild(".git") != null) return null
             directory = directory.parent
         }
@@ -121,7 +144,7 @@ internal object CodeOwners {
     }
 
     /** The repository root that [directory] holds CODEOWNERS for, and that file. */
-    private fun repositoryRoot(directory: VirtualFile): Pair<VirtualFile, VirtualFile>? {
+    internal fun repositoryRoot(directory: VirtualFile): Pair<VirtualFile, VirtualFile>? {
         val codeOwners = fileAt(directory) ?: return null
         // `.github/CODEOWNERS` is found from `.github` itself too; the repository is its parent.
         val parent = directory.parent
@@ -133,18 +156,31 @@ internal object CodeOwners {
 
     private fun match(file: VirtualFile, root: VirtualFile, codeOwners: VirtualFile): Ownership? {
         val path = VfsUtilCore.getRelativePath(file, root, '/')?.takeIf { it.isNotEmpty() } ?: return null
-        val rule = rules(codeOwners).lastOrNull { it.matches(path, file.isDirectory) } ?: return null
-        return Ownership(rule.owners, rule, codeOwners)
+        val matched = rules(codeOwners).groupBy { it.section }.values
+            .mapNotNull { section -> section.lastOrNull { it.matches(path, file.isDirectory) } }
+            .sortedBy { it.line }
+        if (matched.isEmpty()) return null
+        return Ownership(matched.flatMap { it.owners }.distinct(), matched, codeOwners)
     }
 
-    internal fun parse(text: String): List<CodeOwnersRule> = text.lineSequence().withIndex().mapNotNull { (index, raw) ->
-        val line = raw.trim()
-        if (line.isEmpty() || line.startsWith("#") || line.startsWith("[") || line.startsWith("^[")) {
-            return@mapNotNull null
+    internal fun parse(text: String): List<CodeOwnersRule> {
+        val rules = mutableListOf<CodeOwnersRule>()
+        var section: String? = null
+        var sectionOwners = emptyList<String>()
+        for ((index, raw) in text.lineSequence().withIndex()) {
+            val line = raw.trim()
+            if (line.isEmpty() || line.startsWith("#")) continue
+            val header = SECTION.matchEntire(line.substringBefore(" #").trim())
+            if (header != null) {
+                section = header.groupValues[1].trim()
+                sectionOwners = header.groupValues[2].split(SEPARATOR).filter { '@' in it }
+                continue
+            }
+            val tokens = line.substringBefore(" #").trim().split(SEPARATOR)
+            val pattern = tokens.first().replace("\\ ", " ").replace("\\#", "#")
+            val owners = tokens.drop(1).filter { '@' in it }.ifEmpty { sectionOwners }
+            CodeOwnersRule.compile(pattern, owners, index + 1, section)?.let(rules::add)
         }
-        val tokens = line.substringBefore(" #").trim().split(SEPARATOR)
-        val pattern = tokens.first().replace("\\ ", " ").replace("\\#", "#")
-        val owners = tokens.drop(1).filter { '@' in it }
-        CodeOwnersRule.compile(pattern, owners, index + 1)
-    }.toList()
+        return rules
+    }
 }

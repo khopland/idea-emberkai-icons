@@ -3,8 +3,10 @@ package com.github.khopland.symbols
 import com.github.khopland.symbols.core.SemanticTooltipDecorator
 import com.github.khopland.symbols.lens.LensSnapshot
 import com.github.khopland.symbols.lens.OwnerLens
+import com.github.khopland.symbols.lens.UnownedLens
 import com.github.khopland.symbols.ownership.CodeOwners
 import com.github.khopland.symbols.ownership.CodeOwnersRule
+import com.github.khopland.symbols.ownership.UnmatchedCodeOwnersPatternInspection
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.EmberkaiScopesProvider
 import com.intellij.ide.projectView.PresentationData
@@ -107,7 +109,7 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         assertEquals(listOf("@org/payments"), CodeOwners.ownership(payments)!!.owners)
         assertEquals("The later directory rule wins over *.sql", listOf("@org/payments"), CodeOwners.ownership(migration)!!.owners)
         assertEquals(emptyList<String>(), CodeOwners.ownership(generated)!!.owners)
-        assertEquals(4, CodeOwners.ownership(generated)!!.rule.line)
+        assertEquals(listOf(4), CodeOwners.ownership(generated)!!.rules.map { it.line })
         assertEquals(listOf("@org/platform"), CodeOwners.ownership(readme)!!.owners)
         assertEquals("Paths inside .github are relative to the repository", listOf("@org/platform"), CodeOwners.ownership(workflow)!!.owners)
         assertEquals(listOf("@org/payments"), CodeOwners.ownership(payments.parent)!!.owners)
@@ -166,6 +168,91 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         assertTrue(snapshot.highlights(payments))
         assertTrue(snapshot.highlights(payments.parent))
         assertFalse(snapshot.highlights(readme))
+    }
+
+    fun testGitLabSectionsLendDefaultOwnersAndCombine() {
+        val rules = CodeOwners.parse(
+            """
+            * @org/platform
+
+            [Backend] @org/backend
+            /services/
+            /services/legacy/ @org/legacy
+
+            ^[Docs][2] @org/writers
+            *.md
+
+            [Security]
+            /services/auth/ @org/security
+            /services/auth/generated/
+            """.trimIndent(),
+        )
+        assertEquals(listOf(null, "Backend", "Backend", "Docs", "Security", "Security"), rules.map { it.section })
+        assertEquals(listOf("@org/backend"), rules[1].owners)
+        assertEquals(listOf("@org/legacy"), rules[2].owners)
+        assertEquals(listOf("@org/writers"), rules[3].owners)
+        assertTrue("No default owners: explicitly unowned", rules[5].owners.isEmpty())
+
+        myFixture.addFileToProject(
+            ".gitlab/CODEOWNERS",
+            "* @org/platform\n[Backend] @org/backend\n/services/\n[Docs] @org/writers\n*.md\n" +
+                "[Security]\n/services/auth/ @org/security\n",
+        )
+        val readme = myFixture.addFileToProject("services/auth/README.md", "").virtualFile
+        val ownership = CodeOwners.ownership(readme)!!
+        assertEquals(listOf("@org/platform", "@org/backend", "@org/writers", "@org/security"), ownership.owners)
+        assertEquals(listOf(1, 3, 5, 7), ownership.rules.map { it.line })
+    }
+
+    fun testUnownedFilesLensAndScope() {
+        myFixture.addFileToProject("CODEOWNERS", "/services/ @org/backend\n/services/generated/\n")
+        val owned = myFixture.addFileToProject("services/Api.kt", "").virtualFile
+        val explicitlyUnowned = myFixture.addFileToProject("services/generated/Client.kt", "").virtualFile
+        val unmatched = myFixture.addFileToProject("tools/release.sh", "").virtualFile
+
+        assertFalse(CodeOwners.isUnowned(owned))
+        assertTrue(CodeOwners.isUnowned(explicitlyUnowned))
+        assertTrue(CodeOwners.isUnowned(unmatched))
+
+        val snapshot = runReadAction { LensSnapshot.collect(project, UnownedLens) }
+        assertTrue(snapshot.highlights(unmatched))
+        assertTrue(snapshot.highlights(explicitlyUnowned))
+        assertFalse(snapshot.highlights(owned))
+
+        val scope = EmberkaiScopesProvider(project).customScopes.single { it.scopeId == EmberkaiScopesProvider.UNOWNED_SCOPE }
+        val set = scope.value as PackageSetBase
+        assertTrue(set.contains(unmatched, project, null))
+        assertFalse(set.contains(owned, project, null))
+    }
+
+    fun testFilesWithoutCodeOwnersAreNotUnowned() {
+        val file = myFixture.addFileToProject("app/Main.kt", "").virtualFile
+        assertFalse(CodeOwners.isUnowned(file))
+        assertTrue(EmberkaiScopesProvider(project).customScopes.none { it.scopeId == EmberkaiScopesProvider.UNOWNED_SCOPE })
+    }
+
+    fun testPatternsThatMatchNothingAreReported() {
+        myFixture.enableInspections(UnmatchedCodeOwnersPatternInspection())
+        myFixture.addFileToProject("services/payments/Api.kt", "")
+        myFixture.addFileToProject("docs/guide.md", "")
+        val codeOwners = myFixture.addFileToProject(
+            ".github/CODEOWNERS",
+            "* @org/platform\n/services/payments/ @org/payments\n/services/billing/ @org/billing\n*.md @org/writers\n*.rst @org/writers\n",
+        )
+        myFixture.configureFromExistingVirtualFile(codeOwners.virtualFile)
+
+        val problems = myFixture.doHighlighting()
+            .filter { it.description == "Pattern matches no file or folder in the repository" }
+            .map { codeOwners.text.substring(it.startOffset, it.endOffset) }
+        assertEquals(listOf("/services/billing/", "*.rst"), problems)
+    }
+
+    fun testShadowedCodeOwnersFileIsReported() {
+        myFixture.enableInspections(UnmatchedCodeOwnersPatternInspection())
+        myFixture.addFileToProject(".github/CODEOWNERS", "* @org/platform\n")
+        val shadowed = myFixture.addFileToProject("CODEOWNERS", "* @org/other\n")
+        myFixture.configureFromExistingVirtualFile(shadowed.virtualFile)
+        assertTrue(myFixture.doHighlighting().any { it.description == "Ignored: .github/CODEOWNERS takes precedence" })
     }
 
     private fun tooltip(node: PsiFileNode): String? =

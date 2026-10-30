@@ -82,6 +82,12 @@
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.core.SemanticTooltipDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.lens.IconLensDecorator"/>
         <customScopesProvider implementation="com.github.khopland.symbols.settings.EmberkaiScopesProvider"/>
+        <localInspection shortName="EmberkaiUnmatchedCodeOwnersPattern"
+                         displayName="CODEOWNERS pattern matches nothing"
+                         groupName="Emberkai"
+                         enabledByDefault="true"
+                         level="WARNING"
+                         implementationClass="com.github.khopland.symbols.ownership.UnmatchedCodeOwnersPatternInspection"/>
         <iconLayerProvider implementation="com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider"/>
         <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>

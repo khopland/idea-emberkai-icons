@@ -61,16 +61,18 @@ class EmberkaiScopesProvider(private val project: Project) : CustomScopesProvide
         val codeOwners = project.guessProjectDir()?.let(CodeOwners::fileAt) ?: return emptyList()
         val rules = runReadActionBlocking { CodeOwners.rules(codeOwners) }
         ownerScopes?.takeIf { it.first === rules }?.let { return it.second }
-        val built = rules.flatMap { it.owners }.distinct()
-            .sortedBy { it.lowercase() }
-            .take(MAX_OWNER_SCOPES)
-            .map { owner -> NamedScope(ownerScopeName(owner), OwnerPackageSet(owner)) }
+        val built = listOf(NamedScope(UNOWNED_SCOPE, UnownedPackageSet())) +
+            rules.flatMap { it.owners }.distinct()
+                .sortedBy { it.lowercase() }
+                .take(MAX_OWNER_SCOPES)
+                .map { owner -> NamedScope(ownerScopeName(owner), OwnerPackageSet(owner)) }
         ownerScopes = rules to built
         return built
     }
 
     internal companion object {
         const val MAX_OWNER_SCOPES = 50
+        const val UNOWNED_SCOPE = "Emberkai: No code owners"
 
         fun ownerScopeName(owner: String): String = "Emberkai: Owned by $owner"
     }
@@ -80,6 +82,13 @@ private class OwnerPackageSet(private val owner: String) : AbstractPackageSet("e
     override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean {
         if (file.isDirectory || !file.isValid || project.isDisposed) return false
         return runReadActionBlocking { CodeOwners.ownership(file) }?.owners?.contains(owner) == true
+    }
+}
+
+private class UnownedPackageSet : AbstractPackageSet("emberkai:unowned") {
+    override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean {
+        if (file.isDirectory || !file.isValid || project.isDisposed) return false
+        return runReadActionBlocking { CodeOwners.isUnowned(file) }
     }
 }
 
