@@ -154,10 +154,32 @@ internal object CodeOwners {
         return directory to codeOwners
     }
 
+    /**
+     * Who owns [path], relative to [repositoryRoot], which may no longer exist, such as a file a
+     * branch deleted. Null when no CODEOWNERS governs it; empty owners when one does but no line
+     * gives it an owner.
+     */
+    fun ownershipOfPath(repositoryRoot: VirtualFile, path: String): Ownership? {
+        var parent = path.substringBeforeLast('/', "")
+        var directory = repositoryRoot.findFileByRelativePath(parent)
+        while (directory == null && parent.isNotEmpty()) {
+            parent = parent.substringBeforeLast('/', "")
+            directory = repositoryRoot.findFileByRelativePath(parent)
+        }
+        val (root, codeOwners) = governing(directory ?: return null) ?: return null
+        val rootPath = VfsUtilCore.getRelativePath(root, repositoryRoot, '/') ?: return null
+        val relative = if (rootPath.isEmpty()) path else path.removePrefix("$rootPath/").takeIf { it != path } ?: return null
+        return match(relative, isDirectory = false, codeOwners) ?: Ownership(emptyList(), emptyList(), codeOwners)
+    }
+
     private fun match(file: VirtualFile, root: VirtualFile, codeOwners: VirtualFile): Ownership? {
         val path = VfsUtilCore.getRelativePath(file, root, '/')?.takeIf { it.isNotEmpty() } ?: return null
+        return match(path, file.isDirectory, codeOwners)
+    }
+
+    private fun match(path: String, isDirectory: Boolean, codeOwners: VirtualFile): Ownership? {
         val matched = rules(codeOwners).groupBy { it.section }.values
-            .mapNotNull { section -> section.lastOrNull { it.matches(path, file.isDirectory) } }
+            .mapNotNull { section -> section.lastOrNull { it.matches(path, isDirectory) } }
             .sortedBy { it.line }
         if (matched.isEmpty()) return null
         return Ownership(matched.flatMap { it.owners }.distinct(), matched, codeOwners)

@@ -9,4 +9,12 @@
             serviceInterface="com.github.khopland.symbols.badges.MigrationBranchBase"
             serviceImplementation="com.github.khopland.symbols.badges.GitMigrationBranchBase"/>
     </extensions>
+    <actions>
+        <action id="com.github.khopland.symbols.FindBranchReviewers"
+                class="com.github.khopland.symbols.ownership.FindBranchReviewersAction"
+                text="Find Reviewers for This Branch"
+                description="List the CODEOWNERS owners of every file this branch changes">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
