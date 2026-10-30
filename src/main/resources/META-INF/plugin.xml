@@ -43,7 +43,8 @@
         <b>Infrastructure</b>, or <b>Entry points</b>, to keep matching files in full color and dim the rest of the Project view.
         <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.</p>
         <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
-        <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.</p>
+        <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.
+        <b>Tools | Find Reviewers for This Branch</b> lists the owners of every file the current branch changes.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
     ]]></description>

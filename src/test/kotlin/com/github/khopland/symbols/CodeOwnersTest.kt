@@ -36,6 +36,21 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         }
     }
 
+    fun testOwnershipOfPathCoversDeletedFilesAndUngovernedRepositories() {
+        val root = myFixture.addFileToProject("README.md", "").virtualFile.parent
+        assertNull("No CODEOWNERS governs the path", runReadAction { CodeOwners.ownershipOfPath(root, "gone/Old.kt") })
+
+        myFixture.addFileToProject("CODEOWNERS", "/services/ @org/services\n/services/legacy/\n")
+        myFixture.addFileToProject("services/Api.kt", "")
+        val deleted = runReadAction { CodeOwners.ownershipOfPath(root, "services/removed/deep/Old.kt") }
+        assertEquals("A deleted file is matched from its nearest existing folder", listOf("@org/services"), deleted?.owners)
+        val unowned = runReadAction { CodeOwners.ownershipOfPath(root, "services/legacy/Old.kt") }
+        assertNotNull(unowned)
+        assertTrue("A line without owners leaves the path unowned", unowned!!.owners.isEmpty())
+        val unmatched = runReadAction { CodeOwners.ownershipOfPath(root, "README.md") }
+        assertTrue("Governed but unmatched is unowned, not ungoverned", unmatched!!.owners.isEmpty())
+    }
+
     /** Examples from GitHub's CODEOWNERS documentation. */
     fun testPatternsFollowGitHubSemantics() {
         val everything = rule("*")
