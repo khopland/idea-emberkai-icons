@@ -5,10 +5,13 @@ import com.github.khopland.symbols.badges.FlywayMigrations
 import com.github.khopland.symbols.badges.GitMigrationBranchBase
 import com.github.khopland.symbols.badges.MigrationBranchBase
 import com.github.khopland.symbols.badges.MigrationConflictBadgeIcon
+import com.github.khopland.symbols.badges.MigrationConflictFact
 import com.github.khopland.symbols.badges.OutOfOrderMigration
+import com.github.khopland.symbols.badges.OutOfOrderMigrationFact
 import com.github.khopland.symbols.core.IconDescriptions
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.fact
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.openapi.vfs.VirtualFile
@@ -65,12 +68,12 @@ internal class MigrationOutOfOrderTest : IconProviderTestCase() {
         assertFalse(provider.getIcon(newest, 0) is MigrationConflictBadgeIcon)
 
         val resolution = IconResolver.resolveWithDetails(orders.virtualFile, project)
-        assertEquals(OutOfOrderMigration("3", "4", "origin/main"), resolution.migrationOutOfOrder)
-        assertNull(resolution.migrationConflict)
+        assertEquals(OutOfOrderMigration("3", "4", "origin/main"), resolution.fact<OutOfOrderMigrationFact>()?.migration)
+        assertNull(resolution.fact<MigrationConflictFact>())
         assertTrue(resolution.detail, "origin/main already has migrations up to V4" in resolution.detail)
         assertEquals(
             "Flyway versioned migration · out of order: origin/main is at V4",
-            IconDescriptions.describe(orders.virtualFile, resolution, project),
+            IconDescriptions.describe(orders.virtualFile, resolution),
         )
 
         assertTrue(provider.getIcon(folder, 0, project) is MigrationConflictBadgeIcon)
@@ -78,7 +81,7 @@ internal class MigrationOutOfOrderTest : IconProviderTestCase() {
         assertTrue(folderResolution.detail, "the latest on origin/main: V3__orders.sql" in folderResolution.detail)
         assertEquals(
             "Database migrations folder · 3 versioned · latest V5 · 1 out of order",
-            IconDescriptions.describe(folder, folderResolution, project),
+            IconDescriptions.describe(folder, folderResolution),
         )
     }
 
@@ -89,8 +92,8 @@ internal class MigrationOutOfOrderTest : IconProviderTestCase() {
         base.folders[first.virtualFile.parent] = BaseBranchMigrations("origin/main", setOf("V3__c.sql"), "3")
 
         val resolution = IconResolver.resolveWithDetails(first.virtualFile, project)
-        assertEquals("2", resolution.migrationConflict)
-        assertNull(resolution.migrationOutOfOrder)
+        assertEquals("2", resolution.fact<MigrationConflictFact>()?.version)
+        assertNull(resolution.fact<OutOfOrderMigrationFact>())
     }
 
     fun testNoBadgeUntilTheDefaultBranchIsKnownOrWhenDisabled() {

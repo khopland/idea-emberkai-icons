@@ -130,7 +130,7 @@ internal class RunningServicesTest : IconProviderTestCase() {
         assertTrue(resolution.detail, resolution.detail.contains("running 'Orders' on port 8081"))
         assertEquals(
             "Running 'Orders' on port 8081",
-            IconDescriptions.describe(orders, resolution, project),
+            IconDescriptions.describe(orders, resolution),
         )
 
         settings.setEnabled(IconRuleCategory.RUNNING_SERVICES, false)
@@ -156,7 +156,7 @@ internal class RunningServicesTest : IconProviderTestCase() {
         )
         assertEquals(
             "Debugging 'Orders', running 'Orders tests'",
-            IconDescriptions.describe(orders, IconResolver.resolveWithDetails(orders, project), project),
+            IconDescriptions.describe(orders, IconResolver.resolveWithDetails(orders, project)),
         )
     }
 

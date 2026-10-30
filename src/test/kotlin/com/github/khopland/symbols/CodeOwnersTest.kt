@@ -1,6 +1,5 @@
 package com.github.khopland.symbols
 
-import com.github.khopland.symbols.core.SemanticTooltipDecorator
 import com.github.khopland.symbols.lens.LensSnapshot
 import com.github.khopland.symbols.lens.OwnerLens
 import com.github.khopland.symbols.lens.UnownedLens
@@ -9,6 +8,7 @@ import com.github.khopland.symbols.ownership.CodeOwnersRule
 import com.github.khopland.symbols.ownership.UnmatchedCodeOwnersPatternInspection
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.EmberkaiScopesProvider
+import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode

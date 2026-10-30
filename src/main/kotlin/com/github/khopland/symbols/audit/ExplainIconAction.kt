@@ -6,7 +6,6 @@ import com.github.khopland.symbols.core.IconResolution
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.MappingSource
-import com.github.khopland.symbols.core.SemanticTooltipDecorator
 import com.github.khopland.symbols.overrides.IconOverrideDialog
 import com.github.khopland.symbols.overrides.IconOverrideKeySuggestions
 import com.github.khopland.symbols.overrides.ProjectIconOverrideStore
@@ -16,6 +15,7 @@ import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.isEnabled
 import com.github.khopland.symbols.stereotypes.ClassStereotypes
 import com.github.khopland.symbols.stereotypes.StereotypeMatch
+import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -188,7 +188,7 @@ private class ExplainIconDialog(
         } else {
             "Did not take precedence"
         }
-        IconDescriptions.describe(file, resolution, project)?.let { addRow("Recognized as", it) }
+        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         addRow("Resolution", "${resolution.precedence.displayName}: ${resolution.detail}")
         addRow("Mapping key", mapping)
         addRow("Mapping source", source)

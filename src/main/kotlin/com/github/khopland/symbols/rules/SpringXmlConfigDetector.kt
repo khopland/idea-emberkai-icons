@@ -1,4 +1,4 @@
-package com.github.khopland.symbols.spring
+package com.github.khopland.symbols.rules
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project

@@ -1,5 +1,7 @@
-package com.github.khopland.symbols.core
+package com.github.khopland.symbols.tooltips
 
+import com.github.khopland.symbols.core.IconDescriptions
+import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.ownership.CodeOwners
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.stereotypes.ClassStereotypes
@@ -40,7 +42,7 @@ class SemanticTooltipDecorator : ProjectViewNodeDecorator {
         if (node !is PsiFileNode && node !is PsiDirectoryNode) return null
         val project = node.project ?: return null
         val file = node.virtualFile?.takeIf { it.isValid } ?: return null
-        return IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project), project)
+        return IconDescriptions.describe(file, IconResolver.resolveWithDetails(file, project))
     }
 
     internal companion object {

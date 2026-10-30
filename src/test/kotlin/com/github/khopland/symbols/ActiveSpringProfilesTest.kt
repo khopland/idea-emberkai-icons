@@ -111,7 +111,7 @@ internal class ActiveSpringProfilesTest : IconProviderTestCase() {
         val resolution = IconResolver.resolveWithDetails(kafka.virtualFile, project)
         assertEquals(
             "Spring Boot configuration · active in 'Service'",
-            IconDescriptions.describe(kafka.virtualFile, resolution, project),
+            IconDescriptions.describe(kafka.virtualFile, resolution),
         )
 
         select("Local", programArguments = "--spring.profiles.active=local")
@@ -121,7 +121,7 @@ internal class ActiveSpringProfilesTest : IconProviderTestCase() {
         assertEnvironmentBadge("emberkai/icons/spring.svg", EnvironmentVariant.LOCAL, localIcon!!.baseIcon)
         assertEquals(
             "Spring Boot configuration · local · active in 'Local'",
-            IconDescriptions.describe(local.virtualFile, IconResolver.resolveWithDetails(local.virtualFile, project), project),
+            IconDescriptions.describe(local.virtualFile, IconResolver.resolveWithDetails(local.virtualFile, project)),
         )
     }
 

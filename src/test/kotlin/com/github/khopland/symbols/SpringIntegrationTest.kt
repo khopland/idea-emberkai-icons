@@ -1,6 +1,7 @@
 package com.github.khopland.symbols
 
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.rules.SpringXmlConfigDetector
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.setEnabled
 import com.github.khopland.symbols.spring.ModulithFolderIcon
@@ -8,7 +9,6 @@ import com.github.khopland.symbols.spring.ModulithLock
 import com.github.khopland.symbols.spring.ModulithSupport
 import com.github.khopland.symbols.spring.SpringModulithFolderDecorator
 import com.github.khopland.symbols.spring.SpringModulithSupport
-import com.github.khopland.symbols.spring.SpringXmlConfigDetector
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode
