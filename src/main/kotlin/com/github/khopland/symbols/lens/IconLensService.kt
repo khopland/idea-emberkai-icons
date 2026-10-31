@@ -1,5 +1,6 @@
 package com.github.khopland.symbols.lens
 
+import com.github.khopland.symbols.statusbar.EmberkaiStatusBarWidget
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ModalityState
@@ -94,6 +95,7 @@ internal class IconLensService(private val project: Project) : Disposable {
         active = lens
         snapshot = null
         recomputeAlarm.cancelAllRequests()
+        EmberkaiStatusBarWidget.update(project)
         if (lens == null) {
             refreshProjectView()
             return null
