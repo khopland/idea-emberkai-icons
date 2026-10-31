@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added Liquibase to the migration warnings: a changelog that repeats a changeSet `id` and `author`, which Liquibase rejects during validation, gets the amber migration warning badge, and **Explain This Icon** names the repeated changeSets. XML, YAML, JSON, and formatted SQL changelogs are read. Follows the **Migration version conflict badges** setting.
 - Added **Depends on …** lenses: with a file or folder selected, **Lens** offers its module, and choosing it keeps that module and every module that depends on it, directly or transitively, in full color and dims the rest of the Project view. It follows changes to module dependencies.
 - Added the **Hotspots** lens (**View > Emberkai Icons > Lens**): the 30 files changed in the most commits over the last 90 days keep full color, ties included, and files changed only once are skipped. Git runs only while the lens is active. Requires the Git plugin.
 - Added production editor warnings: files with the production environment badge, including files that inherit it from a folder such as `overlays/production/`, open with a red-tinted editor tab and a warning banner that names why the file counts as production. Turn them off with **Production editor warnings** or the banner's link.
