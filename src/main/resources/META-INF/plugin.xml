@@ -44,7 +44,8 @@
         <b>Infrastructure</b>, or <b>Entry points</b>, to keep matching files in full color and dim the rest of the Project view.
         <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.
         <b>Hotspots</b> highlights the files changed in the most commits over the last 90 days,
-        and <b>Depends on</b> highlights a module and every module that depends on it.</p>
+        and <b>Depends on</b> highlights a module and every module that depends on it.
+        A status bar widget shows the active lens and Spring profile and switches either with one click.</p>
         <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
         <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.
         <b>Tools | Find Reviewers for This Branch</b> lists the owners of every file the current branch changes.</p>
@@ -102,6 +103,8 @@
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.tooltips.SemanticTooltipDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.lens.IconLensDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.generated.GeneratedFileDecorator"/>
+        <statusBarWidgetFactory id="com.github.khopland.symbols.StatusBar"
+                                implementation="com.github.khopland.symbols.statusbar.EmberkaiStatusBarWidgetFactory"/>
         <editorTabColorProvider implementation="com.github.khopland.symbols.badges.ProductionEditorTabColorProvider"/>
         <editorNotificationProvider implementation="com.github.khopland.symbols.badges.ProductionEditorNotificationProvider"/>
         <generatedSourcesFilter implementation="com.github.khopland.symbols.generated.EmberkaiGeneratedSourcesFilter"/>
