@@ -50,6 +50,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var generatedFiles: Boolean = true,
         var productionEditorWarnings: Boolean = true,
         var unpinnedReferences: Boolean = true,
+        var configDrift: Boolean = true,
     )
 
     /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
@@ -144,6 +145,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.GENERATED_FILES -> State::generatedFiles
             IconRuleCategory.PRODUCTION_EDITOR_WARNINGS -> State::productionEditorWarnings
             IconRuleCategory.UNPINNED_REFERENCES -> State::unpinnedReferences
+            IconRuleCategory.CONFIG_DRIFT -> State::configDrift
         }
 
         /** Writes [state] as a portable properties file. */

@@ -28,7 +28,8 @@
         selected run configuration get a ring-and-dot live marker, and module folders with a live run or
         debug session get a running marker that names the configuration and Spring Boot port. Flyway migrations that share a version
         with a sibling, and Liquibase changelogs that repeat a changeSet, get an amber warning badge, and so do
-        workflows, Dockerfiles, and manifests with unpinned actions or <code>latest</code> images. Spring controllers, services,
+        workflows, Dockerfiles, and manifests with unpinned actions or <code>latest</code> images, and profile, Helm values,
+        and <code>.env</code> variants that lack a key all their siblings define. Spring controllers, services,
         repositories, configuration classes, and JPA entities keep their native Java/Kotlin class icons
         with a small stereotype badge.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
@@ -70,11 +71,13 @@
     </extensionPoints>
     <!--
         Badges and markers run in this order, each wrapping the icon the previous one produced.
-        The running-service marker must follow module accents because it replaces the accent dot.
+        The running-service marker must follow module accents because it replaces the accent dot, and
+        config drift comes before the live-profile marker so that marker stays outermost on profile files.
     -->
     <extensions defaultExtensionNs="com.github.khopland.symbols">
         <iconDecorator implementation="com.github.khopland.symbols.badges.EnvironmentVariantDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.badges.UnignoredSecretDecorator"/>
+        <iconDecorator implementation="com.github.khopland.symbols.badges.ConfigDriftDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.spring.ActiveSpringProfileDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.badges.MigrationConflictDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.badges.HelmLockDriftDecorator"/>
@@ -92,6 +95,8 @@
         <listener class="com.github.khopland.symbols.rules.OpenTofuSignalCacheListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
         <listener class="com.github.khopland.symbols.badges.HelmLockDriftListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+        <listener class="com.github.khopland.symbols.badges.ConfigDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
