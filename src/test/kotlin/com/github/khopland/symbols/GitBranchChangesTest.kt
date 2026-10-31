@@ -6,6 +6,8 @@ import com.github.khopland.symbols.badges.OutOfOrderMigration
 import com.github.khopland.symbols.git.GitQueries
 import com.github.khopland.symbols.lens.BranchChanges
 import com.github.khopland.symbols.lens.ChangedOnBranchLens
+import com.github.khopland.symbols.lens.Hotspots
+import com.github.khopland.symbols.lens.HotspotsLens
 import com.github.khopland.symbols.lens.IconLensService
 import com.github.khopland.symbols.ownership.BranchReviewers
 import com.github.khopland.symbols.ownership.ChangedPath
@@ -101,6 +103,29 @@ internal class GitBranchChangesTest : HeavyPlatformTestCase() {
         assertEquals(listOf("new.txt"), reviewers.unowned.map { it.path })
         assertTrue(reviewers.ungoverned.isEmpty())
         assertEquals(5, reviewers.changedCount)
+    }
+
+    fun testHotspotsAreFilesChangedInSeveralRecentCommits() {
+        val service = IconLensService.getInstance(project)
+        service.select(HotspotsLens)
+        PlatformTestUtil.waitWithEventsDispatching("lens snapshot", { service.snapshot != null }, 30)
+
+        // committed.txt is the only file in two commits; one edit does not make a hotspot.
+        val hotspots = Hotspots.getInstance(project)!!.files()!!.map(VirtualFile::getName).toSet()
+        assertEquals(setOf("committed.txt"), hotspots)
+        assertEquals(1, service.snapshot!!.memberCount)
+
+        service.select(null)
+        assertNull(Hotspots.getInstance(project)!!.files())
+    }
+
+    fun testHotspotRankingKeepsTiesAndSkipsSingleCommits() {
+        assertEquals(emptySet<String>(), Hotspots.rank(mapOf("a" to 1)))
+        val counts = (1..40).associate { "f$it" to 2 } + ("busy" to 9)
+        assertEquals("Every file tied with the last place stays", 41, Hotspots.rank(counts).size)
+        val ranked = Hotspots.rank((1..40).associate { "f$it" to it + 1 })
+        assertEquals(Hotspots.LIMIT, ranked.size)
+        assertEquals("f40", ranked.first())
     }
 
     fun testMigrationAddedBelowTheDefaultBranchLatestIsOutOfOrder() {
