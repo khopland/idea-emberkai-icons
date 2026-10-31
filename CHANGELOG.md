@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added unpinned reference badges: workflows that use third-party GitHub Actions not pinned to a commit SHA, and Dockerfiles, Kubernetes manifests, and Compose files with images tagged `latest` or not tagged at all, get the amber warning badge. **Explain This Icon** lists each reference and its line. Turn it off with **Unpinned image and action badges**.
 - Added Liquibase to the migration warnings: a changelog that repeats a changeSet `id` and `author`, which Liquibase rejects during validation, gets the amber migration warning badge, and **Explain This Icon** names the repeated changeSets. XML, YAML, JSON, and formatted SQL changelogs are read. Follows the **Migration version conflict badges** setting.
 - Added a status bar widget that shows the active lens and Spring profiles, such as *Lens: Database migrations · Profile: prod*. Click it to switch lens, or to select another run configuration that activates Spring profiles.
 - Added **Depends on …** lenses: with a file or folder selected, **Lens** offers its module, and choosing it keeps that module and every module that depends on it, directly or transitively, in full color and dims the rest of the Project view. It follows changes to module dependencies.
