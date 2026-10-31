@@ -24,4 +24,5 @@ internal enum class IconRuleCategory(val displayName: String) {
     GENERATED_FILES("Generated file markers"),
     PRODUCTION_EDITOR_WARNINGS("Production editor warnings"),
     UNPINNED_REFERENCES("Unpinned image and action badges"),
+    CONFIG_DRIFT("Config key drift badges"),
 }

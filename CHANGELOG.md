@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added config key drift badges: a Spring profile file, Helm `values-<env>.yaml`, or `.env.<variant>` that lacks a key every other variant beside it defines gets the amber warning badge, and **Explain This Icon** lists the missing keys and where they are defined. Local and test variants are ignored. Turn it off with **Config key drift badges**.
 - Added unpinned reference badges: workflows that use third-party GitHub Actions not pinned to a commit SHA, and Dockerfiles, Kubernetes manifests, and Compose files with images tagged `latest` or not tagged at all, get the amber warning badge. **Explain This Icon** lists each reference and its line. Turn it off with **Unpinned image and action badges**.
 - Added Liquibase to the migration warnings: a changelog that repeats a changeSet `id` and `author`, which Liquibase rejects during validation, gets the amber migration warning badge, and **Explain This Icon** names the repeated changeSets. XML, YAML, JSON, and formatted SQL changelogs are read. Follows the **Migration version conflict badges** setting.
 - Added a status bar widget that shows the active lens and Spring profiles, such as *Lens: Database migrations · Profile: prod*. Click it to switch lens, or to select another run configuration that activates Spring profiles.

@@ -94,7 +94,8 @@ internal class ActiveSpringProfilesTest : IconProviderTestCase() {
     fun testSelectedRunConfigurationMarksOnlyMatchingSpringProfiles() {
         springBootProject()
         val kafka = myFixture.addFileToProject("service/src/main/resources/application-kafka.yml", "server: {}")
-        val cloud = myFixture.addFileToProject("service/src/main/resources/application-cloud.properties", "a=b")
+        // Every profile defines the same keys, so no config drift badge wraps the marker.
+        val cloud = myFixture.addFileToProject("service/src/main/resources/application-cloud.properties", "server=")
         val local = myFixture.addFileToProject("service/src/main/resources/bootstrap-local.yaml", "a: b")
         val qa = myFixture.addFileToProject("service/src/main/resources/application-qa.yaml", "server: {}")
         val plain = myFixture.addFileToProject("plain/application-kafka.yml", "server: {}")
