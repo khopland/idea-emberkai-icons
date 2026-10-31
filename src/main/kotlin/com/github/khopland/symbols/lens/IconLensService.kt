@@ -7,6 +7,8 @@ import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ModuleRootEvent
+import com.intellij.openapi.roots.ModuleRootListener
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -47,9 +49,9 @@ internal class LensSnapshot(
 /**
  * Holds the project's active lens. The lens is a view mode, not a setting, so it is not persisted
  * and every project starts without one. Membership is computed in the background when a lens is
- * selected, again after VFS changes in project content, and when a lens reports that its membership
- * changed; the Project view decorator only reads the finished snapshot, and dims nothing while the
- * first one is being computed or the lens is not ready.
+ * selected, again after VFS changes in project content or changes to project roots, and when a lens
+ * reports that its membership changed; the Project view decorator only reads the finished snapshot,
+ * and dims nothing while the first one is being computed or the lens is not ready.
  */
 @Service(Service.Level.PROJECT)
 internal class IconLensService(private val project: Project) : Disposable {
@@ -65,14 +67,21 @@ internal class IconLensService(private val project: Project) : Disposable {
         private set
 
     init {
-        project.messageBus.connect(this).subscribe(
+        val connection = project.messageBus.connect(this)
+        connection.subscribe(
             VirtualFileManager.VFS_CHANGES,
             object : BulkFileListener {
                 override fun after(events: List<VFileEvent>) {
-                    if (active != null && events.any(::affectsContent)) {
-                        recomputeAlarm.cancelAllRequests()
-                        recomputeAlarm.addRequest({ recompute() }, RECOMPUTE_DELAY_MS)
-                    }
+                    if (active != null && events.any(::affectsContent)) scheduleRecompute()
+                }
+            },
+        )
+        // Content roots and module dependencies decide membership too, for example in the module dependents lens.
+        connection.subscribe(
+            ModuleRootListener.TOPIC,
+            object : ModuleRootListener {
+                override fun rootsChanged(event: ModuleRootEvent) {
+                    if (active != null) scheduleRecompute()
                 }
             },
         )
@@ -104,6 +113,11 @@ internal class IconLensService(private val project: Project) : Disposable {
                 refreshProjectView()
             }
             .submit(AppExecutorUtil.getAppExecutorService())
+    }
+
+    private fun scheduleRecompute() {
+        recomputeAlarm.cancelAllRequests()
+        recomputeAlarm.addRequest({ recompute() }, RECOMPUTE_DELAY_MS)
     }
 
     /** Recomputes [lens] if it is still active, after state behind its membership changed. Any thread. */
