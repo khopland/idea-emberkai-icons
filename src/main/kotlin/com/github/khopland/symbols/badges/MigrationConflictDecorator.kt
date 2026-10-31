@@ -17,6 +17,13 @@ internal data class MigrationConflictFact(val version: String) : IconFact {
     override val tooltipOrder: Int get() = 40
 }
 
+/** The changeSet identifiers this Liquibase changelog repeats, as `id::author`. */
+internal data class DuplicateChangeSetFact(val identifiers: List<String>) : IconFact {
+    override val label: String
+        get() = if (identifiers.size == 1) "duplicate changeSet ${identifiers.single()}" else "${identifiers.size} duplicate changeSets"
+    override val tooltipOrder: Int get() = 45
+}
+
 /** This branch's migration whose version is not after the default branch's latest. */
 internal data class OutOfOrderMigrationFact(val migration: OutOfOrderMigration) : IconFact {
     override val label: String get() = "out of order: ${migration.baseRef} is at V${migration.baseLatest}"
@@ -44,9 +51,10 @@ internal data class MigrationFolderSummaryFact(val summary: MigrationFolderSumma
 }
 
 /**
- * Warns about a Flyway version that a sibling migration also uses, which Flyway refuses to run, or
+ * Warns about a Flyway version that a sibling migration also uses, which Flyway refuses to run,
  * about a migration this branch added below the default branch's latest version, which Flyway
- * rejects as out of order once that branch's migrations have run.
+ * rejects as out of order once that branch's migrations have run, and about a Liquibase changelog
+ * that repeats a changeSet identifier, which Liquibase refuses to validate.
  */
 internal class MigrationConflictDecorator : IconDecorator {
     override fun decorateFile(resolution: IconResolution, file: VirtualFile, project: Project?): IconResolution {
@@ -54,9 +62,19 @@ internal class MigrationConflictDecorator : IconDecorator {
         if (!settings.isEnabled(IconRuleCategory.MIGRATION_CONFLICTS)) return resolution
         val conflict = FlywayMigrations.conflict(file)
         val outOfOrder = if (conflict == null) FlywayMigrations.outOfOrder(file, project) else null
-        if (conflict == null && outOfOrder == null) return resolution
+        val duplicates = if (conflict == null && outOfOrder == null) LiquibaseChangeSets.duplicates(file) else emptyList()
+        if (conflict == null && outOfOrder == null && duplicates.isEmpty()) return resolution
         val baseIcon = resolution.iconOrFileTypeIcon(file) ?: return resolution
         val icon = MigrationConflictBadgeIcon(baseIcon, settings.highContrastFolderIcons || settings.monochromeFolderIcons)
+        if (duplicates.isNotEmpty()) {
+            return resolution.decorated(
+                icon,
+                DuplicateChangeSetFact(duplicates),
+                "A warning badge marks a Liquibase changelog that repeats changeSet " +
+                    "${duplicates.joinToString()} (id::author). Liquibase fails validation until each " +
+                    "changeSet in the file has its own id and author.",
+            )
+        }
         if (conflict != null) {
             val (version, others) = conflict
             return resolution.decorated(

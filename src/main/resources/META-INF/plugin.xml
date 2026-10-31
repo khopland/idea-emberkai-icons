@@ -27,7 +27,7 @@
         without being ignored get a red stop-sign warning badge. Spring profile files activated by the
         selected run configuration get a ring-and-dot live marker, and module folders with a live run or
         debug session get a running marker that names the configuration and Spring Boot port. Flyway migrations that share a version
-        with a sibling get an amber warning badge. Spring controllers, services,
+        with a sibling, and Liquibase changelogs that repeat a changeSet, get an amber warning badge. Spring controllers, services,
         repositories, configuration classes, and JPA entities keep their native Java/Kotlin class icons
         with a small stereotype badge.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
