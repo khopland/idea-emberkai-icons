@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.spring
 
 import com.github.khopland.symbols.core.RefreshProjectIconPresentations
+import com.github.khopland.symbols.statusbar.EmberkaiStatusBarWidget
 import com.intellij.execution.CommonJavaRunConfigurationParameters
 import com.intellij.execution.CommonProgramRunConfigurationParameters
 import com.intellij.execution.RunManager
@@ -29,7 +30,10 @@ internal class ActiveSpringProfileListener(private val project: Project) : RunMa
         val snapshot = runManager.selectedConfiguration?.let(ActiveSpringProfileReader::read)
         if (!ActiveSpringProfiles.getInstance(project).update(snapshot)) return
         ApplicationManager.getApplication().invokeLater(
-            { RefreshProjectIconPresentations.refresh(project) },
+            {
+                RefreshProjectIconPresentations.refresh(project)
+                EmberkaiStatusBarWidget.update(project)
+            },
             project.disposed,
         )
     }
