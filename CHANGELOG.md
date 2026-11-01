@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-01
+
 - Fixed *Slow operations are prohibited on EDT* errors: the Project view or a scope picker listing scopes in a project with CODEOWNERS, selecting an owner or double-clicking a file in **Find Reviewers for This Branch**, and **Reveal artwork** in **Explain This Icon** no longer look up files on the UI thread. The **Emberkai: Owned by …** and **Emberkai: No code owners** scopes are now built in the background and appear once CODEOWNERS has been read, and disappear when it is removed.
 
 ## [0.6.0] - 2026-11-01
@@ -83,7 +85,8 @@
 - Established the Symbols-based Java/Kotlin icon provider, checked-in SVG assets, and a minimal Gradle build.
 - Added upstream icon, license, and attribution updates with a check mode and manual CI workflow; included original icon notices under the MIT license.
 
-[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.3.0...v0.4.0
