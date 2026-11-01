@@ -19,24 +19,33 @@ import com.intellij.openapi.project.Project
 internal class ActiveSpringProfileListener(private val project: Project) : RunManagerListener {
     override fun stateLoaded(runManager: RunManager, isFirstLoadState: Boolean) = update(runManager)
 
-    override fun runConfigurationSelected(settings: RunnerAndConfigurationSettings?) = deferUpdate()
+    override fun runConfigurationSelected(settings: RunnerAndConfigurationSettings?) = updateOrDefer()
 
-    override fun runConfigurationChanged(settings: RunnerAndConfigurationSettings) = deferUpdate()
+    override fun runConfigurationChanged(settings: RunnerAndConfigurationSettings) = updateOrDefer()
 
-    override fun runConfigurationRemoved(settings: RunnerAndConfigurationSettings) = deferUpdate()
+    override fun runConfigurationRemoved(settings: RunnerAndConfigurationSettings) = updateOrDefer()
 
     /**
-     * The platform publishes these messages while `RunManager` itself is still initializing, so
-     * resolving it here would block inside its own initialization and cancel project open with a
-     * `CycleInitializationException`. Defer the recompute to a later EDT pass instead.
+     * The platform publishes run-manager messages from inside the service's own initialization,
+     * when `RunManagerImpl` selects its first configuration during `loadState`; resolving
+     * `RunManager` again from that stack cancels project open with a `CycleInitializationException`.
+     * Recompute synchronously once the service exists, and defer to a later EDT pass otherwise.
      */
-    private fun deferUpdate() = ApplicationManager.getApplication().invokeLater(
-        { update() },
-        project.disposed,
-    )
-
-    private fun update(runManager: RunManager = RunManager.getInstance(project)) {
+    private fun updateOrDefer() {
         if (project.isDisposed) return
+        val runManager = project.getServiceIfCreated(RunManager::class.java)
+        if (runManager != null) {
+            update(runManager)
+            return
+        }
+        ApplicationManager.getApplication().invokeLater(
+            { update() },
+            project.disposed,
+        )
+    }
+
+    private fun update(runManager: RunManager? = project.getServiceIfCreated(RunManager::class.java)) {
+        if (runManager == null || project.isDisposed) return
         val snapshot = runManager.selectedConfiguration?.let(ActiveSpringProfileReader::read)
         if (!ActiveSpringProfiles.getInstance(project).update(snapshot)) return
         ApplicationManager.getApplication().invokeLater(
