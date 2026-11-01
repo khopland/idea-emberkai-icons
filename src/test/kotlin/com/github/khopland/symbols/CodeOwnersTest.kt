@@ -12,11 +12,16 @@ import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.PsiFileNode
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.packageDependencies.DependencyValidationManager
 import com.intellij.psi.search.scope.packageSet.NamedScope
+import com.intellij.psi.search.scope.packageSet.NamedScopesHolder
 import com.intellij.psi.search.scope.packageSet.PackageSetBase
+import com.intellij.testFramework.PlatformTestUtil
+import java.util.concurrent.Callable
 
 internal class CodeOwnersTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings
@@ -170,7 +175,7 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         val payments = myFixture.addFileToProject("services/payments/Api.kt", "").virtualFile
         val readme = myFixture.addFileToProject("README.md", "").virtualFile
 
-        val scopes = EmberkaiScopesProvider(project).customScopes.associateBy(NamedScope::getScopeId)
+        val scopes = ownerScopes().associateBy(NamedScope::getScopeId)
         val paymentsScope = scopes[EmberkaiScopesProvider.ownerScopeName("@org/payments")]
         assertNotNull(paymentsScope)
         assertNotNull(scopes[EmberkaiScopesProvider.ownerScopeName("@org/platform")])
@@ -234,16 +239,35 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         assertTrue(snapshot.highlights(explicitlyUnowned))
         assertFalse(snapshot.highlights(owned))
 
-        val scope = EmberkaiScopesProvider(project).customScopes.single { it.scopeId == EmberkaiScopesProvider.UNOWNED_SCOPE }
+        val scope = ownerScopes().single { it.scopeId == EmberkaiScopesProvider.UNOWNED_SCOPE }
         val set = scope.value as PackageSetBase
         assertTrue(set.contains(unmatched, project, null))
         assertFalse(set.contains(owned, project, null))
     }
 
+    fun testOwnerScopesAreBuiltOffTheEdt() {
+        myFixture.addFileToProject("CODEOWNERS", "* @org/platform\n")
+        val provider = EmberkaiScopesProvider(project)
+        var notified = 0
+        val listener = NamedScopesHolder.ScopeListener { notified++ }
+        val holder = DependencyValidationManager.getInstance(project)
+        holder.addScopeListener(listener, testRootDisposable)
+        val ownerScope = EmberkaiScopesProvider.ownerScopeName("@org/platform")
+
+        // Finding CODEOWNERS can load VFS children, so the EDT gets no owner scopes until they are built.
+        assertTrue(provider.customScopes.none { it.scopeId == ownerScope })
+        PlatformTestUtil.waitWithEventsDispatching(
+            "Owner scopes were not built",
+            { provider.customScopes.any { it.scopeId == ownerScope } },
+            10,
+        )
+        assertTrue("Scope listeners were not notified", notified > 0)
+    }
+
     fun testFilesWithoutCodeOwnersAreNotUnowned() {
         val file = myFixture.addFileToProject("app/Main.kt", "").virtualFile
         assertFalse(CodeOwners.isUnowned(file))
-        assertTrue(EmberkaiScopesProvider(project).customScopes.none { it.scopeId == EmberkaiScopesProvider.UNOWNED_SCOPE })
+        assertTrue(ownerScopes().none { it.scopeId == EmberkaiScopesProvider.UNOWNED_SCOPE })
     }
 
     fun testPatternsThatMatchNothingAreReported() {
@@ -269,6 +293,10 @@ internal class CodeOwnersTest : IconProviderTestCase() {
         myFixture.configureFromExistingVirtualFile(shadowed.virtualFile)
         assertTrue(myFixture.doHighlighting().any { it.description == "Ignored: .github/CODEOWNERS takes precedence" })
     }
+
+    /** Owner scopes as a pooled thread, such as Find in Files, gets them: built synchronously. */
+    private fun ownerScopes(): List<NamedScope> =
+        ApplicationManager.getApplication().executeOnPooledThread(Callable { EmberkaiScopesProvider(project).customScopes }).get()
 
     private fun tooltip(node: PsiFileNode): String? =
         PresentationData().also { SemanticTooltipDecorator().decorate(node, it) }.tooltip

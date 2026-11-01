@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed *Slow operations are prohibited on EDT* errors: the Project view or a scope picker listing scopes in a project with CODEOWNERS, selecting an owner or double-clicking a file in **Find Reviewers for This Branch**, and **Reveal artwork** in **Explain This Icon** no longer look up files on the UI thread. The **Emberkai: Owned by …** and **Emberkai: No code owners** scopes are now built in the background and appear once CODEOWNERS has been read, and disappear when it is removed.
+
 ## [0.6.0] - 2026-11-01
 
 - Added the **Changed on this branch** lens (**View > Emberkai Icons > Lens**): files that differ from where the branch left the default branch, including uncommitted edits and untracked files, keep full color, and the rest of the Project view is dimmed. The base is `upstream/main`, the branch `origin/HEAD` points at, `origin/main`, or local `main` (or `master`), per Git repository. Git runs in the background only while the lens is active, and the lens follows commits, checkouts, fetches, and edits. Requires the Git plugin.

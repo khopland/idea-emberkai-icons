@@ -2,9 +2,12 @@ package com.github.khopland.symbols.ownership
 
 import com.intellij.openapi.vfs.VirtualFile
 
-/** A path a branch changed, relative to its repository [root]; deleted files no longer exist. */
+/**
+ * A path a branch changed, relative to its repository [root]. [file] is null for deleted files; it is
+ * looked up once, off the EDT, because the dialog that lists changed paths must not touch the VFS.
+ */
 internal data class ChangedPath(val root: VirtualFile, val path: String) {
-    fun file(): VirtualFile? = root.findFileByRelativePath(path)?.takeIf { it.isValid }
+    val file: VirtualFile? = root.findFileByRelativePath(path)?.takeIf { it.isValid }
 }
 
 /**
