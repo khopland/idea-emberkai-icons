@@ -19,11 +19,21 @@ import com.intellij.openapi.project.Project
 internal class ActiveSpringProfileListener(private val project: Project) : RunManagerListener {
     override fun stateLoaded(runManager: RunManager, isFirstLoadState: Boolean) = update(runManager)
 
-    override fun runConfigurationSelected(settings: RunnerAndConfigurationSettings?) = update()
+    override fun runConfigurationSelected(settings: RunnerAndConfigurationSettings?) = deferUpdate()
 
-    override fun runConfigurationChanged(settings: RunnerAndConfigurationSettings) = update()
+    override fun runConfigurationChanged(settings: RunnerAndConfigurationSettings) = deferUpdate()
 
-    override fun runConfigurationRemoved(settings: RunnerAndConfigurationSettings) = update()
+    override fun runConfigurationRemoved(settings: RunnerAndConfigurationSettings) = deferUpdate()
+
+    /**
+     * The platform publishes these messages while `RunManager` itself is still initializing, so
+     * resolving it here would block inside its own initialization and cancel project open with a
+     * `CycleInitializationException`. Defer the recompute to a later EDT pass instead.
+     */
+    private fun deferUpdate() = ApplicationManager.getApplication().invokeLater(
+        { update() },
+        project.disposed,
+    )
 
     private fun update(runManager: RunManager = RunManager.getInstance(project)) {
         if (project.isDisposed) return
