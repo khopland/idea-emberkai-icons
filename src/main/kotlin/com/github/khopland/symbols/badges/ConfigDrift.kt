@@ -87,8 +87,13 @@ internal object ConfigVariants {
         return name !in IGNORED_VARIANTS && !name.endsWith(".local") && !name.endsWith("-local")
     }
 
-    /** Spring relaxed binding treats `server.max-http-header-size` and `server.maxHttpHeaderSize` alike. */
-    private fun normalize(key: String): String = key.lowercase(Locale.ROOT).replace("-", "").replace("_", "")
+    /**
+     * Spring relaxed binding treats `server.max-http-header-size` and `server.maxHttpHeaderSize` alike.
+     * YAML lists are leaves, so a properties file's `features[0]` or `routes[1].uri` is compared as
+     * `features` or `routes`.
+     */
+    private fun normalize(key: String): String =
+        key.substringBefore('[').trimEnd('.').lowercase(Locale.ROOT).replace("-", "").replace("_", "")
 
     private fun keys(file: VirtualFile, variant: Variant): Set<String>? =
         FileContentCache.inspect(file, KEYS, null) { text ->

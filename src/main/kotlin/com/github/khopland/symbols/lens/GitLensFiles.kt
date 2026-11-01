@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.concurrency.AppExecutorUtil
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Lens membership that comes from Git. Git runs on a background thread, and only while [lens] is
@@ -21,6 +22,10 @@ internal abstract class GitLensFiles(
     private val executor = AppExecutorUtil.createBoundedApplicationPoolExecutor(threadName, 1)
     private val refreshScheduled = AtomicBoolean()
 
+    // Bumped by forget, so a Git run that was already under way when the lens was turned off
+    // cannot store its result, which would show stale the next time the lens is chosen.
+    private val generation = AtomicLong()
+
     @Volatile
     private var files: Set<VirtualFile>? = null
 
@@ -28,7 +33,10 @@ internal abstract class GitLensFiles(
     fun files(): Set<VirtualFile>? = files.also { if (it == null) scheduleRefresh() }
 
     fun forget() {
-        files = null
+        synchronized(generation) {
+            generation.incrementAndGet()
+            files = null
+        }
     }
 
     override fun dispose() = forget()
@@ -54,9 +62,13 @@ internal abstract class GitLensFiles(
             files = null
             return
         }
+        val started = generation.get()
         val computed = compute()
         if (project.isDisposed || computed == files) return
-        files = computed
+        synchronized(generation) {
+            if (generation.get() != started) return
+            files = computed
+        }
         IconLensService.getIfCreated(project)?.membershipChanged(lens)
     }
 

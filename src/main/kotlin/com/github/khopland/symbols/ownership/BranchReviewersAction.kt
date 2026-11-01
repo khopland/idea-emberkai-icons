@@ -6,7 +6,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -35,7 +35,7 @@ internal class FindBranchReviewersAction : AnAction(), DumbAware {
                     indicator.checkCanceled()
                     GitQueries.branchDiff(project, it)
                 }
-                val reviewers = ReadAction.compute<BranchReviewers, RuntimeException> {
+                val reviewers = runReadActionBlocking {
                     BranchReviewers.of(diffs.flatMap { diff -> diff.paths.map { ChangedPath(diff.root, it) } })
                 }
                 val bases = diffs.mapNotNull { it.baseRef }.distinct()
