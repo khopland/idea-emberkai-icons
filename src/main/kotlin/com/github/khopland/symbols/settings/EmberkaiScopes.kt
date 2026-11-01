@@ -7,14 +7,19 @@ import com.github.khopland.symbols.generated.GeneratedFiles
 import com.github.khopland.symbols.ownership.CodeOwners
 import com.github.khopland.symbols.ownership.CodeOwnersRule
 import com.github.khopland.symbols.stereotypes.ClassStereotypes
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.packageDependencies.DependencyValidationManager
 import com.intellij.psi.search.scope.packageSet.AbstractPackageSet
 import com.intellij.psi.search.scope.packageSet.CustomScopesProvider
 import com.intellij.psi.search.scope.packageSet.NamedScope
 import com.intellij.psi.search.scope.packageSet.NamedScopesHolder
+import com.intellij.util.concurrency.AppExecutorUtil
 
 /** IDE scopes built from the resolver's context rules; folders are never members themselves. */
 internal enum class EmberkaiScope(val displayName: String, private val categories: Set<IconRuleCategory>) {
@@ -47,28 +52,57 @@ internal enum class EmberkaiScope(val displayName: String, private val categorie
 /**
  * The fixed Emberkai scopes, plus one "Owned by" scope per owner named in the project's CODEOWNERS
  * file. Owner scopes are rebuilt only when the parsed CODEOWNERS rules change, and capped so a
- * large organization does not flood scope pickers.
+ * large organization does not flood scope pickers. Finding and reading CODEOWNERS can load VFS
+ * children and file content, which the EDT forbids, so EDT callers get the last built scopes while
+ * a background pass rebuilds them and notifies scope listeners if they changed.
  */
 class EmberkaiScopesProvider(private val project: Project) : CustomScopesProvider {
     private val scopes: List<NamedScope> = EmberkaiScope.entries.map { scope ->
         NamedScope(scope.scopeName, EmberkaiPackageSet(scope))
     }
 
+    /** The rules the owner scopes were built from, null without a CODEOWNERS file, and the scopes. */
     @Volatile
-    private var ownerScopes: Pair<List<CodeOwnersRule>, List<NamedScope>>? = null
+    private var ownerScopes: Pair<List<CodeOwnersRule>?, List<NamedScope>>? = null
+
+    /** The owner scopes EDT callers see; scope listeners are notified whenever they change. EDT only. */
+    private var publishedOwnerScopes: List<NamedScope> = emptyList()
 
     override fun getCustomScopes(): List<NamedScope> = scopes + ownerScopes()
 
     private fun ownerScopes(): List<NamedScope> {
         if (project.isDisposed) return emptyList()
-        val codeOwners = project.guessProjectDir()?.let(CodeOwners::fileAt) ?: return emptyList()
-        val rules = runReadActionBlocking { CodeOwners.rules(codeOwners) }
+        if (!ApplicationManager.getApplication().isDispatchThread) return runReadActionBlocking { buildOwnerScopes() }
+        rebuildInBackground()
+        return publishedOwnerScopes
+    }
+
+    private fun rebuildInBackground() {
+        // Each EDT call cancels the pending pass, so compare against what EDT callers last saw.
+        ReadAction.nonBlocking<List<NamedScope>> { buildOwnerScopes() }
+            .expireWith(project)
+            .coalesceBy(this)
+            .finishOnUiThread(ModalityState.any()) { built ->
+                if (built === publishedOwnerScopes) return@finishOnUiThread
+                publishedOwnerScopes = built
+                DependencyValidationManager.getInstance(project).fireScopeListeners()
+            }
+            .submit(AppExecutorUtil.getAppExecutorService())
+    }
+
+    /** Requires a read action. */
+    private fun buildOwnerScopes(): List<NamedScope> {
+        val rules = project.guessProjectDir()?.let(CodeOwners::fileAt)?.let(CodeOwners::rules)
         ownerScopes?.takeIf { it.first === rules }?.let { return it.second }
-        val built = listOf(NamedScope(UNOWNED_SCOPE, UnownedPackageSet())) +
-            rules.flatMap { it.owners }.distinct()
-                .sortedBy { it.lowercase() }
-                .take(MAX_OWNER_SCOPES)
-                .map { owner -> NamedScope(ownerScopeName(owner), OwnerPackageSet(owner)) }
+        val built = if (rules == null) {
+            emptyList()
+        } else {
+            listOf(NamedScope(UNOWNED_SCOPE, UnownedPackageSet())) +
+                rules.flatMap { it.owners }.distinct()
+                    .sortedBy { it.lowercase() }
+                    .take(MAX_OWNER_SCOPES)
+                    .map { owner -> NamedScope(ownerScopeName(owner), OwnerPackageSet(owner)) }
+        }
         ownerScopes = rules to built
         return built
     }

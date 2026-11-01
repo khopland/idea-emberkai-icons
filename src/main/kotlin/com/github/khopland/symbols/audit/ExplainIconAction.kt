@@ -25,10 +25,12 @@ import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.IconLoader
+import com.intellij.openapi.util.ThrowableComputable
 import com.intellij.openapi.util.text.StringUtil.escapeXmlEntities
 import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -120,7 +122,14 @@ private class ExplainIconDialog(
         val revealArtwork = JButton("Reveal artwork")
         revealArtwork.isEnabled = resolution.resourcePath != null
         revealArtwork.addActionListener {
-            val artwork = resolution.resourcePath?.let(::findArtwork)
+            val path = resolution.resourcePath ?: return@addActionListener
+            // Finding the artwork can open the plugin jar in the VFS, which the EDT must not do.
+            val artwork = ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                ThrowableComputable<VirtualFile?, RuntimeException> { findArtwork(path) },
+                "Finding artwork",
+                true,
+                project,
+            )
             if (artwork != null) {
                 OpenFileDescriptor(project, artwork).navigate(true)
             } else {

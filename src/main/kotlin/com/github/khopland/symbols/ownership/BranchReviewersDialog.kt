@@ -64,7 +64,7 @@ internal class BranchReviewersDialog(
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(event: MouseEvent) {
                     if (event.clickCount != 2) return
-                    val file = shown.getOrNull(selectedIndex)?.file() ?: return
+                    val file = shown.getOrNull(selectedIndex)?.file?.takeIf { it.isValid } ?: return
                     OpenFileDescriptor(project, file).navigate(true)
                 }
             })
@@ -83,7 +83,7 @@ internal class BranchReviewersDialog(
     private fun show(changed: List<ChangedPath>) {
         shown = changed
         paths.clear()
-        changed.forEach { paths.addElement(if (it.file() == null) "${it.path} (deleted)" else it.path) }
+        changed.forEach { paths.addElement(if (it.file == null) "${it.path} (deleted)" else it.path) }
     }
 
     private fun summary(): String {
