@@ -35,6 +35,14 @@ internal class ConfigDriftBadgeTest : IconProviderTestCase() {
         assertEquals(mapOf("c" to listOf("prod", "staging")), drift?.missing)
         assertNull(ConfigVariants.compare(setOf("a"), mapOf("prod" to setOf("a"))))
         assertNull("Relaxed binding", ConfigVariants.compare(setOf("server.maxHttpHeaderSize"), mapOf("prod" to setOf("server.max-http-header-size"))))
+        assertNull(
+            "A YAML list and indexed properties are the same key",
+            ConfigVariants.compare(setOf("features", "routes"), mapOf("prod" to setOf("features[0]", "features[1]", "routes[0].uri"))),
+        )
+        assertNull(
+            "Indexed properties and a YAML list are the same key",
+            ConfigVariants.compare(setOf("features[0]"), mapOf("prod" to setOf("features"))),
+        )
     }
 
     fun testYamlKeysAreDottedLeavesAcrossDocuments() {

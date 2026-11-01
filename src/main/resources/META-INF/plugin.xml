@@ -26,12 +26,17 @@
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
         without being ignored get a red stop-sign warning badge. Spring profile files activated by the
         selected run configuration get a ring-and-dot live marker, and module folders with a live run or
-        debug session get a running marker that names the configuration and Spring Boot port. Flyway migrations that share a version
-        with a sibling, and Liquibase changelogs that repeat a changeSet, get an amber warning badge, and so do
-        workflows, Dockerfiles, and manifests with unpinned actions or <code>latest</code> images, and profile, Helm values,
-        and <code>.env</code> variants that lack a key all their siblings define. Spring controllers, services,
-        repositories, configuration classes, and JPA entities keep their native Java/Kotlin class icons
-        with a small stereotype badge.</p>
+        debug session get a running marker that names the configuration and Spring Boot port.</p>
+        <p>An amber warning badge marks problems that would otherwise surface late: Flyway migrations that
+        share a version with a sibling, or that this branch added below the default branch's latest version;
+        Liquibase changelogs that repeat a changeSet; a Helm <code>Chart.lock</code> that is out of date with
+        <code>Chart.yaml</code>; workflows, Dockerfiles, and manifests with unpinned actions or <code>latest</code> images;
+        and profile, Helm values, and <code>.env</code> variants that lack a key all their siblings define.
+        Generated files get a grey <i>generated</i> hint, and those marked by their header are reported to the IDE
+        as generated, so it warns before you edit them.</p>
+        <p>Spring, Quarkus, Micronaut, and JPA classes keep their native Java/Kotlin class icons with a small
+        stereotype badge: controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
+        configuration classes, and entities.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -42,7 +47,7 @@
         to find files that still use generic icons.</p>
         <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
         use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
-        <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>
+        <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>,
         <b>Infrastructure</b>, or <b>Entry points</b>, to keep matching files in full color and dim the rest of the Project view.
         <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.
         <b>Hotspots</b> highlights the files changed in the most commits over the last 90 days,
@@ -50,6 +55,8 @@
         A status bar widget shows the active lens and Spring profile and switches either with one click.</p>
         <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
         <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.
+        A <b>No Owner</b> lens and scope show files CODEOWNERS leaves unowned, and an inspection flags
+        CODEOWNERS lines that match nothing.
         <b>Tools | Find Reviewers for This Branch</b> lists the owners of every file the current branch changes.</p>
         <p>Icons by Miguel Solorio, from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
