@@ -69,7 +69,7 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
 
     private fun localPath(relativePath: String): Path {
         val top = projectBase().resolve(relativePath.substringBefore('/'))
-        if (!Files.exists(top) && top !in localPaths) localPaths += top
+        if (!Files.exists(top) && top !in localPaths) localPaths.add(top)
         return projectBase().resolve(relativePath)
     }
 
