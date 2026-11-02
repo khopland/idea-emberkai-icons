@@ -37,7 +37,8 @@
         as generated, so it warns before you edit them.</p>
         <p>Spring, Quarkus, Micronaut, and JPA classes keep their native Java/Kotlin class icons with a small
         stereotype badge: controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
-        configuration classes, and entities.</p>
+        configuration classes, and entities. Test classes show whether they start containers, the whole
+        application, or a Spring Boot test slice.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -171,7 +172,7 @@
             <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
                     class="com.github.khopland.symbols.settings.ToggleStereotypeBadgesAction"
                     text="Class stereotype badges"
-                    description="Badge native class icons for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, and entities"/>
+                    description="Badge native class icons for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, entities, and tests"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"

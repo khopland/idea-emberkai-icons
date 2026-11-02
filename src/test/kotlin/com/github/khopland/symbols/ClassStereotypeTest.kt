@@ -173,6 +173,60 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         assertTrue("Scopes ignore the badge setting", EmberkaiScope.ENTRY_POINTS.contains(controller, project))
     }
 
+    fun testTestClassesShowWhatTheyStart() {
+        PsiTestUtil.addSourceRoot(module, myFixture.tempDirFixture.findOrCreateDir("src/test/java"), true)
+        PsiTestUtil.addSourceRoot(module, myFixture.tempDirFixture.findOrCreateDir("src/test/kotlin"), true)
+        val application = testFile(
+            "OrdersApplicationTests.java",
+            "import org.springframework.boot.test.context.SpringBootTest;",
+            "@SpringBootTest class OrdersApplicationTests {}",
+        )
+        val slice = testFile(
+            "OrdersControllerTest.java",
+            "import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;",
+            "@WebMvcTest(OrdersController.class) class OrdersControllerTest {}",
+        )
+        val boot4Slice = testFile(
+            "OrderRepositoryTest.java",
+            "import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;",
+            "@DataJpaTest class OrderRepositoryTest {}",
+        )
+        val containers = testFile(
+            "OrderRepositoryContainerTest.java",
+            "import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;\n" +
+                "import org.testcontainers.junit.jupiter.Testcontainers;",
+            "@DataJpaTest @Testcontainers class OrderRepositoryContainerTest {}",
+        )
+        val quarkus = testFile("OrdersResourceTest.java", "import io.quarkus.test.junit.QuarkusTest;", "@QuarkusTest class OrdersResourceTest {}")
+        val micronaut = testFile(
+            "OrdersClientTest.kt",
+            "import io.micronaut.test.extensions.junit5.annotation.MicronautTest",
+            "@MicronautTest\nclass OrdersClientTest",
+        )
+        val lookalike = testFile("LookalikeTest.java", "import com.acme.SpringBootTest;", "@SpringBootTest class LookalikeTest {}")
+
+        assertEquals(ClassStereotype.APPLICATION_TEST, ClassStereotypes.fileStereotype(application)?.stereotype)
+        assertEquals(ClassStereotype.SLICE_TEST, ClassStereotypes.fileStereotype(slice)?.stereotype)
+        assertEquals("@WebMvcTest", ClassStereotypes.fileStereotype(slice)?.evidence)
+        assertEquals(ClassStereotype.SLICE_TEST, ClassStereotypes.fileStereotype(boot4Slice)?.stereotype)
+        val container = ClassStereotypes.fileStereotype(containers)
+        assertEquals("Starting containers outranks the slice", ClassStereotype.CONTAINER_TEST, container?.stereotype)
+        assertEquals("@Testcontainers", container?.evidence)
+        assertEquals(ClassStereotype.APPLICATION_TEST, ClassStereotypes.fileStereotype(quarkus)?.stereotype)
+        assertEquals(ClassStereotype.APPLICATION_TEST, ClassStereotypes.fileStereotype(micronaut)?.stereotype)
+        assertNull(ClassStereotypes.fileStereotype(lookalike))
+
+        val psiClass = (slice as PsiJavaFile).classes.single()
+        assertTrue(ClassStereotype.SLICE_TEST.icon in layers(psiClass.getIcon(Iconable.ICON_FLAG_VISIBILITY)))
+        for (file in listOf(application, slice, containers)) {
+            assertFalse("Tests are not entry points", EmberkaiScope.ENTRY_POINTS.contains(file.virtualFile, project))
+        }
+        assertEquals(
+            "Test slice from @WebMvcTest; shown on the native class icon",
+            StereotypeRow(ClassStereotypes.fileStereotype(slice)).describe(),
+        )
+    }
+
     fun testSpringDataRepositoryInterfacesNeedNoAnnotation() {
         val file = javaFile(
             "OrderRepository",
@@ -349,6 +403,15 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
             "src/main/kotlin/com/example/$name.kt",
             "package com.example\n\n$imports\n\n$body\n",
         ) as KtFile
+
+    private fun testFile(name: String, imports: String, body: String): PsiFile {
+        val language = if (name.endsWith(".kt")) "kotlin" else "java"
+        val semicolon = if (language == "java") ";" else ""
+        return myFixture.addFileToProject(
+            "src/test/$language/com/example/$name",
+            "package com.example$semicolon\n\n$imports\n\n$body\n",
+        )
+    }
 
     /** A file written through the VFS, so no PSI tree exists until something parses it. */
     private fun freshFile(path: String, text: String): PsiFile {

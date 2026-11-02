@@ -21,7 +21,8 @@ import javax.swing.Icon
 /**
  * Spring, Quarkus, Micronaut, and JPA roles shown as a small corner glyph on native class icons, in
  * priority order. Entry points, where work enters a service from outside it, outrank the roles a
- * class plays inside it, so a service with a scheduled method shows the hourglass.
+ * class plays inside it, so a service with a scheduled method shows the hourglass. Test kinds come
+ * last, most expensive first, so a slice that starts containers shows the container.
  */
 internal enum class ClassStereotype(val displayName: String, icon: String, val isEntryPoint: Boolean = false) {
     APPLICATION("Spring Boot application", "application", isEntryPoint = true),
@@ -32,11 +33,42 @@ internal enum class ClassStereotype(val displayName: String, icon: String, val i
     REPOSITORY("Repository", "repository"),
     SERVICE("Service", "service"),
     CONFIGURATION("Configuration", "configuration"),
-    ENTITY("Persistent entity", "entity");
+    ENTITY("Persistent entity", "entity"),
+    CONTAINER_TEST("Testcontainers test", "container-test"),
+    APPLICATION_TEST("Full application test", "application-test"),
+    SLICE_TEST("Test slice", "slice-test");
 
     val icon: Icon = IconLoader.getIcon("/emberkai/icons/stereotypes/$icon.svg", ClassStereotype::class.java)
 
     companion object {
+        /** Spring Boot test slices, from their Spring Boot 3 packages and the Spring Boot 4 test modules. */
+        private val SLICE_TESTS = listOf(
+            "org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest",
+            "org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest",
+            "org.springframework.boot.test.autoconfigure.web.client.RestClientTest",
+            "org.springframework.boot.test.autoconfigure.webservices.client.WebServiceClientTest",
+            "org.springframework.boot.test.autoconfigure.graphql.GraphQlTest",
+            "org.springframework.boot.test.autoconfigure.json.JsonTest",
+            "org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest",
+            "org.springframework.boot.test.autoconfigure.jdbc.JdbcTest",
+            "org.springframework.boot.test.autoconfigure.jooq.JooqTest",
+            "org.springframework.boot.test.autoconfigure.data.jdbc.DataJdbcTest",
+            "org.springframework.boot.test.autoconfigure.data.r2dbc.DataR2dbcTest",
+            "org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest",
+            "org.springframework.boot.test.autoconfigure.data.redis.DataRedisTest",
+            "org.springframework.boot.test.autoconfigure.data.cassandra.DataCassandraTest",
+            "org.springframework.boot.test.autoconfigure.data.elasticsearch.DataElasticsearchTest",
+            "org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest",
+            "org.springframework.boot.webflux.test.autoconfigure.WebFluxTest",
+            "org.springframework.boot.restclient.test.autoconfigure.RestClientTest",
+            "org.springframework.boot.graphql.test.autoconfigure.GraphQlTest",
+            "org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest",
+            "org.springframework.boot.jdbc.test.autoconfigure.JdbcTest",
+            "org.springframework.boot.data.jdbc.test.autoconfigure.DataJdbcTest",
+            "org.springframework.boot.data.r2dbc.test.autoconfigure.DataR2dbcTest",
+            "org.springframework.boot.data.mongodb.test.autoconfigure.DataMongoTest",
+        )
+
         private val ANNOTATIONS = mapOf(
             "org.springframework.boot.autoconfigure.SpringBootApplication" to APPLICATION,
             "org.springframework.web.bind.annotation.RestController" to WEB,
@@ -66,7 +98,14 @@ internal enum class ClassStereotype(val displayName: String, icon: String, val i
             "javax.persistence.Entity" to ENTITY,
             "org.springframework.data.mongodb.core.mapping.Document" to ENTITY,
             "io.micronaut.data.annotation.MappedEntity" to ENTITY,
-        )
+            "org.testcontainers.junit.jupiter.Testcontainers" to CONTAINER_TEST,
+            "org.springframework.boot.testcontainers.context.ImportTestcontainers" to CONTAINER_TEST,
+            "org.springframework.boot.test.context.SpringBootTest" to APPLICATION_TEST,
+            "io.quarkus.test.junit.QuarkusTest" to APPLICATION_TEST,
+            "io.quarkus.test.junit.QuarkusIntegrationTest" to APPLICATION_TEST,
+            "io.micronaut.test.extensions.junit5.annotation.MicronautTest" to APPLICATION_TEST,
+            "io.micronaut.test.extensions.kotest5.annotation.MicronautTest" to APPLICATION_TEST,
+        ) + SLICE_TESTS.associateWith { SLICE_TEST }
 
         /** Annotations that mark a class through one of its own methods. */
         private val METHOD_ANNOTATIONS = mapOf(
