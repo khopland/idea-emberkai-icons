@@ -8,10 +8,15 @@ import com.github.khopland.symbols.folders.ServiceFolderIcons
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.Iconable
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.awt.GraphicsEnvironment
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import javax.swing.Icon
 
 internal abstract class IconProviderTestCase : BasePlatformTestCase() {
@@ -27,6 +32,48 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
             }
         }
     }
+
+    /** Top-level paths that [localDirectory] and [addLocalFile] created under the shared project base. */
+    private val localPaths = mutableListOf<Path>()
+
+    override fun tearDown() {
+        try {
+            // Light tests share one project directory, so files written there would leak into later tests.
+            localPaths.forEach { it.toFile().deleteRecursively() }
+            if (localPaths.isNotEmpty()) {
+                LocalFileSystem.getInstance().refreshAndFindFileByNioFile(projectBase())
+                    ?.let { VfsUtil.markDirtyAndRefresh(false, true, true, it) }
+            }
+            localPaths.clear()
+        } finally {
+            super.tearDown()
+        }
+    }
+
+    /** A real directory under the project base, for rules that read the disk; removed after the test. */
+    protected fun localDirectory(relativePath: String): VirtualFile {
+        val path = localPath(relativePath)
+        Files.createDirectories(path)
+        return LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)
+            ?: error("Could not load project directory: $path")
+    }
+
+    /** A real file under the project base; removed after the test. */
+    protected fun addLocalFile(relativePath: String, content: String): VirtualFile {
+        val path = localPath(relativePath)
+        Files.createDirectories(path.parent)
+        Files.writeString(path, content)
+        return LocalFileSystem.getInstance().refreshAndFindFileByNioFile(path)
+            ?: error("Could not load project file: $path")
+    }
+
+    private fun localPath(relativePath: String): Path {
+        val top = projectBase().resolve(relativePath.substringBefore('/'))
+        if (!Files.exists(top) && top !in localPaths) localPaths.add(top)
+        return projectBase().resolve(relativePath)
+    }
+
+    private fun projectBase(): Path = Paths.get(project.basePath!!)
 
     protected fun serviceFolderIcon(directory: VirtualFile): Icon? =
         IconMappings.get(ServiceFolderIcons.iconKey(directory, project))
