@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added test stereotype badges: test classes show what they start, so slow tests stand out. Tests that start containers (`@Testcontainers`, `@ImportTestcontainers`) get a shipping container, tests that start the whole application (`@SpringBootTest`, `@QuarkusTest`, `@QuarkusIntegrationTest`, `@MicronautTest`) a flask, and Spring Boot test slices such as `@WebMvcTest` and `@DataJpaTest`, from Spring Boot 3 or 4, a test tube. A slice that starts containers shows the container. Follows the **Class stereotype badges** setting.
+
 ## [0.6.1] - 2026-11-01
 
 - Fixed *Slow operations are prohibited on EDT* errors: the Project view or a scope picker listing scopes in a project with CODEOWNERS, selecting an owner or double-clicking a file in **Find Reviewers for This Branch**, and **Reveal artwork** in **Explain This Icon** no longer look up files on the UI thread. The **Emberkai: Owned by …** and **Emberkai: No code owners** scopes are now built in the background and appear once CODEOWNERS has been read, and disappear when it is removed.
