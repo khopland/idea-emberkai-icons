@@ -124,8 +124,7 @@ internal class IconOverrideDialog(
                 status.text = "Use a path inside .idea/${ProjectIconOverrideStore.ICONS_DIRECTORY}/ or a bundled path."
                 return
             }
-            val artwork = store.iconsDirectory()?.findFileByRelativePath(relative)
-            if (artwork == null || artwork.isDirectory) {
+            if (!store.hasArtwork(relative)) {
                 status.text = "Add the SVG to .idea/${ProjectIconOverrideStore.ICONS_DIRECTORY}/ or choose a bundled icon."
                 return
             }

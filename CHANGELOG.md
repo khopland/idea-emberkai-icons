@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Fixed *Slow operations are prohibited on EDT* errors when overriding an icon: **Override This Icon…** and **Remove override** in **Explain This Icon**, typing a key or saving in the override dialog, and creating an override from the coverage audit no longer read `.idea/emberkai-icons.properties` or the chosen artwork on the UI thread.
+
 ## [0.6.1] - 2026-11-01
 
 - Fixed *Slow operations are prohibited on EDT* errors: the Project view or a scope picker listing scopes in a project with CODEOWNERS, selecting an owner or double-clicking a file in **Find Reviewers for This Branch**, and **Reveal artwork** in **Explain This Icon** no longer look up files on the UI thread. The **Emberkai: Owned by …** and **Emberkai: No code owners** scopes are now built in the background and appear once CODEOWNERS has been read, and disappear when it is removed.
