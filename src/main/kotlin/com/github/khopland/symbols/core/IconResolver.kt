@@ -16,6 +16,7 @@ import com.github.khopland.symbols.rules.JvmFrameworkIconRule
 import com.github.khopland.symbols.rules.KubernetesIconRule
 import com.github.khopland.symbols.rules.LiquibaseIconRule
 import com.github.khopland.symbols.rules.MigrationIconRule
+import com.github.khopland.symbols.rules.SopsIconRule
 import com.github.khopland.symbols.rules.SpringBootIconRule
 import com.github.khopland.symbols.rules.SpringXmlConfigDetector
 import com.github.khopland.symbols.rules.TerraformIconRule
@@ -35,6 +36,7 @@ internal object IconResolver {
     private val architectureRule = JvmArchitectureFolderIconRule()
     private val contextRules = listOf(
         CiConfigIconRule(),
+        SopsIconRule(),
         LiquibaseIconRule(),
         HelmIconRule(),
         AnsibleIconRule(),

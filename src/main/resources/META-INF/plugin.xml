@@ -12,7 +12,7 @@
         Emberkai folders when that plugin is installed.</p>
         <p>Includes CI pipelines (including CircleCI, Tekton, and Bazel), Ansible, infrastructure as code
         (including Packer, Vagrant, and Nomad), database migrations, OpenAPI and AsyncAPI contracts, Avro schemas,
-        Kubernetes, Kustomize, Flux, Argo CD, and Skaffold, Quarkus, Micronaut, and Ktor configuration,
+        Kubernetes, Kustomize, Flux, Argo CD, and Skaffold, Sealed Secrets, External Secrets, and SOPS, Quarkus, Micronaut, and Ktor configuration,
         JVM quality tooling, developer-tool configuration, and test assets.</p>
         <p>Symbols-style project folders retain source/test colors, resource and
         package markers, and blue module/source-set badges, including Kotlin Multiplatform.
@@ -24,7 +24,8 @@
         environment folders such as <code>overlays/production/</code>, along with the configuration files inside them.
         Production files open with a red-tinted editor tab and a warning banner.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
-        without being ignored get a red stop-sign warning badge. Spring profile files activated by the
+        without being ignored get a red stop-sign warning badge, and so do Kubernetes manifests that hold a
+        plaintext Secret. Spring profile files activated by the
         selected run configuration get a ring-and-dot live marker, and module folders with a live run or
         debug session get a running marker that names the configuration and Spring Boot port.</p>
         <p>An amber warning badge marks problems that would otherwise surface late: Flyway migrations that

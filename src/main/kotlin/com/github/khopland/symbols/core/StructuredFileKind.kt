@@ -41,6 +41,9 @@ internal enum class StructuredFileKind {
             "CustomResourceDefinition" to setOf("apiextensions.k8s.io"),
             "PersistentVolumeClaim" to setOf(""),
             "Namespace" to setOf(""),
+            "SealedSecret" to setOf("bitnami.com"),
+            "ExternalSecret" to setOf("external-secrets.io"),
+            "ClusterExternalSecret" to setOf("external-secrets.io"),
         )
         private const val BUNDLE = "bundle"
 

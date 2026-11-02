@@ -24,7 +24,7 @@ import com.intellij.util.concurrency.AppExecutorUtil
 /** IDE scopes built from the resolver's context rules; folders are never members themselves. */
 internal enum class EmberkaiScope(val displayName: String, private val categories: Set<IconRuleCategory>) {
     MIGRATIONS("Database migrations", setOf(IconRuleCategory.MIGRATION)),
-    INFRASTRUCTURE("Infrastructure", setOf(IconRuleCategory.INFRASTRUCTURE, IconRuleCategory.ANSIBLE)),
+    INFRASTRUCTURE("Infrastructure", setOf(IconRuleCategory.INFRASTRUCTURE, IconRuleCategory.ANSIBLE, IconRuleCategory.SOPS)),
     KUBERNETES(
         "Kubernetes & GitOps",
         setOf(IconRuleCategory.KUBERNETES, IconRuleCategory.HELM, IconRuleCategory.GITOPS),

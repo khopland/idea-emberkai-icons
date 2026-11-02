@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added plaintext Kubernetes Secret badges: a manifest with a core `v1` Secret whose `data` or `stringData` holds values, inside a VCS root and not ignored, gets the red secret warning badge, and joins the **Production blast radius** lens. Base64 is an encoding, not encryption. **Explain This Icon** lists each Secret with its line and keys. Templated values and SOPS-encrypted files are left alone. Follows the **Unignored secret warning badges** setting.
+- Added secret manager icons: Sealed Secrets, External Secrets, and SOPS-encrypted Kubernetes manifests get their own Kubernetes kind badges, and other SOPS-encrypted files, such as Helm secrets and encrypted dotenv files, and `.sops.yaml` get a SOPS icon with its own **SOPS-encrypted files** setting. SOPS files join the **Emberkai: Infrastructure** scope.
 - Fixed *Slow operations are prohibited on EDT* errors when overriding an icon: **Override This Icon…** and **Remove override** in **Explain This Icon**, typing a key or saving in the override dialog, and creating an override from the coverage audit no longer read `.idea/emberkai-icons.properties` or the chosen artwork on the UI thread.
 
 ## [0.6.1] - 2026-11-01
