@@ -41,9 +41,9 @@ jobs:
 
   verify:
     name: Verify IDE compatibility
-    # Downloads every recommended IDE, so it runs on main instead of on every pull request; the
-    # build job already tests and packages the plugin there.
-    if: github.event_name != 'pull_request'
+    # Downloads every recommended IDE, so it runs on main and on release pull requests instead of on
+    # every pull request; a compatibility problem then blocks the release before it is merged.
+    if: github.event_name != 'pull_request' || startsWith(github.head_ref, 'release/')
     runs-on: ubuntu-latest
     steps:
       - uses: jlumbroso/free-disk-space@v1.3.1
