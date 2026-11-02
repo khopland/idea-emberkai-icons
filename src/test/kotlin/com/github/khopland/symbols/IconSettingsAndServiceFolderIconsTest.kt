@@ -1,5 +1,6 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.CategoryGroup
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.ProjectPathUtil
 import com.github.khopland.symbols.settings.EmberkaiIconsConfigurable
@@ -12,12 +13,14 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import com.intellij.ui.components.JBTextField
 import java.awt.Component
 import java.awt.Container
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.swing.JCheckBox
+import javax.swing.JLabel
 
 internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings
@@ -79,9 +82,45 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         }
     }
 
-    private fun checkBoxes(component: Component): List<JCheckBox> = buildList {
-        if (component is JCheckBox) add(component)
-        if (component is Container) component.components.forEach { addAll(checkBoxes(it)) }
+    fun testSettingsPageGroupsCategoriesAndFiltersBySection() {
+        val configurable = EmberkaiIconsConfigurable()
+        try {
+            val root = configurable.createComponent()
+            val order = components(root).mapNotNull { (it as? JLabel)?.text ?: (it as? JCheckBox)?.text }
+            for (group in CategoryGroup.entries) {
+                val start = order.indexOf(group.title)
+                assertTrue("${group.title} section", start >= 0)
+                val rows = order.drop(start + 2).takeWhile { label -> CategoryGroup.entries.none { it.title == label } }
+                for (category in IconRuleCategory.entries.filter { it.group == group }) {
+                    assertTrue("${category.displayName} is listed under ${group.title}", category.displayName in rows)
+                }
+            }
+
+            val filter = components(root).filterIsInstance<JBTextField>().single()
+            val visible = { text: String -> components(root).single { (it as? JCheckBox)?.text == text || (it as? JLabel)?.text == text }.isVisible }
+            filter.text = "warnings"
+            assertTrue("A section title matches its rows", visible(IconRuleCategory.CONFIG_DRIFT.displayName))
+            assertTrue(visible(CategoryGroup.WARNINGS.title))
+            assertFalse("Sections without a match hide their title", visible(CategoryGroup.TOOL_ICONS.title))
+            assertFalse(visible(IconRuleCategory.HELM.displayName))
+
+            filter.text = "helm"
+            assertTrue(visible(IconRuleCategory.HELM.displayName))
+            assertTrue(visible(CategoryGroup.TOOL_ICONS.title))
+            assertFalse(visible(CategoryGroup.WARNINGS.title))
+
+            filter.text = ""
+            assertTrue(components(root).filterIsInstance<JCheckBox>().all { it.isVisible })
+        } finally {
+            configurable.disposeUIResources()
+        }
+    }
+
+    private fun checkBoxes(component: Component): List<JCheckBox> = components(component).filterIsInstance<JCheckBox>()
+
+    private fun components(component: Component): List<Component> = buildList {
+        add(component)
+        if (component is Container) component.components.forEach { addAll(components(it)) }
     }
 
     fun testKubernetesCategorySwitchChangesIconResolution() {
