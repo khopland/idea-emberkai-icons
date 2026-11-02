@@ -8,7 +8,8 @@ import java.util.Locale
 
 /**
  * Recognizes Kubernetes objects and resource kinds from root metadata, Kustomize trees from their
- * marker, and Kubernetes-shaped tool files: Tekton resources and Skaffold configuration.
+ * marker, and Kubernetes-shaped tool files: Tekton resources and Skaffold configuration. Manifests
+ * that SOPS encrypted get their own badge whatever their kind.
  */
 internal class KubernetesIconRule : ContextIconRule {
     override val category = IconRuleCategory.KUBERNETES
@@ -19,8 +20,10 @@ internal class KubernetesIconRule : ContextIconRule {
         }
         if (name == "skaffold.yaml" || name == "skaffold.yml") return "context.skaffold"
         return when (StructuredFileKind.of(file)) {
-            StructuredFileKind.KUBERNETES -> StructuredFileKind.kubernetesResource(file)
-                ?.let { "context.kubernetes.$it" } ?: "context.kubernetes"
+            StructuredFileKind.KUBERNETES -> when {
+                SopsFiles.isEncrypted(file) -> "context.kubernetes.sops"
+                else -> StructuredFileKind.kubernetesResource(file)?.let { "context.kubernetes.$it" } ?: "context.kubernetes"
+            }
             StructuredFileKind.KUSTOMIZE -> "context.kustomize"
             StructuredFileKind.TEKTON -> "context.tekton"
             StructuredFileKind.SKAFFOLD -> "context.skaffold"

@@ -36,6 +36,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var gitOps: Boolean = true,
         var apiSpecifications: Boolean = true,
         var kubernetes: Boolean = true,
+        var sops: Boolean = true,
         var springBoot: Boolean = true,
         var springModulith: Boolean = true,
         var jvmFrameworks: Boolean = true,
@@ -131,6 +132,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.GITOPS -> State::gitOps
             IconRuleCategory.API_SPECIFICATION -> State::apiSpecifications
             IconRuleCategory.KUBERNETES -> State::kubernetes
+            IconRuleCategory.SOPS -> State::sops
             IconRuleCategory.SPRING_BOOT -> State::springBoot
             IconRuleCategory.SPRING_MODULITH -> State::springModulith
             IconRuleCategory.JVM_FRAMEWORKS -> State::jvmFrameworks

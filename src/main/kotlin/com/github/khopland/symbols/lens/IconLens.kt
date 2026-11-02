@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.lens
 
 import com.github.khopland.symbols.badges.SecretFileExposure
+import com.github.khopland.symbols.badges.KubernetesSecrets
 import com.github.khopland.symbols.badges.SecretFileNames
 import com.github.khopland.symbols.ownership.CodeOwners
 import com.github.khopland.symbols.settings.EmberkaiScope
@@ -29,7 +30,8 @@ internal interface Lens {
 
 /**
  * The fixed lenses. Membership comes from the Emberkai scopes, so a lens and the scopes it names
- * always agree; the blast-radius lens also includes secrets that VCS would pick up.
+ * always agree; the blast-radius lens also includes secrets that VCS would pick up, by name or as
+ * plaintext Kubernetes Secrets.
  */
 internal enum class IconLens(
     override val displayName: String,
@@ -53,7 +55,7 @@ internal enum class IconLens(
         if (file.isDirectory) return false
         if (scopes.any { it.contains(file, project) }) return true
         return exposedSecrets &&
-            SecretFileNames.isCandidate(file) &&
+            (SecretFileNames.isCandidate(file) || KubernetesSecrets.plaintext(file).isNotEmpty()) &&
             SecretFileExposure.getInstance(project)?.isExposed(file) == true
     }
 }
