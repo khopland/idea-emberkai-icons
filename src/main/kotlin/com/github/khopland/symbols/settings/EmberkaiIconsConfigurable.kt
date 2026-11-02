@@ -2,6 +2,7 @@ package com.github.khopland.symbols.settings
 
 import com.github.khopland.symbols.accents.ModuleAccentColor
 import com.github.khopland.symbols.accents.ModuleAccentIcon
+import com.github.khopland.symbols.core.CategoryGroup
 import com.github.khopland.symbols.core.IconMappings
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.RefreshProjectIconPresentations
@@ -59,6 +60,7 @@ class EmberkaiIconsConfigurable : Configurable {
     /** Every boolean setting's checkbox, keyed by the state field it edits. */
     private val flagBoxes = linkedMapOf<KMutableProperty1<State, Boolean>, JCheckBox>()
     private val searchableRows = mutableListOf<SearchableRow>()
+    private val sections = mutableListOf<Section>()
 
     override fun getDisplayName(): String = "Emberkai Icons"
 
@@ -79,24 +81,15 @@ class EmberkaiIconsConfigurable : Configurable {
         root.add(filterField!!)
         statusLabel = JLabel(" ").apply { alignmentX = Component.LEFT_ALIGNMENT }
 
-        root.add(sectionTitle("Icon behavior"))
+        section(root, "Icons")
         addFlag(root, State::preserveNativeJavaKotlinIcons, "Keep IntelliJ's native Java and Kotlin file icons")
         addFlag(root, State::colorServiceFolders, "Color service folders by build or package manifest")
         addFlag(
             root, State::moduleAwareColors, "Use module-aware accent colors and folder badges",
             "Assign a stable color to every IntelliJ module and carry it into source roots and packages.",
         )
-        addFlag(
-            root, State::semanticTooltips, "Describe recognized files and folders in Project view tooltips",
-            "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. " +
-                "Screen readers announce it as the node description.",
-        )
-        addFlag(
-            root, State::codeOwnerTooltips, "Show CODEOWNERS owners in Project view tooltips",
-            "Name the owners from the repository's CODEOWNERS file, such as \"Owned by @org/payments\".",
-        )
 
-        root.add(sectionTitle("Folder accessibility"))
+        section(root, "Folder colors and accessibility")
         folderPalette = JComboBox(DefaultComboBoxModel(FolderIconPalette.entries.toTypedArray())).apply {
             renderer = object : DefaultListCellRenderer() {
                 override fun getListCellRendererComponent(
@@ -130,20 +123,30 @@ class EmberkaiIconsConfigurable : Configurable {
         }
         root.add(previewPanel)
 
-        root.add(sectionTitle("Context icon categories"))
-        root.add(JLabel("Apply refreshes project trees and open editor tabs.").apply {
-            alignmentX = Component.LEFT_ALIGNMENT
-        })
-        for (category in IconRuleCategory.entries) {
-            addFlag(root, EmberkaiIconsSettings.flag(category), category.displayName)
+        // Apply refreshes project trees and open editor tabs; the hints say what each group hides.
+        for (group in CategoryGroup.entries) {
+            section(root, group.title, group.hint)
+            for (category in IconRuleCategory.entries.filter { it.group == group }) {
+                addFlag(root, EmberkaiIconsSettings.flag(category), category.displayName)
+            }
         }
 
-        root.add(sectionTitle("Project icon overrides"))
-        root.add(JLabel(
+        section(root, "Tooltips and ownership")
+        addFlag(
+            root, State::semanticTooltips, "Describe recognized files and folders in Project view tooltips",
+            "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. " +
+                "Screen readers announce it as the node description.",
+        )
+        addFlag(
+            root, State::codeOwnerTooltips, "Show CODEOWNERS owners in Project view tooltips",
+            "Name the owners from the repository's CODEOWNERS file, such as \"Owned by @org/payments\".",
+        )
+
+        section(
+            root,
+            "Project icon overrides",
             "Overrides are stored in .idea/${ProjectIconOverrideStore.PROPERTIES_NAME} and can be shared with the project.",
-        ).apply {
-            alignmentX = Component.LEFT_ALIGNMENT
-        })
+        )
         val overrideButtons = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
             alignmentX = Component.LEFT_ALIGNMENT
             add(JButton("Open override file").apply { addActionListener { openOverridesFile() } })
@@ -158,7 +161,7 @@ class EmberkaiIconsConfigurable : Configurable {
         }
         addSearchable(root, overrideButtons, "Project icon overrides")
 
-        root.add(sectionTitle("Settings file"))
+        section(root, "Settings file")
         val settingsButtons = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
             alignmentX = Component.LEFT_ALIGNMENT
             add(JButton("Export…").apply { addActionListener { exportSettings() } })
@@ -205,6 +208,7 @@ class EmberkaiIconsConfigurable : Configurable {
         statusLabel = null
         flagBoxes.clear()
         searchableRows.clear()
+        sections.clear()
     }
 
     private fun selectedPalette(): FolderIconPalette? = folderPalette?.selectedItem as? FolderIconPalette
@@ -223,16 +227,33 @@ class EmberkaiIconsConfigurable : Configurable {
         addSearchable(root, checkbox, text)
     }
 
+    /** Starts a section that the filter hides, title and [hint] included, when none of its rows match. */
+    private fun section(root: JPanel, title: String, hint: String? = null) {
+        val header = listOfNotNull(
+            sectionTitle(title),
+            hint?.let { JLabel(it).apply { alignmentX = Component.LEFT_ALIGNMENT } },
+        )
+        header.forEach(root::add)
+        sections += Section(title, header)
+    }
+
     private fun addSearchable(root: JPanel, component: JComponent, text: String) {
         component.alignmentX = Component.LEFT_ALIGNMENT
-        searchableRows += SearchableRow(component, text)
+        searchableRows += SearchableRow(component, text, sections.lastOrNull())
         root.add(component)
     }
 
+    /** A row matches by its own text or its section's title, so "warnings" shows that whole section. */
     private fun applyFilter() {
         val query = filterField?.text?.trim()?.lowercase(Locale.ROOT).orEmpty()
         searchableRows.forEach { row ->
-            row.component.isVisible = query.isEmpty() || row.text.lowercase(Locale.ROOT).contains(query)
+            row.component.isVisible = query.isEmpty() ||
+                row.text.lowercase(Locale.ROOT).contains(query) ||
+                row.section?.title?.lowercase(Locale.ROOT)?.contains(query) == true
+        }
+        sections.forEach { section ->
+            val visible = searchableRows.any { it.section === section && it.component.isVisible }
+            section.header.forEach { it.isVisible = visible }
         }
         filterField?.parent?.revalidate()
         filterField?.parent?.repaint()
@@ -409,7 +430,9 @@ class EmberkaiIconsConfigurable : Configurable {
         add(component, BorderLayout.CENTER)
     }
 
-    private data class SearchableRow(val component: JComponent, val text: String)
+    private class Section(val title: String, val header: List<JComponent>)
+
+    private data class SearchableRow(val component: JComponent, val text: String, val section: Section?)
 
     private data class PreviewItem(val label: String, val icon: javax.swing.Icon?)
 
