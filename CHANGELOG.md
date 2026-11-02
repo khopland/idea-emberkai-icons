@@ -2,12 +2,12 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-02
+
 - Added test stereotype badges: test classes show what they start, so slow tests stand out. Tests that start containers (`@Testcontainers`, `@ImportTestcontainers`) get a shipping container, tests that start the whole application (`@SpringBootTest`, `@QuarkusTest`, `@QuarkusIntegrationTest`, `@MicronautTest`) a flask, and Spring Boot test slices such as `@WebMvcTest` and `@DataJpaTest`, from Spring Boot 3 or 4, a test tube. A slice that starts containers shows the container. Follows the **Class stereotype badges** setting.
 - Added plaintext Kubernetes Secret badges: a manifest with a core `v1` Secret whose `data` or `stringData` holds values, inside a VCS root and not ignored, gets the red secret warning badge, and joins the **Production blast radius** lens. Base64 is an encoding, not encryption. **Explain This Icon** lists each Secret with its line and keys. Templated values and SOPS-encrypted files are left alone. Follows the **Unignored secret warning badges** setting.
 - Added secret manager icons: Sealed Secrets, External Secrets, and SOPS-encrypted Kubernetes manifests get their own Kubernetes kind badges, and other SOPS-encrypted files, such as Helm secrets and encrypted dotenv files, and `.sops.yaml` get a SOPS icon with its own **SOPS-encrypted files** setting. SOPS files join the **Emberkai: Infrastructure** scope.
 - Grouped the settings page by what each option shows: **Icons**, **Folder colors and accessibility**, **Tool icons**, **Badges and warnings**, **Markers and hints**, and **Tooltips and ownership**, each with a one-line description. The filter also matches section titles, so *warnings* shows every warning badge, and hides sections with no match.
-
-
 - Fixed *Slow operations are prohibited on EDT* errors when overriding an icon: **Override This Icon…** and **Remove override** in **Explain This Icon**, typing a key or saving in the override dialog, and creating an override from the coverage audit no longer read `.idea/emberkai-icons.properties` or the chosen artwork on the UI thread.
 
 ## [0.6.1] - 2026-11-01
@@ -93,7 +93,8 @@
 - Established the Symbols-based Java/Kotlin icon provider, checked-in SVG assets, and a minimal Gradle build.
 - Added upstream icon, license, and attribution updates with a check mode and manual CI workflow; included original icon notices under the MIT license.
 
-[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.4.0...v0.5.0
