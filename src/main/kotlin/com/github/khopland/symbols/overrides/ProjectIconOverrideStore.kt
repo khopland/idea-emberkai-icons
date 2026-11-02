@@ -5,6 +5,7 @@ import com.github.khopland.symbols.core.ProjectPathUtil
 import com.github.khopland.symbols.core.RefreshProjectIconPresentations
 import com.github.khopland.symbols.core.SymbolsIconProvider
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.Service
@@ -21,6 +22,7 @@ import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.encoding.EncodingRegistry
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.vfs.newvfs.events.VFileMoveEvent
@@ -30,6 +32,8 @@ import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URLClassLoader
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.Locale
 import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
@@ -45,7 +49,8 @@ internal data class ProjectIconOverride(
 /**
  * Project-scoped overrides live next to the project's other `.idea` configuration so a team can
  * share them through version control. Lookups only read an in-memory snapshot; VFS events and
- * unsaved edits to the properties document invalidate it and repaint the project's icons.
+ * unsaved edits to the properties document invalidate it and repaint the project's icons. Saves
+ * made through the store publish the text they wrote, so dialogs read their own edits back at once.
  */
 @Service(Service.Level.PROJECT)
 internal class ProjectIconOverrideStore(private val project: Project) : Disposable {
@@ -138,14 +143,21 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
 
     /** Must be called from the EDT. */
     fun removeOverride(key: String): Boolean {
-        if (ProjectIconOverrideFile.normalizeKey(key) !in overrides()) return true
+        if (propertiesFile() == null) return true
         return updateEntry(key, null)
+    }
+
+    /** Whether [relative] names a file in `.idea/emberkai-icons/`; checks the disk, not the VFS, so the EDT may call it. */
+    fun hasArtwork(relative: String): Boolean {
+        val directory = iconsPath()?.let(Path::of) ?: return false
+        val artwork = directory.resolve(relative).normalize()
+        return artwork.startsWith(directory) && Files.isRegularFile(artwork)
     }
 
     /**
      * Copies [source] and its `_dark` sibling, if any, into `.idea/emberkai-icons/` and returns the
      * relative path. Artwork already in that folder is referenced in place; a different file with
-     * the same name gets a numbered copy.
+     * the same name gets a numbered copy. Must be called from the EDT.
      */
     fun importArtwork(source: VirtualFile): String? {
         iconsDirectory()?.let { directory ->
@@ -153,11 +165,12 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
         }
         val directory = ensureIconsDirectory() ?: return null
         return try {
-            val bytes = source.contentsToByteArray()
-            val extension = source.extension?.let { ".$it" }.orEmpty()
-            val darkBytes = source.parent?.findChild("${source.nameWithoutExtension}_dark$extension")
-                ?.takeIf { !it.isDirectory }?.contentsToByteArray()
+            // Reading the artwork can hit the disk, which the EDT may do only inside a write action.
             WriteAction.compute<String, IOException> {
+                val bytes = source.contentsToByteArray()
+                val extension = source.extension?.let { ".$it" }.orEmpty()
+                val darkBytes = source.parent?.findChild("${source.nameWithoutExtension}_dark$extension")
+                    ?.takeIf { !it.isDirectory }?.contentsToByteArray()
                 val baseName = source.nameWithoutExtension.ifBlank { "custom" }
                 var name = baseName
                 var suffix = 2
@@ -231,12 +244,23 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
             ?: return Snapshot(emptyMap(), iconsDirectory = null)
         val text = try {
             FileDocumentManager.getInstance().getCachedDocument(file)?.immutableCharSequence?.toString()
-                ?: VfsUtilCore.loadText(file)
+                ?: readText(file)
         } catch (exception: IOException) {
             log.warn("Could not read project icon overrides", exception)
             return Snapshot(emptyMap(), iconsDirectory = null)
         }
         return Snapshot(ProjectIconOverrideFile.parse(text), iconsPath())
+    }
+
+    /**
+     * Dialog buttons and key listeners read overrides on the EDT, where loading VFS content is a slow
+     * operation the IDE reports; the file is small, so read it straight from the disk there.
+     */
+    private fun readText(file: VirtualFile): String {
+        if (!ApplicationManager.getApplication().isDispatchThread || !file.isInLocalFileSystem) return VfsUtilCore.loadText(file)
+        // VirtualFile.charset may detect the encoding from content; use the one properties files are configured with.
+        val charset = EncodingRegistry.getInstance().getDefaultCharsetForPropertiesFiles(file) ?: Charsets.UTF_8
+        return Files.readString(file.toNioPath(), charset)
     }
 
     private fun changed() {
@@ -269,23 +293,30 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
     private fun updateEntry(key: String, value: String?): Boolean {
         val file = ensurePropertiesFile() ?: return false
         val documents = FileDocumentManager.getInstance()
-        val document = documents.getDocument(file)
-        try {
-            if (document != null) {
-                val updated = ProjectIconOverrideFile.update(document.text, key, value)
-                WriteCommandAction.runWriteCommandAction(project, "Update Icon Override", null, {
+        val text = try {
+            // Loading the document or the file can hit the disk, which the EDT may do only inside a write action.
+            WriteCommandAction.writeCommandAction(project).withName("Update Icon Override").compute<String, IOException> {
+                val document = documents.getDocument(file)
+                val current = document?.text ?: VfsUtilCore.loadText(file)
+                if (value == null && ProjectIconOverrideFile.normalizeKey(key) !in ProjectIconOverrideFile.parse(current)) {
+                    return@compute current
+                }
+                val updated = ProjectIconOverrideFile.update(current, key, value)
+                if (document != null) {
                     document.setText(updated)
-                })
-                documents.saveDocument(document)
-            } else {
-                val updated = ProjectIconOverrideFile.update(VfsUtilCore.loadText(file), key, value)
-                WriteAction.run<IOException> { file.setBinaryContent(updated.toByteArray(file.charset)) }
+                    documents.saveDocument(document)
+                } else {
+                    file.setBinaryContent(updated.toByteArray(file.charset))
+                }
+                updated
             }
         } catch (exception: IOException) {
             log.warn("Could not save project icon overrides", exception)
             return false
         }
         changed()
+        // The text just written is the new state; dialogs read it back on the EDT right away.
+        synchronized(lock) { cached = Snapshot(ProjectIconOverrideFile.parse(text), iconsPath()) }
         return true
     }
 

@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Added test stereotype badges: test classes show what they start, so slow tests stand out. Tests that start containers (`@Testcontainers`, `@ImportTestcontainers`) get a shipping container, tests that start the whole application (`@SpringBootTest`, `@QuarkusTest`, `@QuarkusIntegrationTest`, `@MicronautTest`) a flask, and Spring Boot test slices such as `@WebMvcTest` and `@DataJpaTest`, from Spring Boot 3 or 4, a test tube. A slice that starts containers shows the container. Follows the **Class stereotype badges** setting.
+- Fixed *Slow operations are prohibited on EDT* errors when overriding an icon: **Override This Icon…** and **Remove override** in **Explain This Icon**, typing a key or saving in the override dialog, and creating an override from the coverage audit no longer read `.idea/emberkai-icons.properties` or the chosen artwork on the UI thread.
 
 ## [0.6.1] - 2026-11-01
 
