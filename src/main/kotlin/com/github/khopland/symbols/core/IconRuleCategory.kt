@@ -10,6 +10,7 @@ internal enum class IconRuleCategory(val displayName: String) {
     GITOPS("Flux and Argo CD"),
     API_SPECIFICATION("API contracts (OpenAPI, AsyncAPI, Avro)"),
     KUBERNETES("Kubernetes and Kustomize"),
+    SOPS("SOPS-encrypted files"),
     SPRING_BOOT("Spring Boot"),
     SPRING_MODULITH("Spring Modulith package locks"),
     JVM_FRAMEWORKS("Quarkus, Micronaut, and Ktor"),

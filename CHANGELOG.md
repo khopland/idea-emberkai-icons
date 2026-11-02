@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Added plaintext Kubernetes Secret badges: a manifest with a core `v1` Secret whose `data` or `stringData` holds values, inside a VCS root and not ignored, gets the red secret warning badge, and joins the **Production blast radius** lens. Base64 is an encoding, not encryption. **Explain This Icon** lists each Secret with its line and keys. Templated values and SOPS-encrypted files are left alone. Follows the **Unignored secret warning badges** setting.
+- Added secret manager icons: Sealed Secrets, External Secrets, and SOPS-encrypted Kubernetes manifests get their own Kubernetes kind badges, and other SOPS-encrypted files, such as Helm secrets and encrypted dotenv files, and `.sops.yaml` get a SOPS icon with its own **SOPS-encrypted files** setting. SOPS files join the **Emberkai: Infrastructure** scope.
+
 ## [0.6.1] - 2026-11-01
 
 - Fixed *Slow operations are prohibited on EDT* errors: the Project view or a scope picker listing scopes in a project with CODEOWNERS, selecting an owner or double-clicking a file in **Find Reviewers for This Branch**, and **Reveal artwork** in **Explain This Icon** no longer look up files on the UI thread. The **Emberkai: Owned by …** and **Emberkai: No code owners** scopes are now built in the background and appear once CODEOWNERS has been read, and disappear when it is removed.

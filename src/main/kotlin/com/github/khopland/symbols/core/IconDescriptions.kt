@@ -24,6 +24,11 @@ internal object IconDescriptions {
         "context.opentofu" to "OpenTofu configuration",
         "context.opentofu-folder" to "OpenTofu folder",
         "context.kubernetes" to "Kubernetes manifest",
+        "context.kubernetes.sops" to "SOPS-encrypted Kubernetes manifest",
+        "context.kubernetes.sealedsecret" to "Sealed Secret",
+        "context.kubernetes.externalsecret" to "External Secret",
+        "context.kubernetes.clusterexternalsecret" to "Cluster External Secret",
+        "context.sops" to "SOPS-encrypted file",
         "context.kustomize" to "Kustomization",
         "context.kustomize-folder" to "Kustomize folder",
         "context.migration" to "Database migration",
@@ -105,6 +110,7 @@ internal object IconDescriptions {
                 file.parent?.name == "crds" -> "Helm chart CRD"
                 else -> null
             }
-            else -> if (key?.startsWith("context.kubernetes.") == true) LABELS["context.kubernetes"] else null
+            "context.sops" -> if (name == ".sops.yaml" || name == ".sops.yml") "SOPS configuration" else null
+            else -> if (key?.startsWith("context.kubernetes.") == true) LABELS[key] ?: LABELS["context.kubernetes"] else null
         }
 }
