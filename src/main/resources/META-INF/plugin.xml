@@ -79,9 +79,8 @@
                         dynamic="true"/>
     </extensionPoints>
     <!--
-        Badges and markers run in this order, each wrapping the icon the previous one produced.
-        The running-service marker must follow module accents because it replaces the accent dot, and
-        config drift comes before the live-profile marker so that marker stays outermost on profile files.
+        Badges and markers run in this order, each wrapping the icon the previous one produced. Each
+        corner holds one badge (see BadgeSlot), so which badge is drawn depends on urgency, not on this order.
     -->
     <extensions defaultExtensionNs="com.github.khopland.symbols">
         <iconDecorator implementation="com.github.khopland.symbols.badges.EnvironmentVariantDecorator"/>

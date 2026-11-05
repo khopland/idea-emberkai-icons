@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.spring
 
-import com.github.khopland.symbols.badges.BadgedIcon
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.ui.JBColor
 import java.awt.BasicStroke
 import java.awt.Color
@@ -10,18 +11,22 @@ import javax.swing.Icon
 
 /**
  * Marks a Spring profile file that the selected run configuration activates. The ring-and-dot
- * "live" target sits in the top-right corner, away from the bottom-right environment badge, and
- * its shape stays distinct from the filled badge shapes when color is reduced or removed.
+ * "live" target sits in the attention corner, below warnings and exposed secrets, and its shape
+ * stays distinct from the filled badge shapes when color is reduced or removed.
  */
 internal class ActiveSpringProfileIcon(
     baseIcon: Icon,
     private val highContrast: Boolean = false,
     private val monochrome: Boolean = false,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ATTENTION
+    override val urgency: Int get() = BadgedIcon.LIVE
+
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = minOf(6.5f, iconWidth / 2f, iconHeight / 2f)
-        val markerX = x + iconWidth - size - 0.75f
-        val markerY = y + 0.75f
+        val origin = slotOrigin(x, y, size, inset = 0.75f)
+        val markerX = origin.x
+        val markerY = origin.y
         val ring = Ellipse2D.Float(markerX, markerY, size, size)
         val dotSize = size * 0.38f
         val dot = Ellipse2D.Float(

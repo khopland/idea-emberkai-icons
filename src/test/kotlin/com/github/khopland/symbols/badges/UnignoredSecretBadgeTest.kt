@@ -1,13 +1,16 @@
 package com.github.khopland.symbols.badges
 
 import com.github.khopland.symbols.IconProviderTestCase
+import com.github.khopland.symbols.core.BadgedIcon
 import com.github.khopland.symbols.core.IconDescriptions
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.core.fact
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.setEnabled
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.registerOrReplaceServiceInstance
+import javax.swing.Icon
 
 internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings
@@ -75,6 +78,28 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
         assertNotNull(
             "Files without a mapping fall back to their file-type icon",
             (provider.getIcon(key, 0) as? UnignoredSecretBadgeIcon)?.baseIcon,
+        )
+    }
+
+    fun testAnExposedSecretOutranksOtherWarningsButStillReportsThem() {
+        useExposure { true }
+        myFixture.addFileToProject(".env.staging", "DB_URL=staging\nFEATURE_FLAG=1\n")
+        myFixture.addFileToProject(".env.test", "DB_URL=test\nFEATURE_FLAG=1\n")
+        val production = myFixture.addFileToProject(".env.production", "DB_URL=prod\n").virtualFile
+
+        val resolution = IconResolver.resolveWithDetails(production, project)
+        val secret = resolution.icon as? UnignoredSecretBadgeIcon
+        assertNotNull("The exposed secret holds the attention corner", secret)
+        assertEquals(EnvironmentVariant.PRODUCTION, (secret!!.baseIcon as? EnvironmentVariantBadgeIcon)?.variant)
+        assertFalse(
+            "The drift warning is not drawn under the secret badge",
+            generateSequence<Icon>(secret) { (it as? BadgedIcon)?.baseIcon }.any { it is ConfigDriftBadgeIcon },
+        )
+        assertNotNull("The drift is still reported", resolution.fact<ConfigDriftFact>())
+        assertTrue(resolution.detail, resolution.detail.contains("A more urgent badge is drawn in its place."))
+        assertEquals(
+            "Environment file · production · missing FEATURE_FLAG · not ignored by VCS — may contain secrets",
+            IconDescriptions.describe(production, resolution),
         )
     }
 

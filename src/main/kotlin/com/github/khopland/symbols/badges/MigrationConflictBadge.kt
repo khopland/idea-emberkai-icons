@@ -1,5 +1,7 @@
 package com.github.khopland.symbols.badges
 
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -166,17 +168,21 @@ internal class FlywayMigrationCacheListener : BulkFileListener {
 }
 
 /**
- * Paints an amber warning triangle in the bottom-left corner, the one corner no other Emberkai
- * badge uses, so it stacks with environment, secret, and live-profile badges.
+ * Paints an amber warning triangle in the attention corner. It outranks live markers and module
+ * accents there and yields only to the exposed-secret badge.
  */
 internal abstract class WarningTriangleBadgeIcon(
     baseIcon: Icon,
     internal val highContrast: Boolean,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ATTENTION
+    override val urgency: Int get() = BadgedIcon.WARNING
+
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = minOf(8f, iconWidth / 2f, iconHeight / 2f)
-        val left = x + 0.5f
-        val top = y + iconHeight - size - 0.5f
+        val origin = slotOrigin(x, y, size, inset = 0.5f)
+        val left = origin.x
+        val top = origin.y
         val triangle = Path2D.Float().apply {
             moveTo(left + size / 2, top)
             lineTo(left + size, top + size)

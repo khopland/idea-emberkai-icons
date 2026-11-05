@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.run
 
-import com.github.khopland.symbols.badges.BadgedIcon
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.ui.JBColor
 import java.awt.BasicStroke
 import java.awt.Color
@@ -10,8 +11,9 @@ import javax.swing.Icon
 
 /**
  * Marks a module folder with a live run or debug session: a solid core inside an outer pulse ring,
- * in the top-right "live" corner. The solid core keeps it distinct from the Spring profile marker's
- * hollow ring-and-dot, which only appears on files, when color is reduced or removed.
+ * in the attention corner, where it replaces the module accent dot. The solid core keeps it
+ * distinct from the Spring profile marker's hollow ring-and-dot, which only appears on files, when
+ * color is reduced or removed.
  */
 internal class RunningServiceIcon(
     baseIcon: Icon,
@@ -19,10 +21,14 @@ internal class RunningServiceIcon(
     private val highContrast: Boolean = false,
     private val monochrome: Boolean = false,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ATTENTION
+    override val urgency: Int get() = BadgedIcon.LIVE
+
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = minOf(7f, iconWidth / 2f, iconHeight / 2f)
-        val markerX = x + iconWidth - size - 0.5f
-        val markerY = y + 0.5f
+        val origin = slotOrigin(x, y, size, inset = 0.5f)
+        val markerX = origin.x
+        val markerY = origin.y
         val ring = Ellipse2D.Float(markerX, markerY, size, size)
         val coreSize = size * 0.5f
         val core = Ellipse2D.Float(
