@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Redrew Emberkai's own artwork on the 16px pixel grid so it reads at normal size. Kubernetes kind badges are larger, with one glyph per kind: External Secrets now show a key instead of an arrow like Ingress, Sealed Secrets an envelope, persistent volume claims a drive, namespaces corner brackets, and Ingress turns magenta. JVM architecture folders use the same shapes and colors as the class stereotype badges. Flux folders show reconcile arrows, so they no longer look like Kustomize folders, and OpenAPI files show a segmented ring, so they no longer look like OpenRewrite. The OpenAPI, Flux, Kustomize, SOPS, pre-commit, SDKMAN, Skaffold, Packer, Avro, and AsyncAPI icons and the test-slice badge are simpler and sharper.
+
 ## [0.7.0] - 2026-11-02
 
 - Added test stereotype badges: test classes show what they start, so slow tests stand out. Tests that start containers (`@Testcontainers`, `@ImportTestcontainers`) get a shipping container, tests that start the whole application (`@SpringBootTest`, `@QuarkusTest`, `@QuarkusIntegrationTest`, `@MicronautTest`) a flask, and Spring Boot test slices such as `@WebMvcTest` and `@DataJpaTest`, from Spring Boot 3 or 4, a test tube. A slice that starts containers shows the container. Follows the **Class stereotype badges** setting.
