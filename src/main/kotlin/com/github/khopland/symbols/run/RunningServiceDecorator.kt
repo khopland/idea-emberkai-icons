@@ -1,6 +1,5 @@
 package com.github.khopland.symbols.run
 
-import com.github.khopland.symbols.accents.ModuleAccentIcon
 import com.github.khopland.symbols.core.IconDecorator
 import com.github.khopland.symbols.core.IconFact
 import com.github.khopland.symbols.core.IconResolution
@@ -17,11 +16,7 @@ internal data class RunningSessionsFact(val sessions: List<RunningServices.Sessi
     override val tooltipOrder: Int get() = 70
 }
 
-/**
- * A module folder with a live run or debug session carries the running marker. It shares the
- * top-right corner with module accents, which module roots rarely carry, so it replaces the dot.
- * Registered after the module accent decorator so it can unwrap the dot.
- */
+/** A module folder with a live run or debug session carries the running marker, in place of its accent dot. */
 internal class RunningServiceDecorator : IconDecorator {
     override fun decorateFolder(resolution: IconResolution, directory: VirtualFile, project: Project?): IconResolution {
         if (project == null || project.isDisposed) return resolution
@@ -30,10 +25,9 @@ internal class RunningServiceDecorator : IconDecorator {
         val settings = EmberkaiIconsSettings.getInstance()
         if (!settings.isEnabled(IconRuleCategory.RUNNING_SERVICES)) return resolution
         val icon = resolution.icon ?: return resolution
-        val base = (icon as? ModuleAccentIcon)?.baseIcon ?: icon
         return resolution.decorated(
             RunningServiceIcon(
-                base,
+                icon,
                 debug = sessions.all { it.debug },
                 highContrast = settings.highContrastFolderIcons,
                 monochrome = settings.monochromeFolderIcons,

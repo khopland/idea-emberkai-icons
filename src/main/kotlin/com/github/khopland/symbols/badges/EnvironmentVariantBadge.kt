@@ -1,5 +1,7 @@
 package com.github.khopland.symbols.badges
 
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.BasicStroke
 import java.awt.Color
@@ -128,9 +130,12 @@ internal class EnvironmentVariantBadgeIcon(
     baseIcon: Icon,
     internal val variant: EnvironmentVariant,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ENVIRONMENT
+
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = minOf(7f, iconWidth / 2f, iconHeight / 2f)
-        val shape = variant.badgeShape(x + iconWidth - size - 1f, y + iconHeight - size - 1f, size)
+        val origin = slotOrigin(x, y, size, inset = 1f)
+        val shape = variant.badgeShape(origin.x, origin.y, size)
         g.color = Color.WHITE
         g.stroke = BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
         g.draw(shape)

@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.accents
 
-import com.github.khopland.symbols.badges.BadgedIcon
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.ui.JBColor
 import java.awt.Color
 import java.awt.Graphics2D
@@ -8,18 +9,23 @@ import javax.swing.Icon
 
 /**
  * Adds a small module-color dot to folder artwork. The badge is intentionally quieter than the
- * fully colored service-root icon so source roots and packages keep their role cues.
+ * fully colored service-root icon so source roots and packages keep their role cues, and it is the
+ * least urgent attention badge, so any other one replaces it.
  */
 internal class ModuleAccentIcon(
     baseIcon: Icon,
     val accent: ModuleAccentColor,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ATTENTION
+    override val urgency: Int get() = BadgedIcon.MODULE_ACCENT
+
     private val accentColor: Color = JBColor(accent.awtColor(false), accent.awtColor(true))
 
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = (minOf(iconWidth, iconHeight) * 0.32f).coerceIn(4f, 6f)
-        val dotX = x + iconWidth - size - 0.5f
-        val dotY = y + 0.5f
+        val origin = slotOrigin(x, y, size, inset = 0.5f)
+        val dotX = origin.x
+        val dotY = origin.y
         // Paint a halo first so the dot separates from both light and dark folder outlines.
         g.color = HALO
         g.fillOval((dotX - 1f).toInt(), (dotY - 1f).toInt(), (size + 2f).toInt(), (size + 2f).toInt())

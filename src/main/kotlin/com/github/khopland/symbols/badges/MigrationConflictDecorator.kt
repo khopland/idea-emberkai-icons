@@ -118,9 +118,10 @@ internal class MigrationConflictDecorator : IconDecorator {
                     "${it.values.first().baseRef}: ${it.keys.sorted().joinToString()}"
             },
         )
-        return described.copy(
-            icon = MigrationConflictBadgeIcon(icon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
-            detail = "${described.detail} A warning badge marks ${problems.joinToString("; and ")}.",
+        return described.decorated(
+            MigrationConflictBadgeIcon(icon, settings.highContrastFolderIcons || settings.monochromeFolderIcons),
+            null,
+            "A warning badge marks ${problems.joinToString("; and ")}.",
         )
     }
 }

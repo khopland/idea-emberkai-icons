@@ -25,6 +25,14 @@ internal interface IconDecorator {
 internal fun IconResolution.iconOrFileTypeIcon(file: VirtualFile): Icon? =
     icon ?: FileTypeManager.getInstance().getFileTypeByFile(file).icon
 
-/** Replaces the icon with [icon], records [fact], and appends [detail] to the explanation. */
-internal fun IconResolution.decorated(icon: Icon, fact: IconFact, detail: String): IconResolution =
-    copy(icon = icon, facts = facts + fact, detail = "${this.detail} $detail")
+/**
+ * Replaces the icon with [icon], records [fact], and appends [detail] to the explanation. A badge
+ * that loses its corner to a more urgent one is not drawn, but its fact and detail are kept, so
+ * tooltips and Explain This Icon still report it.
+ */
+internal fun IconResolution.decorated(icon: Icon, fact: IconFact?, detail: String): IconResolution {
+    val badge = icon as? BadgedIcon
+    val shown = badge?.claimSlot() ?: icon
+    val hidden = if (badge != null && shown === badge.baseIcon) " A more urgent badge is drawn in its place." else ""
+    return copy(icon = shown, facts = facts + listOfNotNull(fact), detail = "${this.detail} $detail$hidden")
+}

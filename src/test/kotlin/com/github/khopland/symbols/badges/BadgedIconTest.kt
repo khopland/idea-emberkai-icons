@@ -2,6 +2,8 @@ package com.github.khopland.symbols.badges
 
 import com.github.khopland.symbols.accents.ModuleAccentColor
 import com.github.khopland.symbols.accents.ModuleAccentIcon
+import com.github.khopland.symbols.core.BadgedIcon
+import com.github.khopland.symbols.core.BadgeSlot
 import com.github.khopland.symbols.core.SymbolsIconProvider
 import com.github.khopland.symbols.spring.ActiveSpringProfileIcon
 import com.github.khopland.symbols.spring.ModulithFolderIcon
@@ -50,6 +52,47 @@ internal class BadgedIconTest : BasePlatformTestCase() {
             assertTrue("$name should swap in the dark base", pixels(dark.baseIcon).contentEquals(darkPixels))
         }
     }
+
+    fun testEachCornerShowsOnlyItsMostUrgentBadge() {
+        val accented = ModuleAccentIcon(base, ModuleAccentColor.GREEN).claimSlot()
+        val warned = ConfigDriftBadgeIcon(accented, highContrast = false).claimSlot()
+        assertSame("A warning replaces the accent dot", base, (warned as BadgedIcon).baseIcon)
+
+        val environment = EnvironmentVariantBadgeIcon(warned, EnvironmentVariant.PRODUCTION).claimSlot()
+        assertSame("The environment has its own corner", warned, (environment as BadgedIcon).baseIcon)
+
+        assertSame("A live marker yields to a warning", environment, ActiveSpringProfileIcon(environment).claimSlot())
+        assertSame("Equal warnings draw one triangle", environment, UnpinnedReferenceBadgeIcon(environment, false).claimSlot())
+
+        val secret = UnignoredSecretBadgeIcon(environment, highContrast = false).claimSlot()
+        assertEquals(listOf(UnignoredSecretBadgeIcon::class, EnvironmentVariantBadgeIcon::class), layers(secret))
+        assertEquals(listOf(BadgeSlot.ATTENTION, BadgeSlot.ENVIRONMENT), badges(secret).map { it.slot })
+    }
+
+    fun testOverlaysLeaveTheArtworksOwnCornerBadge() {
+        val deployment = IconLoader.getIcon("/emberkai/icons/kubernetes/deployment.svg", SymbolsIconProvider::class.java)
+        val kindBadge = corner(pixels(deployment), deployment.iconWidth)
+        val overlays: List<BadgedIcon> = listOf(
+            EnvironmentVariantBadgeIcon(deployment, EnvironmentVariant.PRODUCTION),
+            UnignoredSecretBadgeIcon(deployment, highContrast = false),
+            ConfigDriftBadgeIcon(deployment, highContrast = false),
+        )
+        for (overlay in overlays) {
+            assertTrue(
+                "${overlay.javaClass.simpleName} must not cover the Kubernetes kind badge",
+                corner(pixels(overlay), overlay.iconWidth).contentEquals(kindBadge),
+            )
+        }
+    }
+
+    private fun badges(icon: Icon): List<BadgedIcon> =
+        generateSequence(icon as? BadgedIcon) { it.baseIcon as? BadgedIcon }.toList()
+
+    private fun layers(icon: Icon) = badges(icon).map { it::class }
+
+    /** The bottom-right pixels from (10, 10), where artwork such as Kubernetes kinds draws its own badge. */
+    private fun corner(pixels: IntArray, width: Int): IntArray =
+        pixels.filterIndexed { index, _ -> index % width >= 10 && index / width >= 10 }.toIntArray()
 
     private fun pixels(icon: Icon): IntArray {
         val image = BufferedImage(icon.iconWidth, icon.iconHeight, BufferedImage.TYPE_INT_ARGB)

@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.spring
 
-import com.github.khopland.symbols.badges.BadgedIcon
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.ui.JBColor
 import java.awt.BasicStroke
 import java.awt.Color
@@ -13,9 +14,12 @@ internal class ModulithFolderIcon(
     baseIcon: Icon,
     internal val lock: ModulithLock,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ARTWORK
+
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = (minOf(iconWidth, iconHeight) * 0.5f).coerceIn(7f, 9f)
-        paintLock(g, x + iconWidth - size, y + iconHeight - size, size)
+        val origin = slotOrigin(x, y, size, inset = 0f)
+        paintLock(g, origin.x, origin.y, size)
     }
 
     override fun withBase(base: Icon): BadgedIcon = ModulithFolderIcon(base, lock)

@@ -1,5 +1,7 @@
 package com.github.khopland.symbols.badges
 
+import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.BadgedIcon
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import java.awt.BasicStroke
@@ -54,11 +56,14 @@ internal class UnignoredSecretBadgeIcon(
     baseIcon: Icon,
     internal val highContrast: Boolean,
 ) : BadgedIcon(baseIcon) {
+    override val slot: BadgeSlot get() = BadgeSlot.ATTENTION
+    override val urgency: Int get() = BadgedIcon.EXPOSED_SECRET
+
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
-        // Top-right keeps the badge clear of environment badges in the bottom-right corner.
         val size = minOf(8f, iconWidth / 2f, iconHeight / 2f)
-        val badgeX = x + iconWidth - size - 0.5f
-        val badgeY = y + 0.5f
+        val origin = slotOrigin(x, y, size, inset = 0.5f)
+        val badgeX = origin.x
+        val badgeY = origin.y
         val shape = octagon(badgeX, badgeY, size)
         g.color = Color.WHITE
         g.stroke = BasicStroke(2.4f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)

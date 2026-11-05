@@ -1,5 +1,6 @@
 package com.github.khopland.symbols.badges
 
+import com.github.khopland.symbols.core.BadgedIcon
 import com.github.khopland.symbols.core.FileContentCache
 import com.github.khopland.symbols.core.StructuredFileKind
 import com.intellij.openapi.util.Key
