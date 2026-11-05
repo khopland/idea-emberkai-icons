@@ -108,7 +108,7 @@ Folder icons use the Symbols shape with IntelliJ-style role cues: blue corner sq
 
 Content detection reads at most 256 KiB and caches results by modification stamp, including unsaved editor changes. Structured metadata checks only top-level YAML/JSON fields; bounded text signatures identify infrastructure templates and Ansible playbooks. Incomplete, unsupported, or oversized metadata keeps the normal format icon; canonical filenames still identify their tools. No builds, dependency resolution, or network calls run during icon lookup.
 
-Custom SVGs use matching `_dark.svg` variants when neutral slate outlines or ink details need more contrast in dark themes. Brand-color artwork stays shared between themes, and IntelliJ selects the dark variant automatically.
+Custom SVGs use matching `_dark.svg` variants when the two themes need different colors. Neutral slate outlines and ink details get lighter in dark themes. Thin accent strokes use a deeper shade in light themes, such as blue-600 instead of blue-400, because the bright dark-theme shade washes out on a light background. Brand-color fills stay shared between themes, and IntelliJ selects the dark variant automatically.
 
 ## Install
 
