@@ -65,6 +65,8 @@
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
+    <!-- 263 moved VCS out of the core into this plugin; older builds lack the ID and serve the classes from the core. -->
+    <depends optional="true" config-file="platform-vcs.xml">com.intellij.platform.vcs</depends>
     <depends optional="true" config-file="vcs-secrets.xml">com.intellij.modules.vcs</depends>
     <depends optional="true" config-file="git.xml">Git4Idea</depends>
     <depends optional="true" config-file="spring-xml.xml">com.intellij.modules.xml</depends>
