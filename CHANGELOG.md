@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-05
+
 - Added support for IntelliJ IDEA 2026.3. It moved version control out of the core into its own plugin, which left the Git lenses, out-of-order migration warnings, **Find Reviewers for This Branch**, and unignored secret warning badges unable to load their VCS classes.
 - Each icon corner now shows at most one badge, so badges no longer cover each other or the artwork. Environment badges moved to the bottom-left, where they no longer hide Kubernetes kind badges and Symbols folder glyphs such as Kustomize's, and amber warning triangles moved to the top-right. When a file or folder has several problems or markers, the top-right shows the most urgent: an unignored secret, then a warning, then a running or live-profile marker, then the module accent dot. The others are still listed in the Project view tooltip and **Explain This Icon**.
 - Class stereotype badges are easier to see in dark themes: each glyph is a solid, saturated shape, slightly larger, instead of a pale one outlined in light grey. Light themes are unchanged.
@@ -99,7 +101,8 @@
 - Established the Symbols-based Java/Kotlin icon provider, checked-in SVG assets, and a minimal Gradle build.
 - Added upstream icon, license, and attribution updates with a check mode and manual CI workflow; included original icon notices under the MIT license.
 
-[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.5.0...v0.6.0
