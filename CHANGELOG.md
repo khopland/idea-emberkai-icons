@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Each icon corner now shows at most one badge, so badges no longer cover each other or the artwork. Environment badges moved to the bottom-left, where they no longer hide Kubernetes kind badges and Symbols folder glyphs such as Kustomize's, and amber warning triangles moved to the top-right. When a file or folder has several problems or markers, the top-right shows the most urgent: an unignored secret, then a warning, then a running or live-profile marker, then the module accent dot. The others are still listed in the Project view tooltip and **Explain This Icon**.
+- Class stereotype badges are easier to see in dark themes: each glyph is a solid, saturated shape, slightly larger, instead of a pale one outlined in light grey. Light themes are unchanged.
 - Redrew Emberkai's own artwork on the 16px pixel grid so it reads at normal size. Kubernetes kind badges are larger, with one glyph per kind: External Secrets now show a key instead of an arrow like Ingress, Sealed Secrets an envelope, persistent volume claims a drive, namespaces corner brackets, and Ingress turns magenta. JVM architecture folders use the same shapes and colors as the class stereotype badges. Flux folders show reconcile arrows, so they no longer look like Kustomize folders, and OpenAPI files show a segmented ring, so they no longer look like OpenRewrite. The OpenAPI, Flux, Kustomize, SOPS, pre-commit, SDKMAN, Skaffold, Packer, Avro, and AsyncAPI icons and the test-slice badge are simpler and sharper.
 
 ## [0.7.0] - 2026-11-02
