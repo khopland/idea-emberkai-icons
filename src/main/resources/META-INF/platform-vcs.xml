@@ -1,0 +1,3 @@
+<idea-plugin>
+    <!-- Empty on purpose: depending on the plugin from 263 on makes its VCS and DVCS classes visible. -->
+</idea-plugin>

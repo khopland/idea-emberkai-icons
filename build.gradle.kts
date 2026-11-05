@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 
 plugins {
     kotlin("jvm") version "2.4.21"
-    id("org.jetbrains.intellij.platform") version "2.16.0"
+    id("org.jetbrains.intellij.platform") version "2.20.0"
     id("org.jetbrains.changelog") version "2.5.0"
 }
 
@@ -31,6 +31,10 @@ dependencies {
         intellijIdea(providers.gradleProperty("platformVersion"))
         bundledPlugin("com.intellij.java")
         bundledPlugin("Git4Idea")
+        // 263 moved VCS out of the core into its own plugin, so -PplatformVersion=2026.3 needs it on the classpath.
+        if (providers.gradleProperty("platformVersion").get() >= "2026.3") {
+            bundledPlugin("com.intellij.platform.vcs")
+        }
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)
         bundledPlugin("org.jetbrains.kotlin")
