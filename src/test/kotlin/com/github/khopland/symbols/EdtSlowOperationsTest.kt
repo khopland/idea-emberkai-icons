@@ -1,6 +1,9 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.badges.RegistryToken
+import com.github.khopland.symbols.badges.RegistryTokens
 import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.lens.IconLens
 import com.github.khopland.symbols.node.StereotypeBadgeIcon
 import com.github.khopland.symbols.overrides.ProjectIconOverrideStore
 import com.github.khopland.symbols.settings.EmberkaiScope
@@ -81,6 +84,21 @@ internal class EdtSlowOperationsTest : HeavyPlatformTestCase() {
         onEdtOutsideAnAction {
             assertTrue("A background lookup warmed the caches", EmberkaiScope.ENTRY_POINTS.contains(controller, project))
             assertTrue(IconResolver.resolve(controller, project) is StereotypeBadgeIcon)
+        }
+    }
+
+    fun testRegistryTokensOnTheEdtUseOnlyCachedResults() {
+        write("api/.npmrc", "//registry.npmjs.org/:_authToken=npm_abc123\n")
+        val npmrc = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(base.resolve("api/.npmrc"))!!
+
+        onEdtOutsideAnAction {
+            assertEquals(emptyList<RegistryToken>(), RegistryTokens.literal(npmrc))
+            IconResolver.resolve(npmrc, project)
+            IconLens.PRODUCTION_BLAST_RADIUS.contains(npmrc, project)
+        }
+        ApplicationManager.getApplication().executeOnPooledThread { RegistryTokens.literal(npmrc) }.get()
+        onEdtOutsideAnAction {
+            assertEquals(listOf(RegistryToken(1, "_authToken")), RegistryTokens.literal(npmrc))
         }
     }
 

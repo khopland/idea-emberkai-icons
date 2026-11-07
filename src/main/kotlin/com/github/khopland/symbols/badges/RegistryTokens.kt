@@ -29,6 +29,8 @@ internal object RegistryTokens {
             ".yarnrc.yml" -> ::yarnrc
             else -> return emptyList()
         }
+        // On the EDT, reading the file would be a slow operation; use what a background lookup cached.
+        if (!FileContentCache.mayLoad()) return FileContentCache.peek(file, CACHE)?.value.orEmpty()
         return FileContentCache.inspect(file, CACHE, emptyList(), reader)
     }
 
