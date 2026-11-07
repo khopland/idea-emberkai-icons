@@ -19,7 +19,8 @@ internal class ModuleAccentIcon(
     override val slot: BadgeSlot get() = BadgeSlot.ATTENTION
     override val urgency: Int get() = BadgedIcon.MODULE_ACCENT
 
-    private val accentColor: Color = JBColor(accent.awtColor(false), accent.awtColor(true))
+    // Resolved at paint time, so a palette change shows without rebuilding decorated icons.
+    private val accentColor: Color = JBColor.lazy { JBColor(accent.awtColor(false), accent.awtColor(true)) }
 
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
         val size = (minOf(iconWidth, iconHeight) * 0.32f).coerceIn(4f, 6f)

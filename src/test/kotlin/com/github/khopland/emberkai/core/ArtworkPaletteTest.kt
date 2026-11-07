@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.core
 
+import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.intellij.openapi.util.IconLoader
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
@@ -52,6 +53,25 @@ internal class ArtworkPaletteTest : BasePlatformTestCase() {
         settings.artworkPalette = ArtworkPalette.EMBERKAI
         assertNull(ArtworkPalettePatcher.patchPath("/emberkai/icons/helm.svg", null))
         assertTrue(emberkai.contentEquals(pixels(icon)))
+    }
+
+    fun testPalettesRetintUpstreamFoldersButNotBrandFileIcons() {
+        settings.artworkPalette = ArtworkPalette.GRUVBOX
+        val folder = ArtworkPalettePatcher.patchPath("/symbols/icons/folders/folder-blue.svg", null)
+        assertEquals("/emberkai/palettes/gruvbox/symbols/icons/folders/folder-blue.svg", folder)
+        assertNotNull(ArtworkPalette::class.java.classLoader.getResource(folder!!.removePrefix("/")))
+        assertNull(ArtworkPalettePatcher.patchPath("/symbols/icons/files/docker.svg", null))
+    }
+
+    fun testModuleAccentsFollowThePalette() {
+        val emberkai = ModuleAccentColor.entries.map { it.awtColor(false) to it.awtColor(true) }
+        settings.artworkPalette = ArtworkPalette.NORD
+        val nord = ModuleAccentColor.entries.map { it.awtColor(false) to it.awtColor(true) }
+        assertTrue("Every accent is retinted", emberkai.zip(nord).none { (a, b) -> a.first == b.first || a.second == b.second })
+        assertEquals("Accents stay distinct", ModuleAccentColor.entries.size, nord.toSet().size)
+
+        settings.artworkPalette = ArtworkPalette.EMBERKAI
+        assertEquals(emberkai, ModuleAccentColor.entries.map { it.awtColor(false) to it.awtColor(true) })
     }
 
     fun testExportedSettingsKeepThePalette() {

@@ -39,7 +39,7 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     }
 
     fun testEmberkaiArtworkUsesSquareGrids() {
-        assertNoProblems(EMBERKAI.svgs().mapNotNull(::gridProblem))
+        assertNoProblems(EMBERKAI.ownArtwork().mapNotNull(::gridProblem))
     }
 
     fun testEmberkaiArtworkUsesThePalette() {
@@ -48,11 +48,11 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     }
 
     fun testDarkVariantsMatchTheirLightArtwork() {
-        assertNoProblems(EMBERKAI.svgs().filter { it.name.endsWith(DARK_SUFFIX) }.mapNotNull(::darkVariantProblem))
+        assertNoProblems(EMBERKAI.ownArtwork().filter { it.name.endsWith(DARK_SUFFIX) }.mapNotNull(::darkVariantProblem))
     }
 
     fun testEmberkaiArtworkIsLegibleInBothThemes() {
-        assertNoProblems(EMBERKAI.svgs().filterNot { it.name.endsWith(DARK_SUFFIX) }.flatMap(::legibilityProblems))
+        assertNoProblems(EMBERKAI.ownArtwork().filterNot { it.name.endsWith(DARK_SUFFIX) }.flatMap(::legibilityProblems))
     }
 
     fun testEachRuleRejectsKnownBadArtwork() {
@@ -234,6 +234,11 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
             get() = if (startsWith(File("src/main/resources"))) relativeTo(File("src/main/resources")).path else name
 
         fun File.svgs(): List<File> = walk().filter { it.isFile && it.extension == "svg" }.sorted().toList()
+
+        /** Emberkai artwork and its palette copies; palette copies of upstream folders are upstream art. */
+        fun File.ownArtwork(): List<File> = svgs().filterNot { file ->
+            file.startsWith(THEME_PALETTES) && file.relativeTo(THEME_PALETTES).invariantSeparatorsPath.substringAfter('/').startsWith("symbols/")
+        }
 
         /** Parses without fetching external DTDs, which editors such as Inkscape declare. */
         fun parse(file: File): Element = DocumentBuilderFactory.newInstance().apply {

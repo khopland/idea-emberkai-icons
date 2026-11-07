@@ -3,6 +3,7 @@ package com.github.khopland.emberkai.settings
 import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.accents.ModuleAccentIcon
 import com.github.khopland.emberkai.core.ArtworkPalette
+import com.github.khopland.emberkai.core.ArtworkPalettePatcher
 import com.github.khopland.emberkai.core.CategoryGroup
 import com.github.khopland.emberkai.core.IconMappings
 import com.github.khopland.emberkai.core.IconRuleCategory
@@ -116,8 +117,13 @@ class EmberkaiIconsConfigurable : Configurable {
             }
             accessibleContext.accessibleName = "Artwork colors"
             accessibleContext.accessibleDescription =
-                "Retint Emberkai's own icons to match a theme. Upstream Symbols icons keep their colors."
+                "Retint Emberkai's icons, folders, and module accents to match a theme. Brand file icons keep their colors."
             toolTipText = accessibleContext.accessibleDescription
+            // Shows the palette everywhere at once while the page is open; Cancel puts the saved one back.
+            addActionListener {
+                (selectedItem as? ArtworkPalette)?.let(ArtworkPalettePatcher::select)
+                updatePreview()
+            }
         }
         addSearchable(
             root, labeledControl("Artwork colors", artworkPalette!!),
@@ -282,6 +288,7 @@ class EmberkaiIconsConfigurable : Configurable {
     }
 
     override fun disposeUIResources() {
+        ArtworkPalettePatcher.select(EmberkaiIconsSettings.getInstance().artworkPalette)
         previewPanel = null
         folderPalette = null
         artworkPalette = null

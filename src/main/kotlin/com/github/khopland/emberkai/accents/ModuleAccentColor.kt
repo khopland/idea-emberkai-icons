@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.accents
 
+import com.github.khopland.emberkai.core.ArtworkPalettePatcher
 import com.github.khopland.emberkai.folders.FolderIconPalette
 import java.awt.Color
 import java.util.Locale
@@ -27,7 +28,8 @@ internal enum class ModuleAccentColor(
     val iconKey: String
         get() = "folder.service.$id"
 
-    fun awtColor(dark: Boolean): Color = Color(if (dark) darkRgb else lightRgb)
+    /** The accent in the selected artwork palette, so module dots match the retinted folders. */
+    fun awtColor(dark: Boolean): Color = ArtworkPalettePatcher.palette.recolor(Color(if (dark) darkRgb else lightRgb))
 
     companion object {
         fun fromId(id: String?): ModuleAccentColor? = entries.firstOrNull { it.id == id }
