@@ -87,13 +87,13 @@ class EmberkaiIconsConfigurable : Configurable {
         root.add(filterField!!)
         statusLabel = JLabel(" ").apply { alignmentX = Component.LEFT_ALIGNMENT }
 
-        section(root, "Preset", "Pick how much Emberkai shows. Fine-tune single features under Advanced.")
+        section(root, "Features", "Choose how much Emberkai shows. Fine-tune single features under Advanced.")
         presetBox = JComboBox(DefaultComboBoxModel((SettingsPreset.entries.map(::PresetItem) + PresetItem(null)).toTypedArray())).apply {
             accessibleContext.accessibleName = "Feature preset"
             addActionListener { applySelectedPreset() }
         }
         presetDescription = JLabel(" ")
-        addSearchable(root, labeledControl("Features", presetBox!!), "Preset features " + SettingsPreset.entries.joinToString(" ") { it.displayName })
+        addSearchable(root, labeledControl("Preset", presetBox!!), "Preset features " + SettingsPreset.entries.joinToString(" ") { it.displayName })
         addSearchable(root, presetDescription!!, "Preset features")
 
         section(root, "Icons")
@@ -214,6 +214,12 @@ class EmberkaiIconsConfigurable : Configurable {
     private fun loadForm(state: State) {
         flagBoxes.forEach { (flag, box) -> box.isSelected = flag.get(state) }
         folderPalette?.selectedItem = FolderIconPalette.fromId(state.serviceFolderPalette)
+        formChanged()
+    }
+
+    /** Keeps the preset picker, the Advanced count, and the preview in step with the checkboxes. */
+    private fun formChanged() {
+        syncPreset()
         updatePreview()
     }
 
@@ -234,7 +240,9 @@ class EmberkaiIconsConfigurable : Configurable {
         } finally {
             syncingPreset = false
         }
-        presetDescription?.text = preset?.description ?: "A custom mix of features. Choose a preset to replace it."
+        val description = preset?.description ?: "A custom mix of features. Choose a preset to replace it."
+        presetDescription?.text = description
+        box.accessibleContext.accessibleDescription = description
         val enabled = SettingsPreset.PRESET_FLAGS.count { it.get(state) }
         advancedLink?.text = (if (advancedExpanded) "Hide" else "Advanced: show") +
             " individual features ($enabled of ${SettingsPreset.PRESET_FLAGS.size} on)"
@@ -276,7 +284,7 @@ class EmberkaiIconsConfigurable : Configurable {
     private fun addFlag(root: JPanel, flag: KMutableProperty1<State, Boolean>, text: String, tooltip: String? = null) {
         val checkbox = checkBox(text)
         checkbox.toolTipText = tooltip
-        checkbox.addActionListener { updatePreview() }
+        checkbox.addActionListener { formChanged() }
         flagBoxes[flag] = checkbox
         addSearchable(root, checkbox, text)
     }
@@ -387,7 +395,6 @@ class EmberkaiIconsConfigurable : Configurable {
     }
 
     private fun updatePreview() {
-        syncPreset()
         val panel = previewPanel ?: return
         val settings = PreviewSettings(
             palette = selectedPalette() ?: FolderIconPalette.EMBERKAI,

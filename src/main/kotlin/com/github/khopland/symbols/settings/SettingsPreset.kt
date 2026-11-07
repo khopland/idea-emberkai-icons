@@ -26,22 +26,25 @@ internal enum class SettingsPreset(val displayName: String, val description: Str
 
     /** A copy of [state] with this preset's features applied. */
     fun applyTo(state: State): State = state.copy().also { result ->
-        PRESET_FLAGS.forEach { it.set(result, valueOf(it)) }
+        PRESET_FLAGS.forEach { it.set(result, enables(it)) }
     }
 
     /** Whether [state] has exactly this preset's features, whatever its other settings. */
-    fun matches(state: State): Boolean = PRESET_FLAGS.all { it.get(state) == valueOf(it) }
+    fun matches(state: State): Boolean = PRESET_FLAGS.all { it.get(state) == enables(it) }
 
-    private fun valueOf(flag: KMutableProperty1<State, Boolean>): Boolean = when (this) {
+    /** Icons only keeps the tool icons that are on by default, so opt-in architecture folders stay off. */
+    private fun enables(flag: KMutableProperty1<State, Boolean>): Boolean = when (this) {
         RECOMMENDED -> flag.get(DEFAULTS)
         EVERYTHING -> true
-        ICONS_ONLY -> IconRuleCategory.entries.any {
-            it.group == CategoryGroup.TOOL_ICONS && EmberkaiIconsSettings.flag(it) == flag && flag.get(DEFAULTS)
-        }
+        ICONS_ONLY -> flag in TOOL_ICON_FLAGS && flag.get(DEFAULTS)
     }
 
     companion object {
         private val DEFAULTS = State()
+        private val TOOL_ICON_FLAGS = IconRuleCategory.entries
+            .filter { it.group == CategoryGroup.TOOL_ICONS }
+            .map(EmberkaiIconsSettings::flag)
+            .toSet()
 
         /** The settings a preset decides; the rest are look and accessibility choices. */
         internal val PRESET_FLAGS: List<KMutableProperty1<State, Boolean>> =
