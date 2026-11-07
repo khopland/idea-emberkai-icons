@@ -115,6 +115,8 @@
             instance="com.github.khopland.symbols.settings.EmberkaiIconsConfigurable"
             id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
             displayName="Emberkai Icons"/>
+        <!-- Content facts for scopes, lenses, and badges; the EDT and dumb mode still read files directly. -->
+        <fileBasedIndex implementation="com.github.khopland.symbols.rules.ContentIndex"/>
         <iconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
         <fileIconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
         <projectViewNodeDecorator implementation="com.github.khopland.symbols.tooltips.SemanticTooltipDecorator"/>

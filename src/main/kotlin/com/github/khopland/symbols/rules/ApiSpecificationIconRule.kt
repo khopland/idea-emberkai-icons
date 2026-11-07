@@ -16,7 +16,7 @@ internal class ApiSpecificationIconRule : ContextIconRule {
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? = when {
         name in OPEN_API_NAMES -> "context.openapi"
         name in ASYNC_API_NAMES -> "context.asyncapi"
-        else -> when (StructuredFileKind.of(file)) {
+        else -> when (StructuredFileKind.of(file, project)) {
             StructuredFileKind.OPEN_API -> "context.openapi"
             StructuredFileKind.ASYNC_API -> "context.asyncapi"
             else -> null

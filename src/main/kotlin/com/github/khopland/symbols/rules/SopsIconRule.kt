@@ -18,7 +18,7 @@ internal class SopsIconRule : ContextIconRule {
 
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (name in SopsFiles.CONFIG_NAMES) return "context.sops"
-        if (!SopsFiles.isEncrypted(file) || StructuredFileKind.of(file) == StructuredFileKind.KUBERNETES) return null
+        if (!SopsFiles.isEncrypted(file, project) || StructuredFileKind.of(file, project) == StructuredFileKind.KUBERNETES) return null
         return "context.sops"
     }
 }
@@ -34,12 +34,19 @@ internal object SopsFiles {
     private const val ENCRYPTED_VALUE = "ENC[AES256_GCM,"
     val CONFIG_NAMES = setOf(".sops.yaml", ".sops.yml")
 
-    fun isEncrypted(file: VirtualFile): Boolean {
+    /** With a [project], background callers read the answer from [ContentIndex] instead of the file. */
+    fun isEncrypted(file: VirtualFile, project: Project? = null): Boolean {
+        if (!appliesTo(file)) return false
+        ContentIndex.facts(file, project)?.let { return it.sopsEncrypted }
+        return FileContentCache.inspect(file, CACHE, false, ::isEncrypted)
+    }
+
+    /** Whether [file]'s name allows SOPS encryption; the contents decide. */
+    fun appliesTo(file: VirtualFile): Boolean {
         if (file.isDirectory) return false
         val name = file.name.lowercase(Locale.ROOT)
         if (name in CONFIG_NAMES) return false
-        if (file.extension?.lowercase(Locale.ROOT) !in EXTENSIONS && !name.startsWith(".env")) return false
-        return FileContentCache.inspect(file, CACHE, false, ::isEncrypted)
+        return file.extension?.lowercase(Locale.ROOT) in EXTENSIONS || name.startsWith(".env")
     }
 
     internal fun isEncrypted(text: String): Boolean = ENCRYPTED_VALUE in text && METADATA.containsMatchIn(text)

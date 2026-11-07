@@ -13,7 +13,7 @@ internal class GitOpsIconRule : ContextIconRule {
 
     override fun fileIconKey(file: VirtualFile, name: String, project: Project?): String? {
         if (isArgoConfig(name)) return "context.argocd"
-        when (StructuredFileKind.of(file)) {
+        when (StructuredFileKind.of(file, project)) {
             StructuredFileKind.FLUX -> return "context.flux"
             StructuredFileKind.ARGOCD -> return "context.argocd"
             else -> Unit

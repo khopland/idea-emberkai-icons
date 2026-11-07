@@ -32,7 +32,7 @@ internal class UnignoredSecretDecorator : IconDecorator {
     override fun decorateFile(resolution: IconResolution, file: VirtualFile, project: Project?): IconResolution {
         val settings = EmberkaiIconsSettings.getInstance()
         if (!settings.isEnabled(IconRuleCategory.UNIGNORED_SECRETS)) return resolution
-        val secrets = if (SecretFileNames.isCandidate(file)) null else KubernetesSecrets.plaintext(file)
+        val secrets = if (SecretFileNames.isCandidate(file)) null else KubernetesSecrets.plaintext(file, project)
         if (secrets != null && secrets.isEmpty()) return resolution
         if (project == null || project.isDisposed || project.isDefault) return resolution
         val exposure = SecretFileExposure.getInstance(project) ?: return resolution
