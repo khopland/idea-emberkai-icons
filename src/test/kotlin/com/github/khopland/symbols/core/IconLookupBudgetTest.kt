@@ -3,6 +3,7 @@ package com.github.khopland.symbols.core
 import com.github.khopland.symbols.IconProviderTestCase
 import com.github.khopland.symbols.lens.IconLens
 import com.github.khopland.symbols.lens.LensSnapshot
+import com.github.khopland.symbols.node.StereotypeBadgeIcon
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.vfs.VfsUtil
@@ -30,6 +31,11 @@ internal class IconLookupBudgetTest : IconProviderTestCase() {
 
         assertTrue("Cold lookup averaged ${cold}ns, budget ${COLD_BUDGET_NS}ns", cold <= COLD_BUDGET_NS)
         assertTrue("Warm lookup averaged ${warm}ns, budget ${WARM_BUDGET_NS}ns", warm <= WARM_BUDGET_NS)
+
+        assertTrue(
+            "The corpus exercises the NestJS stereotype path",
+            files.any { IconResolver.resolve(it, project) is StereotypeBadgeIcon },
+        )
 
         val fileCount = files.count { !it.isDirectory }
         val lens = bestOf(LENS_PASSES) {
@@ -63,6 +69,16 @@ internal class IconLookupBudgetTest : IconProviderTestCase() {
             for (version in 1..10) add("$root/db/migration/V${version}__step.sql", "select 1")
             for (index in 0 until 20) add("$root/docs/note$index.md", "# note")
             for (index in 0 until 20) add("$root/data/item$index.json", "{}")
+
+            // A NestJS API with a Next.js front end: stereotypes read package.json and NestJS sources.
+            val node = "apps/node$service"
+            add("$node/package.json", """{ "dependencies": { "@nestjs/common": "11.0.0", "next": "16.0.0" } }""")
+            add("$node/.npmrc", "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}\n")
+            add("$node/app/page.tsx", "export default function Page() { return null }\n")
+            add("$node/app/api/orders/route.ts", "export async function GET() {}\n")
+            add("$node/src/orders.controller.ts", "import { Controller } from '@nestjs/common';\n@Controller('orders')\nexport class Orders {}\n")
+            add("$node/src/orders.service.ts", "import { Injectable } from '@nestjs/common';\n@Injectable()\nexport class Orders {}\n")
+            for (index in 0 until 10) add("$node/src/model$index.ts", "export interface Model$index { id: string }\n")
         }
 
         val root = myFixture.tempDirFixture.findOrCreateDir("")

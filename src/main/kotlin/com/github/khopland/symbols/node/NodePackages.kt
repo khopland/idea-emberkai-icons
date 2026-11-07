@@ -1,6 +1,8 @@
 package com.github.khopland.symbols.node
 
 import com.github.khopland.symbols.core.FileContentCache
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 
@@ -21,14 +23,19 @@ internal object NodePackages {
         Regex(""""(?:dependencies|devDependencies|peerDependencies|optionalDependencies)"\s*:\s*\{([^{}]*)}""")
     private val DEPENDENCY_NAME = Regex(""""([^"\\]+)"\s*:""")
 
-    /** The package [file] belongs to; null outside any package and for installed packages. */
-    fun nearest(file: VirtualFile): NodePackage? {
+    /**
+     * The package [file] belongs to; null outside any package and for installed packages. The search
+     * stops at [file]'s content root, so a stray `package.json` above the project never counts.
+     */
+    fun nearest(file: VirtualFile, project: Project): NodePackage? {
         if ("/node_modules/" in file.path) return null
+        val contentRoot = ProjectFileIndex.getInstance(project).getContentRootForFile(file) ?: return null
         var directory = if (file.isDirectory) file else file.parent
         var depth = 0
         while (directory != null && depth++ < MAX_DEPTH) {
             val manifest = directory.findChild("package.json")
             if (manifest != null && !manifest.isDirectory) return NodePackage(directory, dependencies(manifest))
+            if (directory == contentRoot) return null
             directory = directory.parent
         }
         return null

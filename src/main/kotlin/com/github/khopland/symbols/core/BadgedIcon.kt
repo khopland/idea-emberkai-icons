@@ -54,7 +54,10 @@ internal abstract class BadgedIcon(val baseIcon: Icon) : ReplaceableIcon {
         }
     }
 
-    final override fun replaceBy(replacer: IconReplacer): Icon = withBase(replacer.replaceIcon(baseIcon))
+    final override fun replaceBy(replacer: IconReplacer): Icon = replaced(replacer)
+
+    /** This badge with [replacer] applied; badges that paint artwork of their own replace that too. */
+    protected open fun replaced(replacer: IconReplacer): BadgedIcon = withBase(replacer.replaceIcon(baseIcon))
 
     /**
      * This badge if it wins its [slot], with any weaker badge in that slot removed, or the base icon

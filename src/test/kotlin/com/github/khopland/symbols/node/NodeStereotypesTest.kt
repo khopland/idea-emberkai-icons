@@ -2,12 +2,17 @@ package com.github.khopland.symbols.node
 
 import com.github.khopland.symbols.IconProviderTestCase
 import com.github.khopland.symbols.core.BadgeSlot
+import com.github.khopland.symbols.core.IconDescriptions
 import com.github.khopland.symbols.core.IconResolver
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.fact
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.EmberkaiScope
 import com.github.khopland.symbols.stereotypes.ClassStereotype
+import com.intellij.openapi.util.IconLoader
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
+import java.nio.file.Files
 
 internal class NodeStereotypesTest : IconProviderTestCase() {
     private lateinit var settings: EmberkaiIconsSettings
@@ -36,7 +41,7 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             "web/src/proxy.ts" to "Next.js proxy",
         )
         for ((path, evidence) in routes) {
-            val match = NodeStereotypes.match(file(path, "export default function Page() {}"))
+            val match = match(file(path, "export default function Page() {}"))
             assertEquals(path, ClassStereotype.WEB, match?.stereotype)
             assertEquals(path, evidence, match?.evidence)
         }
@@ -44,13 +49,13 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             "web/app/layout.tsx", "web/app/_components/page.tsx", "web/pages/_app.tsx", "web/app/page.css",
             "web/components/page.tsx", "web/lib/middleware.ts", "web/app/page.d.ts",
         )) {
-            assertNull(path, NodeStereotypes.match(file(path, "export {}")))
+            assertNull(path, match(file(path, "export {}")))
         }
     }
 
     fun testNextJsLayoutNeedsTheNextDependency() {
         packageJson("site", """{ "dependencies": { "react": "19.0.0" } }""")
-        assertNull(NodeStereotypes.match(file("site/app/page.tsx", "export default function Page() {}")))
+        assertNull(match(file("site/app/page.tsx", "export default function Page() {}")))
     }
 
     fun testNestJsDecoratorsNeedTheirImports() {
@@ -73,7 +78,7 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
                 to (ClassStereotype.SCHEDULED to "@Cron"),
         )
         cases.entries.forEachIndexed { index, (source, expected) ->
-            val match = NodeStereotypes.match(file("api/src/case$index.ts", source))
+            val match = match(file("api/src/case$index.ts", source))
             assertEquals(source, expected, match?.stereotype to match?.evidence)
         }
         for (source in listOf(
@@ -81,19 +86,32 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             "import { Controller } from './local';\n@Controller('orders')\nexport class Orders {}",
             "import { Entity } from '@mikro-orm/core';\n@Entity()\nexport class Order {}",
         )) {
-            assertNull(source, NodeStereotypes.match(file("api/src/other${source.length}.ts", source)))
+            assertNull(source, match(file("api/src/other${source.length}.ts", source)))
         }
     }
 
     fun testNestJsSourcesAreReadOnlyInNestPackages() {
         packageJson("tool", """{ "devDependencies": { "typescript": "5.9.0" } }""")
-        assertNull(NodeStereotypes.match(file("tool/src/orders.ts", nest("Controller", "@nestjs/common"))))
+        assertNull(match(file("tool/src/orders.ts", nest("Controller", "@nestjs/common"))))
     }
 
     fun testInstalledPackagesAreIgnored() {
         packageJson("api", """{ "dependencies": { "@nestjs/common": "11.0.0" } }""")
         packageJson("api/node_modules/lib", """{ "dependencies": { "@nestjs/common": "11.0.0" } }""")
-        assertNull(NodeStereotypes.match(file("api/node_modules/lib/orders.ts", nest("Controller", "@nestjs/common"))))
+        assertNull(match(file("api/node_modules/lib/orders.ts", nest("Controller", "@nestjs/common"))))
+    }
+
+    fun testPackagesOutsideTheProjectAreIgnored() {
+        val outside = Files.createTempDirectory("emberkai-outside")
+        try {
+            Files.writeString(outside.resolve("package.json"), """{ "dependencies": { "next": "16.0.0" } }""")
+            Files.createDirectories(outside.resolve("app"))
+            Files.writeString(outside.resolve("app/page.tsx"), "export default function Page() {}")
+            val page = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(outside.resolve("app/page.tsx"))!!
+            assertNull("A package.json outside every content root never counts", match(page))
+        } finally {
+            outside.toFile().deleteRecursively()
+        }
     }
 
     fun testBadgeIsDrawnTopLeftAndFollowsTheSetting() {
@@ -106,6 +124,12 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
         assertEquals(ClassStereotype.WEB, badge!!.stereotype)
         assertEquals(BadgeSlot.ROLE, badge.slot)
         assertEquals("web controller (@Controller)", resolution.fact<SourceStereotypeFact>()?.label)
+        assertEquals("Web controller (@Controller)", IconDescriptions.describe(controller, resolution))
+
+        val dark = IconLoader.getDarkIcon(badge, true) as? StereotypeBadgeIcon
+        assertNotNull("Theme previews keep the badge", dark)
+        assertNotSame("and swap the glyph for its dark variant too", badge.glyph, dark!!.glyph)
+        assertEquals(ClassStereotype.WEB, dark.stereotype)
 
         settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, false)
         assertFalse(IconResolver.resolve(controller, project) is StereotypeBadgeIcon)
@@ -122,6 +146,8 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
         assertTrue(EmberkaiScope.ENTRY_POINTS.contains(controller, project))
         assertFalse("Services are not entry points", EmberkaiScope.ENTRY_POINTS.contains(service, project))
     }
+
+    private fun match(file: VirtualFile) = NodeStereotypes.match(file, project)
 
     private fun packageJson(directory: String, content: String) = file("$directory/package.json", content)
 

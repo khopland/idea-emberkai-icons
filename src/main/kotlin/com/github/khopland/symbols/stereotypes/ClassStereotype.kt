@@ -245,7 +245,7 @@ internal object ClassStereotypes {
         if (NodeStereotypes.isCandidate(file)) {
             return runReadActionBlocking {
                 !project.isDisposed && file.isValid && ProjectFileIndex.getInstance(project).isInContent(file) &&
-                    NodeStereotypes.match(file)?.stereotype?.isEntryPoint == true
+                    NodeStereotypes.match(file, project)?.stereotype?.isEntryPoint == true
             }
         }
         if (file.extension?.lowercase() !in SOURCE_EXTENSIONS) return false
