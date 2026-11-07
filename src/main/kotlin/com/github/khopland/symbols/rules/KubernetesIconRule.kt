@@ -19,10 +19,10 @@ internal class KubernetesIconRule : ContextIconRule {
             return "context.kustomize"
         }
         if (name == "skaffold.yaml" || name == "skaffold.yml") return "context.skaffold"
-        return when (StructuredFileKind.of(file)) {
+        return when (StructuredFileKind.of(file, project)) {
             StructuredFileKind.KUBERNETES -> when {
-                SopsFiles.isEncrypted(file) -> "context.kubernetes.sops"
-                else -> StructuredFileKind.kubernetesResource(file)?.let { "context.kubernetes.$it" } ?: "context.kubernetes"
+                SopsFiles.isEncrypted(file, project) -> "context.kubernetes.sops"
+                else -> StructuredFileKind.kubernetesResource(file, project)?.let { "context.kubernetes.$it" } ?: "context.kubernetes"
             }
             StructuredFileKind.KUSTOMIZE -> "context.kustomize"
             StructuredFileKind.TEKTON -> "context.tekton"

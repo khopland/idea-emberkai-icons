@@ -3,6 +3,7 @@ package com.github.khopland.symbols.badges
 import com.github.khopland.symbols.core.FileContentCache
 import com.github.khopland.symbols.core.StructuredFileKind
 import com.github.khopland.symbols.rules.SopsFiles
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.StringReader
@@ -28,9 +29,10 @@ internal object KubernetesSecrets {
     private val SECRET_RESOURCES = setOf("secret", "bundle")
     private const val MAX_DOCUMENTS = 32
 
-    fun plaintext(file: VirtualFile): List<PlaintextSecret> {
-        if (file.isDirectory || StructuredFileKind.of(file) != StructuredFileKind.KUBERNETES) return emptyList()
-        if (StructuredFileKind.kubernetesResource(file) !in SECRET_RESOURCES || SopsFiles.isEncrypted(file)) return emptyList()
+    /** With a [project], background callers rule out most files from the index without reading them. */
+    fun plaintext(file: VirtualFile, project: Project? = null): List<PlaintextSecret> {
+        if (file.isDirectory || StructuredFileKind.of(file, project) != StructuredFileKind.KUBERNETES) return emptyList()
+        if (StructuredFileKind.kubernetesResource(file, project) !in SECRET_RESOURCES || SopsFiles.isEncrypted(file, project)) return emptyList()
         return FileContentCache.inspect(file, CACHE, emptyList(), ::plaintext)
     }
 
