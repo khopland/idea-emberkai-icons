@@ -1,0 +1,14 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g data-theme="light">
+<path d="M1 2H4.9L7.1 4 4.9 6H1Z" stroke="white" stroke-width="2.4" stroke-linejoin="round"/>
+<path d="M1 2H4.9L7.1 4 4.9 6H1Z" fill="lime-400" stroke="slate-800" stroke-width="0.9" stroke-linejoin="round"/>
+<path d="M2.2 4H4.6M3.7 3.1 4.6 4 3.7 4.9" stroke="slate-800" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<g data-theme="dark">
+<g transform="translate(-0.5 -0.5) scale(1.12)">
+<path d="M1 2H4.9L7.1 4 4.9 6H1Z" stroke="ide-dark-background" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M1 2H4.9L7.1 4 4.9 6H1Z" fill="lime-400" stroke="lime-400" stroke-width="0.8" stroke-linejoin="round"/>
+<path d="M2.2 4H4.6M3.7 3.1 4.6 4 3.7 4.9" stroke="slate-800" stroke-width="0.75" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>

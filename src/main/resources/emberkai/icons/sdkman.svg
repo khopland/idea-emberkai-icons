@@ -1,5 +1,5 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs><mask id="sdkman-badge-cut"><rect width="16" height="16" fill="#fff"/><rect x="8" y="8" width="9" height="9" rx="2.5" fill="#000"/></mask></defs>
+<defs><mask id="sdkman-badge-cut"><rect width="16" height="16" fill="#FFFFFF"/><rect x="8" y="8" width="9" height="9" rx="2.5" fill="#000000"/></mask></defs>
 <g mask="url(#sdkman-badge-cut)">
 <path d="M7 1L13 4.25V10.75L7 14L1 10.75V4.25Z" fill="#FB923C" stroke="#9A3412" stroke-width="1" stroke-linejoin="round"/>
 <path d="M1 4.25L7 7.5L13 4.25L7 1Z" fill="#FED7AA" stroke="#9A3412" stroke-width="1" stroke-linejoin="round"/>
