@@ -1,0 +1,138 @@
+package com.github.khopland.emberkai.artwork
+
+import java.io.File
+import java.util.Locale
+import java.util.Properties
+import kotlin.math.atan2
+import kotlin.math.cbrt
+import kotlin.math.cos
+import kotlin.math.hypot
+import kotlin.math.pow
+import kotlin.math.roundToInt
+import kotlin.math.sin
+
+/**
+ * Retints generated artwork for a theme palette in design/palettes, such as Nord. A palette gives
+ * each Tailwind family (`blue`, `slate`, …) one color from the theme. Every shade of that family
+ * takes the theme color's OKLCH hue, with its chroma scaled by how far the theme color is from the
+ * family's 500 shade, and keeps its own luminance, so its contrast against both IDE backgrounds,
+ * which is what the legibility lint measures, does not change. So blue-600 stays a deep line on
+ * light themes and blue-400 a bright one on dark themes, both in Nord's blue. White, black, the IDE
+ * background and brand colors are left alone.
+ */
+internal class IconPalette(val id: String, private val recolor: Map<String, String>) {
+    /** [svg] with each palette color this palette changes replaced. */
+    fun apply(svg: String): String = HEX.replace(svg) { recolor[it.value.uppercase(Locale.ROOT)] ?: it.value }
+
+    companion object {
+        private val HEX = Regex("#[0-9A-Fa-f]{6}\\b")
+        private val SHADE = Regex("([a-z]+)-(\\d+)")
+
+        /** Every palette in design/palettes, by file name. */
+        fun fromRepository(): List<IconPalette> {
+            val colors = properties(File("design/palette.properties"))
+            return File("design/palettes").listFiles { file -> file.extension == "properties" }.orEmpty().sorted()
+                .map { file -> of(file.nameWithoutExtension, colors, properties(file)) }
+        }
+
+        fun of(id: String, colors: Map<String, String>, families: Map<String, String>): IconPalette {
+            val recolor = buildMap {
+                for ((name, hex) in colors) {
+                    val (family) = SHADE.matchEntire(name)?.destructured ?: continue
+                    val target = families[family] ?: continue
+                    val reference = colors["$family-500"] ?: error("design/palette.properties has no $family-500")
+                    put(hex.uppercase(Locale.ROOT), retint(hex, reference, target))
+                }
+            }
+            for (family in families.keys) require(colors.containsKey("$family-500")) { "$id: $family is not a palette family" }
+            return IconPalette(id, recolor)
+        }
+
+        private fun properties(file: File): Map<String, String> =
+            Properties().apply { file.reader().use(::load) }.entries.associate { (k, v) -> k as String to (v as String).trim() }
+
+        /** [color]'s luminance with [target]'s hue, and chroma scaled by [target] against [reference]. */
+        internal fun retint(color: String, reference: String, target: String): String {
+            val (l, c) = Lch.of(color)
+            val ref = Lch.of(reference)
+            val goal = Lch.of(target)
+            val chroma = if (ref.c < 1e-4) goal.c else c * goal.c / ref.c
+            val luminance = luminance(color)
+            // Hue shifts change luminance a little at the same OKLCH lightness; search for the lightness that keeps it.
+            var low = 0.0
+            var high = 1.0
+            var best = Lch(l, chroma, goal.h).toHexInGamut()
+            repeat(32) {
+                val mid = (low + high) / 2
+                best = Lch(mid, chroma, goal.h).toHexInGamut()
+                if (luminance(best) < luminance) low = mid else high = mid
+            }
+            return best
+        }
+
+        /** WCAG relative luminance. */
+        internal fun luminance(hex: String): Double {
+            val value = hex.removePrefix("#").toInt(16)
+            val (r, g, b) = listOf(16, 8, 0).map { shift ->
+                val v = ((value shr shift) and 0xFF) / 255.0
+                if (v <= 0.03928) v / 12.92 else ((v + 0.055) / 1.055).pow(2.4)
+            }
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b
+        }
+    }
+
+    /** OKLCH, with hue in radians. */
+    private data class Lch(val l: Double, val c: Double, val h: Double) {
+        /** The nearest in-gamut color with the same lightness and hue, found by lowering chroma. */
+        fun toHexInGamut(): String {
+            var low = 0.0
+            var high = c
+            if (rgb(c) == null) {
+                repeat(24) {
+                    val mid = (low + high) / 2
+                    if (rgb(mid) == null) high = mid else low = mid
+                }
+            } else {
+                low = c
+            }
+            val (r, g, b) = rgb(low) ?: error("no in-gamut color for $this")
+            return "#%02X%02X%02X".format(Locale.ROOT, r, g, b)
+        }
+
+        private fun rgb(chroma: Double): Triple<Int, Int, Int>? {
+            val a = chroma * cos(h)
+            val b = chroma * sin(h)
+            val l1 = (l + 0.3963377774 * a + 0.2158037573 * b).pow(3)
+            val m1 = (l - 0.1055613458 * a - 0.0638541728 * b).pow(3)
+            val s1 = (l - 0.0894841775 * a - 1.2914855480 * b).pow(3)
+            val linear = listOf(
+                4.0767416621 * l1 - 3.3077115913 * m1 + 0.2309699292 * s1,
+                -1.2684380046 * l1 + 2.6097574011 * m1 - 0.3413193965 * s1,
+                -0.0041960863 * l1 - 0.7034186147 * m1 + 1.7076147010 * s1,
+            )
+            if (linear.any { it < -1e-6 || it > 1 + 1e-6 }) return null
+            val (r, g, bl) = linear.map { channel ->
+                val v = channel.coerceIn(0.0, 1.0)
+                ((if (v <= 0.0031308) 12.92 * v else 1.055 * v.pow(1 / 2.4) - 0.055) * 255).roundToInt()
+            }
+            return Triple(r, g, bl)
+        }
+
+        companion object {
+            fun of(hex: String): Lch {
+                val value = hex.removePrefix("#").toInt(16)
+                val (r, g, b) = listOf(16, 8, 0).map { shift ->
+                    val v = ((value shr shift) and 0xFF) / 255.0
+                    if (v <= 0.04045) v / 12.92 else ((v + 0.055) / 1.055).pow(2.4)
+                }
+                val l1 = cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+                val m1 = cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+                val s1 = cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+                val l = 0.2104542553 * l1 + 0.7936177850 * m1 - 0.0040720468 * s1
+                val a = 1.9779984951 * l1 - 2.4285922050 * m1 + 0.4505937099 * s1
+                val bb = 0.0259040371 * l1 + 0.7827717662 * m1 - 0.8086757660 * s1
+                return Lch(l, hypot(a, bb), atan2(bb, a))
+            }
+        }
+    }
+}

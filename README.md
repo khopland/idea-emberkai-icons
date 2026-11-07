@@ -163,6 +163,8 @@ Each source becomes `<name>.svg`, plus `<name>_dark.svg` when the two themes com
 ./gradlew test --tests '*IconSourcesTest' -PwriteIcons
 ```
 
+Each theme palette in `design/palettes/` (Catppuccin, Nord, Gruvbox) also gets a retinted copy of the whole set in `src/main/resources/emberkai/palettes/<palette>/icons/`, chosen with **Artwork colors** in settings. A palette gives each Tailwind family one theme color. Every shade takes that color's hue and keeps its own luminance, so contrast against both IDE backgrounds, and so the legibility lint, is unchanged. Upstream Symbols artwork keeps its colors.
+
 `IconSourcesTest` fails when the generated artwork is stale, missing, or has no source, so a hand edit to a generated SVG is caught. Changing a token, say making `outline` slate-400 in dark themes, retints every icon that uses it.
 
 ### Artwork checks

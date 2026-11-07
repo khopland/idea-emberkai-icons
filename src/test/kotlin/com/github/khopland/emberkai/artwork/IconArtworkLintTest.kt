@@ -43,7 +43,8 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     }
 
     fun testEmberkaiArtworkUsesThePalette() {
-        assertNoProblems(EMBERKAI.svgs().flatMap(::paletteProblems))
+        // Theme palettes are generated from this artwork by retinting it, so their colors are off-palette on purpose.
+        assertNoProblems(EMBERKAI.svgs().filterNot { it.startsWith(THEME_PALETTES) }.flatMap(::paletteProblems))
     }
 
     fun testDarkVariantsMatchTheirLightArtwork() {
@@ -214,6 +215,7 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     private companion object {
         val EMBERKAI = File("src/main/resources/emberkai")
         val SYMBOLS = File("src/main/resources/symbols")
+        val THEME_PALETTES = File("src/main/resources/emberkai/palettes")
         const val DARK_SUFFIX = "_dark.svg"
         val SCALES = listOf(1, 2)
         const val MIN_LEGIBLE_INK = 0.12

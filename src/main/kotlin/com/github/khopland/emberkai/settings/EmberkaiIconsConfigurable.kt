@@ -2,6 +2,7 @@ package com.github.khopland.emberkai.settings
 
 import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.accents.ModuleAccentIcon
+import com.github.khopland.emberkai.core.ArtworkPalette
 import com.github.khopland.emberkai.core.CategoryGroup
 import com.github.khopland.emberkai.core.IconMappings
 import com.github.khopland.emberkai.core.IconRuleCategory
@@ -56,6 +57,7 @@ import kotlin.reflect.KMutableProperty1
 class EmberkaiIconsConfigurable : Configurable {
     private var previewPanel: JPanel? = null
     private var folderPalette: JComboBox<FolderIconPalette>? = null
+    private var artworkPalette: JComboBox<ArtworkPalette>? = null
     private var filterField: JBTextField? = null
     private var statusLabel: JLabel? = null
     private var presetBox: JComboBox<PresetItem>? = null
@@ -102,6 +104,24 @@ class EmberkaiIconsConfigurable : Configurable {
         addFlag(
             root, State::moduleAwareColors, "Use module-aware accent colors and folder badges",
             "Assign a stable color to every IntelliJ module and carry it into source roots and packages.",
+        )
+
+        artworkPalette = JComboBox(DefaultComboBoxModel(ArtworkPalette.entries.toTypedArray())).apply {
+            renderer = object : DefaultListCellRenderer() {
+                override fun getListCellRendererComponent(
+                    list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean,
+                ): Component = super.getListCellRendererComponent(
+                    list, (value as? ArtworkPalette)?.displayName ?: value, index, isSelected, cellHasFocus,
+                )
+            }
+            accessibleContext.accessibleName = "Artwork colors"
+            accessibleContext.accessibleDescription =
+                "Retint Emberkai's own icons to match a theme. Upstream Symbols icons keep their colors."
+            toolTipText = accessibleContext.accessibleDescription
+        }
+        addSearchable(
+            root, labeledControl("Artwork colors", artworkPalette!!),
+            "Artwork colors theme palette " + ArtworkPalette.entries.joinToString(" ") { it.displayName },
         )
 
         section(root, "Folder colors and accessibility")
@@ -214,6 +234,7 @@ class EmberkaiIconsConfigurable : Configurable {
     private fun loadForm(state: State) {
         flagBoxes.forEach { (flag, box) -> box.isSelected = flag.get(state) }
         folderPalette?.selectedItem = FolderIconPalette.fromId(state.serviceFolderPalette)
+        artworkPalette?.selectedItem = ArtworkPalette.fromId(state.artworkPalette)
         formChanged()
     }
 
@@ -257,11 +278,13 @@ class EmberkaiIconsConfigurable : Configurable {
     private fun formState(): State = EmberkaiIconsSettings.getInstance().state.also { state ->
         flagBoxes.forEach { (flag, box) -> flag.set(state, box.isSelected) }
         selectedPalette()?.let { state.serviceFolderPalette = it.name }
+        (artworkPalette?.selectedItem as? ArtworkPalette)?.let { state.artworkPalette = it.name }
     }
 
     override fun disposeUIResources() {
         previewPanel = null
         folderPalette = null
+        artworkPalette = null
         filterField = null
         statusLabel = null
         presetBox = null

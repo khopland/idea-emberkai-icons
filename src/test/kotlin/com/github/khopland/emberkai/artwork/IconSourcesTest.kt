@@ -3,25 +3,31 @@ package com.github.khopland.emberkai.artwork
 import java.io.File
 import java.nio.file.Files
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * Keeps src/main/resources/emberkai/icons in step with its sources in design/icons. After editing a
- * source or a token, regenerate the artwork with:
+ * Keeps src/main/resources/emberkai/icons, and its retinted copies in emberkai/palettes, in step with
+ * the sources in design/icons. After editing a source, a token or a palette, regenerate the artwork with:
  *
  *     ./gradlew test --tests '*IconSourcesTest' -PwriteIcons
  */
 internal class IconSourcesTest {
     @Test
     fun generatedArtworkIsUpToDate() {
-        val generated = IconSources.fromRepository().generate()
+        val icons = IconSources.fromRepository().generate()
+        // Each theme palette in design/palettes gets a retinted copy of the whole set.
+        val generated = icons.mapKeys { (path) -> "icons/$path" } + IconPalette.fromRepository().flatMap { palette ->
+            icons.map { (path, text) -> "palettes/${palette.id}/icons/$path" to palette.apply(text) }
+        }
+        val shipped = GENERATED.flatMap { File(ARTWORK, it).svgs().entries }
+            .associate { (path, file) -> file.relativeTo(ARTWORK).invariantSeparatorsPath to file }
         if (System.getProperty("emberkai.writeIcons") != null) {
-            ARTWORK.svgs().filterKeys { it !in generated }.values.forEach(File::delete)
+            shipped.filterKeys { it !in generated }.values.forEach(File::delete)
             generated.forEach { (path, text) -> File(ARTWORK, path).apply { parentFile.mkdirs() }.writeText(text) }
             return
         }
-        val shipped = ARTWORK.svgs()
         val problems = generated.mapNotNull { (path, text) ->
             when (val file = shipped[path]) {
                 null -> "$path: missing"
@@ -69,6 +75,24 @@ internal class IconSourcesTest {
     }
 
     @Test
+    fun palettesKeepEachShadesLuminanceAndTakeTheThemeHue() {
+        val palette = IconPalette.of(
+            "test",
+            mapOf("blue-500" to "#3B82F6", "blue-600" to "#2563EB", "white" to "#FFFFFF", "spring-green" to "#6DB33F"),
+            mapOf("blue" to "#5E81AC"),
+        )
+        val recolored = palette.apply("""<path fill="#2563EB" stroke="#FFFFFF"/><path fill="#6DB33F"/><path fill="#3b82f6"/>""")
+
+        assertEquals("White and brand colors are kept", 2, Regex("#FFFFFF|#6DB33F").findAll(recolored).count())
+        val (deep, bright) = Regex("""fill="(#[0-9A-F]{6})"""").findAll(recolored).map { it.groupValues[1] }.toList().let { it[0] to it[2] }
+        assertFalse(deep == "#2563EB" || bright == "#3B82F6")
+        for ((original, retinted) in listOf("#2563EB" to deep, "#3B82F6" to bright)) {
+            assertEquals("$original keeps its luminance", IconPalette.luminance(original), IconPalette.luminance(retinted), 0.004)
+        }
+        assertEquals("the theme color itself is kept", "#5E81AC", IconPalette.retint("#5E81AC", "#5E81AC", "#5E81AC"))
+    }
+
+    @Test
     fun unknownColorsFail() {
         val dir = Files.createTempDirectory("emberkai-sources").toFile()
         try {
@@ -83,7 +107,8 @@ internal class IconSourcesTest {
     }
 
     private companion object {
-        val ARTWORK = File("src/main/resources/emberkai/icons")
+        val ARTWORK = File("src/main/resources/emberkai")
+        val GENERATED = listOf("icons", "palettes")
 
         fun File.svgs(): Map<String, File> = walk().filter { it.isFile && it.extension == "svg" }
             .associateBy { it.relativeTo(this).invariantSeparatorsPath }
