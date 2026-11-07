@@ -173,8 +173,8 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         settings.colorServiceFolders = false
         settings.setEnabled(IconRuleCategory.KUBERNETES, false)
         val file = myFixture.addFileToProject("deployment.yaml", "apiVersion: v1\nkind: Service")
-        assertResourceIcon("symbols/icons/files/yaml.svg", provider.getIcon(file, 0))
-        assertResourceIcon("symbols/icons/files/yaml.svg", provider.getIcon(file.virtualFile, 0, project))
+        assertResourceIcon("emberkai/icons/originals/files/yaml.svg", provider.getIcon(file, 0))
+        assertResourceIcon("emberkai/icons/originals/files/yaml.svg", provider.getIcon(file.virtualFile, 0, project))
 
         settings.setEnabled(IconRuleCategory.KUBERNETES, true)
         assertResourceIcon("emberkai/icons/kubernetes/service.svg", provider.getIcon(file, 0))
@@ -184,42 +184,42 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
     fun testEveryContextCategoryCanBeDisabledWithoutDisablingFormatIcons() {
         assertCategoryGate(
             IconRuleCategory.CI, "azure-pipelines-team.yml", "trigger: none",
-            "emberkai/icons/ci/azurepipelines.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/ci/azurepipelines.svg", "emberkai/icons/originals/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.MIGRATION, "db/migration/V1__create_tables.sql", "",
-            "emberkai/icons/migration.svg", "symbols/icons/files/database.svg",
+            "emberkai/icons/migration.svg", "emberkai/icons/originals/files/database.svg",
         )
         assertCategoryGate(
             IconRuleCategory.HELM, "chart/values.yaml", "replicas: 1",
-            "emberkai/icons/helm.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/helm.svg", "emberkai/icons/originals/files/yaml.svg",
             "chart/Chart.yaml" to "apiVersion: v2\nname: chart",
         )
         assertCategoryGate(
             IconRuleCategory.ANSIBLE, "playbook.yaml", "- hosts: all\n  tasks: []",
-            "emberkai/icons/ansible.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/ansible.svg", "emberkai/icons/originals/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.INFRASTRUCTURE, "template.yaml",
             "AWSTemplateFormatVersion: '2010-09-09'\nResources: {}",
-            "emberkai/icons/infrastructure.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/infrastructure.svg", "emberkai/icons/originals/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.GITOPS, "flux-resource.yaml",
             "apiVersion: source.toolkit.fluxcd.io/v1\nkind: GitRepository\nmetadata: {}",
-            "emberkai/icons/gitops/flux.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/gitops/flux.svg", "emberkai/icons/originals/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.API_SPECIFICATION, "contract.yaml", "openapi: 3.1.0\ninfo: {title: API}",
-            "emberkai/icons/openapi.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/openapi.svg", "emberkai/icons/originals/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.KUBERNETES, "deployment.yaml", "apiVersion: v1\nkind: Service",
-            "emberkai/icons/kubernetes/service.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/kubernetes/service.svg", "emberkai/icons/originals/files/yaml.svg",
         )
         assertCategoryGate(
             IconRuleCategory.SPRING_BOOT, "service/src/main/resources/application-local.yaml", "server: {}",
-            "emberkai/icons/spring.svg", "symbols/icons/files/yaml.svg",
+            "emberkai/icons/spring.svg", "emberkai/icons/originals/files/yaml.svg",
             "service/build.gradle.kts" to "plugins { id(\"org.springframework.boot\") }",
         )
     }

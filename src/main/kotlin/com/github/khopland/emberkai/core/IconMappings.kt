@@ -17,9 +17,9 @@ import javax.swing.Icon
 internal object IconMappings {
     private val icons: Map<String, MappedIcon> = buildMap {
         load("symbols.icons").forEach { (key, path) ->
-            put(key, MappedIcon(key, MappingSource.UPSTREAM, "/symbols/icons/$path"))
+            put(key, MappedIcon(key, MappingSource.UPSTREAM, artwork("/symbols/icons/$path")))
         }
-        load("emberkai.icons").forEach { (key, path) -> put(key, MappedIcon(key, MappingSource.CUSTOM, path)) }
+        load("emberkai.icons").forEach { (key, path) -> put(key, MappedIcon(key, MappingSource.CUSTOM, artwork(path))) }
     }
 
     private val contextDepths = MappingKeys.contextDepths(icons.keys)
@@ -40,6 +40,20 @@ internal object IconMappings {
     fun catalog(): List<IconCatalogEntry> = icons.values
         .map { IconCatalogEntry(it.key, it.source, it.resourcePath) }
         .sortedBy { it.key.lowercase(Locale.ROOT) }
+
+    /**
+     * Upstream Symbols artwork, or Emberkai's own redraw of it from `emberkai/icons/originals/` when
+     * there is one. Upstream then supplies only the mapping, and a refresh never brings its art back.
+     */
+    private fun artwork(path: String): String {
+        val relative = path.removePrefix("/")
+        if (!relative.startsWith(UPSTREAM_ART)) return path
+        val original = ORIGINALS + relative.removePrefix(UPSTREAM_ART)
+        return if (SymbolsIconProvider::class.java.classLoader.getResource(original) != null) "/$original" else path
+    }
+
+    private const val UPSTREAM_ART = "symbols/icons/"
+    private const val ORIGINALS = "emberkai/icons/originals/"
 
     private fun load(bundle: String): Map<String, String> {
         val resource = ResourceBundle.getBundle(bundle, Locale.ROOT, SymbolsIconProvider::class.java.classLoader)

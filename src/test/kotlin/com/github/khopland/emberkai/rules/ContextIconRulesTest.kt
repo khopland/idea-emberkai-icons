@@ -173,11 +173,11 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "apiVersion: 1\nkind: Service", "apiVersion: v1\nkind: {}",
         )
         for (i in ordinaryYaml.indices) {
-            assertContentIcon("ordinary-$i.yaml", ordinaryYaml[i], "symbols/icons/files/yaml.svg")
+            assertContentIcon("ordinary-$i.yaml", ordinaryYaml[i], "emberkai/icons/originals/files/yaml.svg")
         }
         assertContentIcon(
             "settings.json", "{\"example\":{\"openapi\":\"3.1.0\"}}",
-            "symbols/icons/files/brackets-yellow.svg",
+            "emberkai/icons/originals/files/brackets-yellow.svg",
         )
     }
 
@@ -189,7 +189,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "nested: " + "[".repeat(40) + "0" + "]".repeat(40),
         )
         for (i in documents.indices) {
-            assertContentIcon("incomplete-$i.yaml", documents[i], "symbols/icons/files/yaml.svg")
+            assertContentIcon("incomplete-$i.yaml", documents[i], "emberkai/icons/originals/files/yaml.svg")
         }
     }
 
@@ -197,13 +197,13 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
         assertContentIcon(
             "large.yaml",
             "apiVersion: v1\nkind: ConfigMap\ndata: " + "x".repeat(FileContentCache.MAX_FILE_SIZE),
-            "symbols/icons/files/yaml.svg",
+            "emberkai/icons/originals/files/yaml.svg",
         )
     }
 
     fun testStructuredMetadataFollowsUnsavedEdits() {
         val file = myFixture.addFileToProject("editable.yaml", "name: ordinary")
-        assertFileResource(file, "symbols/icons/files/yaml.svg")
+        assertFileResource(file, "emberkai/icons/originals/files/yaml.svg")
         val document = FileDocumentManager.getInstance().getDocument(file.virtualFile)
         assertNotNull(document)
         WriteCommandAction.runWriteCommandAction(project) { document!!.setText("openapi: 3.1.0") }
@@ -215,7 +215,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
         WriteCommandAction.runWriteCommandAction(project) { document!!.setText("apiVersion: v1\nkind: Widget") }
         assertFileResource(file, "emberkai/icons/kubernetes.svg")
         WriteCommandAction.runWriteCommandAction(project) { document!!.setText("kind: [") }
-        assertFileResource(file, "symbols/icons/files/yaml.svg")
+        assertFileResource(file, "emberkai/icons/originals/files/yaml.svg")
     }
 
     fun testStructuredMetadataFollowsVirtualFileChanges() {
@@ -281,7 +281,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "deploy/deploy.yaml", "- hosts: web\n  roles:\n    - common", "emberkai/icons/ansible.svg",
         )
         assertCustomPathIcon("ansible/inventory/hosts.ini", "ansible.svg")
-        assertContentIcon("settings.yaml", "name: example", "symbols/icons/files/yaml.svg")
+        assertContentIcon("settings.yaml", "name: example", "emberkai/icons/originals/files/yaml.svg")
 
         assertCustomFolderIcon("ansible", "folders/folder-ansible.svg")
         for (name in arrayOf("playbooks", "roles", "inventory", "inventories")) {
@@ -302,7 +302,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "stack.json", "{\"Resources\":{\"Queue\":{\"Type\":\"AWS::SQS::Queue\"}}}",
             "emberkai/icons/infrastructure.svg",
         )
-        assertContentIcon("settings.yaml", "name: example", "symbols/icons/files/yaml.svg")
+        assertContentIcon("settings.yaml", "name: example", "emberkai/icons/originals/files/yaml.svg")
     }
 
     fun testGitOpsResourcesBootstrapFilesAndFolders() {

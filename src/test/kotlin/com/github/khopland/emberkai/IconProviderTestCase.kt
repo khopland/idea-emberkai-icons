@@ -122,8 +122,11 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
         }
     }
 
+    /** Asserts the artwork an upstream mapping to [path] shows: Emberkai's redraw when there is one. */
     protected fun assertIcon(path: String, actual: Icon?) {
-        assertResourceIcon("symbols/icons/$path", actual)
+        val original = "emberkai/icons/originals/$path"
+        val loader = SymbolsIconProvider::class.java.classLoader
+        assertResourceIcon(if (loader.getResource(original) != null) original else "symbols/icons/$path", actual)
     }
 
     protected fun assertResourceIcon(path: String, actual: Icon?) {

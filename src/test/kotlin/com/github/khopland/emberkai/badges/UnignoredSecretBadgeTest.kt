@@ -61,7 +61,7 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
         val dotenv = myFixture.addFileToProject(".env", "TOKEN=abc")
         val badge = provider.getIcon(dotenv, 0) as? UnignoredSecretBadgeIcon
         assertNotNull("An exposed .env file is badged", badge)
-        assertResourceIcon("symbols/icons/files/gear.svg", badge!!.baseIcon)
+        assertResourceIcon("emberkai/icons/originals/files/gear.svg", badge!!.baseIcon)
         assertFalse(badge.highContrast)
         assertTrue(exposed.contains(dotenv.virtualFile))
 
@@ -106,7 +106,7 @@ internal class UnignoredSecretBadgeTest : IconProviderTestCase() {
     fun testIgnoredOrUnknownSecretsKeepTheirIcons() {
         useExposure { false }
         val dotenv = myFixture.addFileToProject(".env", "TOKEN=abc")
-        assertResourceIcon("symbols/icons/files/gear.svg", provider.getIcon(dotenv, 0))
+        assertResourceIcon("emberkai/icons/originals/files/gear.svg", provider.getIcon(dotenv, 0))
     }
 
     fun testWarningBadgeFollowsSettingsAndExplainsItself() {

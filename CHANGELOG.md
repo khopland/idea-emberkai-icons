@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 - Added **Artwork colors** to the settings page: **Emberkai**, **Catppuccin**, **Nord**, or **Gruvbox**. A theme palette retints Emberkai's own icons, badges, and folders to that theme's hues while keeping each color's brightness, so icons stay exactly as legible on light and dark themes. Upstream Symbols icons keep their colors. The choice is included when settings are exported.
+- Redrew the 15 most common file icons in Emberkai's own style, so they match the rest of the set: JSON, YAML, Markdown, XML, plain text, license, shell scripts, configuration files (the gear, also used for `.env` and TOML), lock files, databases and SQL, images, CSV, Git files, archives, and video. Most keep their old color; lock files, licenses, and video, which were plain grey, now get one. All are drawn on the 16px grid with an outline that keeps them readable on light and dark themes.
 - Emberkai's icons are now generated from one source each, in `design/icons/`, that names its colors with palette names and light/dark tokens such as `$ink`, so an icon's light and dark versions can no longer drift apart. The icons look the same as before. The SDKMAN icon's dark variant was an identical copy and is gone.
 - Moved the plugin's code from the `com.github.khopland.symbols` package to `com.github.khopland.emberkai`, to match the Emberkai name. The plugin ID, action IDs, and settings are unchanged, so upgrades, keymaps, and saved settings carry over. To see Emberkai's debug logs, use the category `#com.github.khopland.emberkai` instead.
 
