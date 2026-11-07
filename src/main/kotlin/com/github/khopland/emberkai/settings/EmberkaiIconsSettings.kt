@@ -1,7 +1,10 @@
 package com.github.khopland.emberkai.settings
 
+import com.github.khopland.emberkai.core.ArtworkPalette
+import com.github.khopland.emberkai.core.ArtworkPalettePatcher
 import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.folders.FolderIconPalette
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
@@ -16,13 +19,14 @@ import kotlin.reflect.KProperty
 
 @Service(Service.Level.APP)
 @State(name = "EmberkaiIconsSettings", storages = [Storage("emberkai-icons.xml")])
-class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.State> {
+class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.State>, Disposable {
     /** Field names are the persisted and exported setting names; keep them stable. */
     data class State(
         var preserveNativeJavaKotlinIcons: Boolean = true,
         var colorServiceFolders: Boolean = true,
         var moduleAwareColors: Boolean = false,
         var serviceFolderPalette: String = FolderIconPalette.EMBERKAI.name,
+        var artworkPalette: String = ArtworkPalette.EMBERKAI.name,
         var highContrastFolderIcons: Boolean = false,
         var monochromeFolderIcons: Boolean = false,
         var reducedFolderColor: Boolean = false,
@@ -65,6 +69,11 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         synchronized(stateLock) {
             currentState = state.copy()
         }
+        ArtworkPalettePatcher.select(ArtworkPalette.fromId(state.artworkPalette))
+    }
+
+    override fun dispose() {
+        ArtworkPalettePatcher.uninstall()
     }
 
     var preserveNativeJavaKotlinIcons by flag(State::preserveNativeJavaKotlinIcons)
@@ -80,6 +89,13 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         get() = FolderIconPalette.fromId(currentState.serviceFolderPalette)
         set(value) {
             updateState { it.serviceFolderPalette = value.name }
+        }
+
+    internal var artworkPalette: ArtworkPalette
+        get() = ArtworkPalette.fromId(currentState.artworkPalette)
+        set(value) {
+            updateState { it.artworkPalette = value.name }
+            ArtworkPalettePatcher.select(value)
         }
 
     internal fun isEnabled(category: IconRuleCategory): Boolean = currentState.isEnabled(category)
@@ -118,6 +134,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         )
         private val EXPORTED_FLAGS = GENERAL_FLAGS + IconRuleCategory.entries.map(::flag)
         private const val PALETTE_KEY = "serviceFolderPalette"
+        private const val ARTWORK_PALETTE_KEY = "artworkPalette"
 
         fun getInstance(): EmberkaiIconsSettings =
             ApplicationManager.getApplication().getService(EmberkaiIconsSettings::class.java)
@@ -155,6 +172,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             val properties = Properties()
             EXPORTED_FLAGS.forEach { properties.setProperty(it.name, it.get(state).toString()) }
             properties.setProperty(PALETTE_KEY, state.serviceFolderPalette)
+            properties.setProperty(ARTWORK_PALETTE_KEY, state.artworkPalette)
             Files.newOutputStream(path).use { properties.store(it, "Emberkai Icons settings") }
         }
 
@@ -167,6 +185,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
                     properties.getProperty(property.name)?.trim()?.toBooleanStrictOrNull()?.let { property.set(this, it) }
                 }
                 serviceFolderPalette = FolderIconPalette.fromId(properties.getProperty(PALETTE_KEY)?.trim()).name
+                artworkPalette = ArtworkPalette.fromId(properties.getProperty(ARTWORK_PALETTE_KEY)?.trim()).name
             }
         }
     }
