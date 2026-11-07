@@ -25,6 +25,7 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.LayeredIcon
+import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBTextField
 import java.awt.BorderLayout
 import java.awt.Component
@@ -57,6 +58,11 @@ class EmberkaiIconsConfigurable : Configurable {
     private var folderPalette: JComboBox<FolderIconPalette>? = null
     private var filterField: JBTextField? = null
     private var statusLabel: JLabel? = null
+    private var presetBox: JComboBox<PresetItem>? = null
+    private var presetDescription: JLabel? = null
+    private var advancedLink: ActionLink? = null
+    private var advancedExpanded = false
+    private var syncingPreset = false
     /** Every boolean setting's checkbox, keyed by the state field it edits. */
     private val flagBoxes = linkedMapOf<KMutableProperty1<State, Boolean>, JCheckBox>()
     private val searchableRows = mutableListOf<SearchableRow>()
@@ -80,6 +86,15 @@ class EmberkaiIconsConfigurable : Configurable {
         }
         root.add(filterField!!)
         statusLabel = JLabel(" ").apply { alignmentX = Component.LEFT_ALIGNMENT }
+
+        section(root, "Preset", "Pick how much Emberkai shows. Fine-tune single features under Advanced.")
+        presetBox = JComboBox(DefaultComboBoxModel((SettingsPreset.entries.map(::PresetItem) + PresetItem(null)).toTypedArray())).apply {
+            accessibleContext.accessibleName = "Feature preset"
+            addActionListener { applySelectedPreset() }
+        }
+        presetDescription = JLabel(" ")
+        addSearchable(root, labeledControl("Features", presetBox!!), "Preset features " + SettingsPreset.entries.joinToString(" ") { it.displayName })
+        addSearchable(root, presetDescription!!, "Preset features")
 
         section(root, "Icons")
         addFlag(root, State::preserveNativeJavaKotlinIcons, "Keep IntelliJ's native Java and Kotlin file icons")
@@ -123,15 +138,20 @@ class EmberkaiIconsConfigurable : Configurable {
         }
         root.add(previewPanel)
 
+        // Single features sit behind a link; the preset picks them, and the filter still finds them.
+        root.add(Box.createVerticalStrut(8))
+        advancedLink = ActionLink("") { toggleAdvanced() }.apply { alignmentX = Component.LEFT_ALIGNMENT }
+        root.add(advancedLink!!)
+
         // Apply refreshes project trees and open editor tabs; the hints say what each group hides.
         for (group in CategoryGroup.entries) {
-            section(root, group.title, group.hint)
+            section(root, group.title, group.hint, advanced = true)
             for (category in IconRuleCategory.entries.filter { it.group == group }) {
                 addFlag(root, EmberkaiIconsSettings.flag(category), category.displayName)
             }
         }
 
-        section(root, "Tooltips and ownership")
+        section(root, "Tooltips and ownership", advanced = true)
         addFlag(
             root, State::semanticTooltips, "Describe recognized files and folders in Project view tooltips",
             "Show what Emberkai recognized, such as a Kubernetes manifest or a production profile. " +
@@ -174,6 +194,7 @@ class EmberkaiIconsConfigurable : Configurable {
 
         reset()
         updatePreview()
+        applyFilter()
         return root
     }
 
@@ -196,6 +217,35 @@ class EmberkaiIconsConfigurable : Configurable {
         updatePreview()
     }
 
+    private fun applySelectedPreset() {
+        if (syncingPreset) return
+        val preset = (presetBox?.selectedItem as? PresetItem)?.preset
+        if (preset != null) loadForm(preset.applyTo(formState())) else syncPreset()
+    }
+
+    /** Selects the preset the checkboxes match, or Custom, without applying it. */
+    private fun syncPreset() {
+        val box = presetBox ?: return
+        val state = formState()
+        val preset = SettingsPreset.matching(state)
+        syncingPreset = true
+        try {
+            box.selectedItem = PresetItem(preset)
+        } finally {
+            syncingPreset = false
+        }
+        presetDescription?.text = preset?.description ?: "A custom mix of features. Choose a preset to replace it."
+        val enabled = SettingsPreset.PRESET_FLAGS.count { it.get(state) }
+        advancedLink?.text = (if (advancedExpanded) "Hide" else "Advanced: show") +
+            " individual features ($enabled of ${SettingsPreset.PRESET_FLAGS.size} on)"
+    }
+
+    private fun toggleAdvanced() {
+        advancedExpanded = !advancedExpanded
+        syncPreset()
+        applyFilter()
+    }
+
     private fun formState(): State = EmberkaiIconsSettings.getInstance().state.also { state ->
         flagBoxes.forEach { (flag, box) -> flag.set(state, box.isSelected) }
         selectedPalette()?.let { state.serviceFolderPalette = it.name }
@@ -206,6 +256,10 @@ class EmberkaiIconsConfigurable : Configurable {
         folderPalette = null
         filterField = null
         statusLabel = null
+        presetBox = null
+        presetDescription = null
+        advancedLink = null
+        advancedExpanded = false
         flagBoxes.clear()
         searchableRows.clear()
         sections.clear()
@@ -227,14 +281,17 @@ class EmberkaiIconsConfigurable : Configurable {
         addSearchable(root, checkbox, text)
     }
 
-    /** Starts a section that the filter hides, title and [hint] included, when none of its rows match. */
-    private fun section(root: JPanel, title: String, hint: String? = null) {
+    /**
+     * Starts a section that the filter hides, title and [hint] included, when none of its rows match.
+     * An [advanced] section also stays hidden until Advanced is expanded or the filter matches it.
+     */
+    private fun section(root: JPanel, title: String, hint: String? = null, advanced: Boolean = false) {
         val header = listOfNotNull(
             sectionTitle(title),
             hint?.let { JLabel(it).apply { alignmentX = Component.LEFT_ALIGNMENT } },
         )
         header.forEach(root::add)
-        sections += Section(title, header)
+        sections += Section(title, header, advanced)
     }
 
     private fun addSearchable(root: JPanel, component: JComponent, text: String) {
@@ -247,10 +304,14 @@ class EmberkaiIconsConfigurable : Configurable {
     private fun applyFilter() {
         val query = filterField?.text?.trim()?.lowercase(Locale.ROOT).orEmpty()
         searchableRows.forEach { row ->
-            row.component.isVisible = query.isEmpty() ||
+            row.component.isVisible = if (query.isEmpty()) {
+                row.section?.advanced != true || advancedExpanded
+            } else {
                 row.text.lowercase(Locale.ROOT).contains(query) ||
-                row.section?.title?.lowercase(Locale.ROOT)?.contains(query) == true
+                    row.section?.title?.lowercase(Locale.ROOT)?.contains(query) == true
+            }
         }
+        advancedLink?.isVisible = query.isEmpty()
         sections.forEach { section ->
             val visible = searchableRows.any { it.section === section && it.component.isVisible }
             section.header.forEach { it.isVisible = visible }
@@ -326,6 +387,7 @@ class EmberkaiIconsConfigurable : Configurable {
     }
 
     private fun updatePreview() {
+        syncPreset()
         val panel = previewPanel ?: return
         val settings = PreviewSettings(
             palette = selectedPalette() ?: FolderIconPalette.EMBERKAI,
@@ -430,7 +492,12 @@ class EmberkaiIconsConfigurable : Configurable {
         add(component, BorderLayout.CENTER)
     }
 
-    private class Section(val title: String, val header: List<JComponent>)
+    private class Section(val title: String, val header: List<JComponent>, val advanced: Boolean)
+
+    /** A preset, or Custom when [preset] is null. */
+    private data class PresetItem(val preset: SettingsPreset?) {
+        override fun toString(): String = preset?.displayName ?: "Custom"
+    }
 
     private data class SearchableRow(val component: JComponent, val text: String, val section: Section?)
 
