@@ -1,7 +1,11 @@
 package com.github.khopland.symbols
 
+import com.github.khopland.symbols.core.IconResolver
+import com.github.khopland.symbols.node.StereotypeBadgeIcon
 import com.github.khopland.symbols.overrides.ProjectIconOverrideStore
+import com.github.khopland.symbols.settings.EmberkaiScope
 import com.github.khopland.symbols.settings.EmberkaiScopesProvider
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.HeavyPlatformTestCase
@@ -53,6 +57,30 @@ internal class EdtSlowOperationsTest : HeavyPlatformTestCase() {
             assertTrue(store.removeOverride("file.readme.md"))
             assertEquals(setOf("extension.md"), store.overrides().keys)
             assertNotNull(store.iconsDirectory()?.findChild("brand_dark.svg"))
+        }
+    }
+
+    /**
+     * The Project view computes icons in the background, but editor tabs and scope-based file colors
+     * ask on the EDT. There, TypeScript stereotypes come only from what a background caller cached.
+     */
+    fun testNodeStereotypesOnTheEdtUseOnlyCachedResults() {
+        write("api/package.json", """{ "dependencies": { "@nestjs/common": "11.0.0" } }""")
+        write("api/src/orders.controller.ts", "import { Controller } from '@nestjs/common';\n@Controller()\nexport class Orders {}\n")
+        val controller = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(base.resolve("api/src/orders.controller.ts"))!!
+
+        onEdtOutsideAnAction {
+            assertFalse("Nothing is cached yet", EmberkaiScope.ENTRY_POINTS.contains(controller, project))
+            assertFalse(IconResolver.resolve(controller, project) is StereotypeBadgeIcon)
+        }
+
+        ApplicationManager.getApplication().executeOnPooledThread {
+            assertTrue(EmberkaiScope.ENTRY_POINTS.contains(controller, project))
+        }.get()
+
+        onEdtOutsideAnAction {
+            assertTrue("A background lookup warmed the caches", EmberkaiScope.ENTRY_POINTS.contains(controller, project))
+            assertTrue(IconResolver.resolve(controller, project) is StereotypeBadgeIcon)
         }
     }
 

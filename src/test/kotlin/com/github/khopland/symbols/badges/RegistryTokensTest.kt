@@ -43,6 +43,33 @@ internal class RegistryTokensTest : IconProviderTestCase() {
         assertEquals(listOf(RegistryToken(2, "npmAuthToken"), RegistryToken(6, "npmAuthIdent")), tokens)
     }
 
+    fun testCommentsEmptyValuesAndVariablesAreNotTokens() {
+        assertEquals(
+            emptyList<RegistryToken>(),
+            RegistryTokens.yarnrc(
+                listOf(
+                    "npmAuthToken: \"\"  # set in CI", "npmAuthToken: # set in CI", "npmAuthToken: null",
+                    "npmAuthToken: ~", "# npmAuthToken: npm_abc123", "npmAuthToken: \"${'$'}{NPM_TOKEN}\"",
+                ).joinToString("\n"),
+            ),
+        )
+        assertEquals(
+            "A literal value keeps its trailing comment out of the check",
+            listOf(RegistryToken(1, "npmAuthToken")),
+            RegistryTokens.yarnrc("npmAuthToken: npm_abc123 # rotated monthly"),
+        )
+        assertEquals(
+            emptyList<RegistryToken>(),
+            RegistryTokens.npmrc(
+                listOf(
+                    "#//registry.npmjs.org/:_authToken=npm_abc123", ";//registry.npmjs.org/:_authToken=npm_abc123",
+                    "//registry.npmjs.org/:_authToken=${'$'}NPM_TOKEN", "//registry.npmjs.org/:_authToken=",
+                ).joinToString("\r\n"),
+            ),
+        )
+        assertEquals(listOf(RegistryToken(2, "_authToken")), RegistryTokens.npmrc("# token\r\n//r.dev/:_authToken=abc\r\n"))
+    }
+
     fun testExposedNpmrcWithATokenIsBadgedAndJoinsTheBlastRadius() {
         useExposure { true }
         val exposed = myFixture.addFileToProject("web/.npmrc", "//registry.npmjs.org/:_authToken=npm_abc123\n").virtualFile

@@ -108,6 +108,8 @@
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
         <listener class="com.github.khopland.symbols.badges.HelmLockDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+        <listener class="com.github.khopland.symbols.node.NodePackageListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
         <listener class="com.github.khopland.symbols.badges.ConfigDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>

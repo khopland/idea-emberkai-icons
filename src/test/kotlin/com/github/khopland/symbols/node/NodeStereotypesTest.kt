@@ -12,6 +12,7 @@ import com.github.khopland.symbols.stereotypes.ClassStereotype
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.newvfs.events.VFileContentChangeEvent
 import java.nio.file.Files
 
 internal class NodeStereotypesTest : IconProviderTestCase() {
@@ -34,23 +35,47 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
         val routes = mapOf(
             "web/app/page.tsx" to "Next.js page",
             "web/app/(shop)/cart/[id]/page.jsx" to "Next.js page",
-            "web/src/app/api/orders/route.ts" to "Next.js route handler",
+            "web/app/@modal/(.)photo/[id]/page.tsx" to "Next.js page",
+            "web/app/api/orders/route.ts" to "Next.js route handler",
+            "web/app/sitemap.ts" to "Next.js metadata route",
+            "web/app/blog/opengraph-image.tsx" to "Next.js metadata route",
             "web/pages/index.tsx" to "Next.js page",
             "web/pages/api/orders/[id].ts" to "Next.js API route",
             "web/middleware.ts" to "Next.js middleware",
-            "web/src/proxy.ts" to "Next.js proxy",
+            "web/proxy.ts" to "Next.js proxy",
         )
         for ((path, evidence) in routes) {
             val match = match(file(path, "export default function Page() {}"))
-            assertEquals(path, ClassStereotype.WEB, match?.stereotype)
-            assertEquals(path, evidence, match?.evidence)
+            assertEquals(path, ClassStereotype.WEB to evidence, match?.stereotype to match?.evidence)
         }
         for (path in listOf(
             "web/app/layout.tsx", "web/app/_components/page.tsx", "web/pages/_app.tsx", "web/app/page.css",
-            "web/components/page.tsx", "web/lib/middleware.ts", "web/app/page.d.ts",
+            "web/components/page.tsx", "web/lib/middleware.ts", "web/app/page.d.ts", "web/pages/index.test.tsx",
+            "web/pages/index.stories.tsx",
+            // Next.js ignores src/app when app/ sits next to src/.
+            "web/src/app/page.tsx",
         )) {
             assertNull(path, match(file(path, "export {}")))
         }
+    }
+
+    fun testNextJsSourceFolderAppsAreRecognized() {
+        packageJson("shop", """{ "dependencies": { "next": "16.0.0" } }""")
+        assertEquals("Next.js route handler", match(file("shop/src/app/api/route.ts", "export {}"))?.evidence)
+        assertEquals("Next.js proxy", match(file("shop/src/proxy.ts", "export {}"))?.evidence)
+    }
+
+    fun testNextJsAppsInAMonorepoAreRootedAtTheirConfig() {
+        // An Nx-style workspace: one root package.json, and each app marked by its next.config.
+        packageJson("repo", """{ "dependencies": { "next": "16.0.0", "@nestjs/common": "11.0.0" } }""")
+        file("repo/apps/web/next.config.ts", "export default {}")
+        assertEquals("Next.js page", match(file("repo/apps/web/app/page.tsx", "export {}"))?.evidence)
+        assertNull("Without a next.config, a nested folder is not an app", match(file("repo/apps/docs/app/page.tsx", "export {}")))
+        assertEquals(
+            "NestJS apps in the same workspace still read the root dependencies",
+            ClassStereotype.WEB,
+            match(file("repo/apps/api/src/orders.controller.ts", nest("Controller", "@nestjs/common")))?.stereotype,
+        )
     }
 
     fun testNextJsLayoutNeedsTheNextDependency() {
@@ -67,10 +92,25 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             nest("Injectable", "@nestjs/common") to (ClassStereotype.SERVICE to "@Injectable"),
             nest("Module", "@nestjs/common") to (ClassStereotype.CONFIGURATION to "@Module"),
             nest("Entity", "typeorm") to (ClassStereotype.ENTITY to "@Entity"),
+            nest("Entity", "@mikro-orm/core") to (ClassStereotype.ENTITY to "@Entity"),
+            nest("Schema", "@nestjs/mongoose") to (ClassStereotype.ENTITY to "@Schema"),
             nest("Cron", "@nestjs/schedule") to (ClassStereotype.SCHEDULED to "@Cron"),
             nest("EventPattern", "@nestjs/microservices") to (ClassStereotype.LISTENER to "@EventPattern"),
+            nest("OnEvent", "@nestjs/event-emitter") to (ClassStereotype.LISTENER to "@OnEvent"),
             // Aliases resolve to the imported name.
             "import { Controller as Route } from '@nestjs/common';\n@Route('orders')\nexport class Orders {}"
+                to (ClassStereotype.WEB to "@Controller"),
+            // Comments inside the braces, as Prettier keeps them.
+            "import {\n  // routing\n  Controller, /* web */\n} from '@nestjs/common';\n@Controller()\nexport class A {}"
+                to (ClassStereotype.WEB to "@Controller"),
+            // Default plus named, namespace, deep-path, and CommonJS imports.
+            "import Nest, { Controller } from '@nestjs/common';\n@Controller()\nexport class B {}"
+                to (ClassStereotype.WEB to "@Controller"),
+            "import * as common from '@nestjs/common';\n@common.Controller()\nexport class C {}"
+                to (ClassStereotype.WEB to "@Controller"),
+            "import { Controller } from '@nestjs/common/decorators';\n@Controller()\nexport class D {}"
+                to (ClassStereotype.WEB to "@Controller"),
+            "const { Controller: Route } = require('@nestjs/common');\n@Route()\nclass E {}"
                 to (ClassStereotype.WEB to "@Controller"),
             // Entry points outrank the roles a class plays inside a service.
             "import { Injectable } from '@nestjs/common';\nimport { Cron } from '@nestjs/schedule';\n" +
@@ -81,13 +121,35 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             val match = match(file("api/src/case$index.ts", source))
             assertEquals(source, expected, match?.stereotype to match?.evidence)
         }
-        for (source in listOf(
+        val unmatched = listOf(
             "@Controller('orders')\nexport class Orders {}",
             "import { Controller } from './local';\n@Controller('orders')\nexport class Orders {}",
-            "import { Entity } from '@mikro-orm/core';\n@Entity()\nexport class Order {}",
-        )) {
-            assertNull(source, match(file("api/src/other${source.length}.ts", source)))
+            "import { Entity } from '@acme/orm';\n@Entity()\nexport class Order {}",
+            // Commented-out code and documentation are not decorators.
+            "// import { Controller } from '@nestjs/common';\n// @Controller()\nexport class F {}",
+            "import { Controller } from '@nestjs/common';\n/** Use @Controller() on handlers. */\nexport const G = 1",
+        )
+        unmatched.forEachIndexed { index, source -> assertNull(source, match(file("api/src/other$index.ts", source))) }
+    }
+
+    fun testRequestPlumbingIsNotAService() {
+        packageJson("api", """{ "dependencies": { "@nestjs/common": "11.0.0" } }""")
+        val guard = "import { Injectable, CanActivate } from '@nestjs/common';\n" +
+            "@Injectable()\nexport class Auth implements CanActivate {\n  canActivate() { return true }\n}"
+        assertNull(match(file("api/src/auth.ts", guard)))
+        assertNull(match(file("api/src/roles.guard.ts", nest("Injectable", "@nestjs/common"))))
+        assertNull(match(file("api/src/jwt.strategy.ts", nest("Injectable", "@nestjs/common"))))
+        assertEquals(ClassStereotype.SERVICE, match(file("api/src/orders.service.ts", nest("Injectable", "@nestjs/common")))?.stereotype)
+    }
+
+    fun testPackageAndConfigChangesRepaintIcons() {
+        val listener = NodePackageListener()
+        val events = listOf("api/package.json", "web/next.config.mjs", "web/app/page.tsx").map { path ->
+            VFileContentChangeEvent(null, file(path, "{}"), 0, 0)
         }
+        assertTrue(listener.isRelevant(events.subList(0, 1)))
+        assertTrue(listener.isRelevant(events.subList(1, 2)))
+        assertFalse(listener.isRelevant(events.subList(2, 3)))
     }
 
     fun testNestJsSourcesAreReadOnlyInNestPackages() {
