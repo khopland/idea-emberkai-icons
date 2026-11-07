@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Added stereotype badges for TypeScript and JavaScript, so the controllers, routes, and jobs of a Node service stand out like Spring's. In a Next.js app (a folder with `next.config.*`, or a package that depends on `next`), App Router pages, route handlers, and metadata routes, Pages Router pages and API routes, and `middleware` or `proxy` get the web-controller square. In a package that depends on NestJS, TypeORM, or MikroORM, `@Controller` and `@Resolver` get the square, `@WebSocketGateway`, `@MessagePattern`, `@EventPattern`, `@OnEvent`, and `@Processor` the envelope, `@Cron`, `@Interval`, and `@Timeout` the hourglass, `@Injectable` services the ring (guards, pipes, interceptors, filters, middleware, and strategies are left out), `@Module` the toggle, and `@Entity` and Mongoose `@Schema` the cube, counted only when imported from the module that defines them. Routes, controllers, listeners, and jobs join the **Emberkai: Entry points** scope and the **Entry points** lens. Badges update when `package.json` or `next.config.*` changes. Follows the **Class stereotype badges** setting.
+- `.npmrc` and `.yarnrc.yml` files that hold a literal registry token (`_authToken`, `_auth`, `_password`, `npmAuthToken`, or `npmAuthIdent`) and are not ignored by VCS get the red secret warning badge and join the **Production blast radius** lens. Tokens read from an environment variable, such as `${NPM_TOKEN}`, comment lines, and empty values are left alone. Follows the **Unignored secret warning badges** setting.
+
 ## [0.8.0] - 2026-11-05
 
 - Added support for IntelliJ IDEA 2026.3. It moved version control out of the core into its own plugin, which left the Git lenses, out-of-order migration warnings, **Find Reviewers for This Branch**, and unignored secret warning badges unable to load their VCS classes.
