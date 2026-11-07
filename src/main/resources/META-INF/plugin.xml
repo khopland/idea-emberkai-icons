@@ -38,7 +38,8 @@
         <p>Spring, Quarkus, Micronaut, and JPA classes keep their native Java/Kotlin class icons with a small
         stereotype badge: controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
         configuration classes, and entities. Test classes show whether they start containers, the whole
-        application, or a Spring Boot test slice.</p>
+        application, or a Spring Boot test slice. Next.js routes and NestJS controllers, gateways, jobs, services,
+        modules, and TypeORM entities get the same badges on their TypeScript and JavaScript file icons.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -85,6 +86,7 @@
         corner holds one badge (see BadgeSlot), so which badge is drawn depends on urgency, not on this order.
     -->
     <extensions defaultExtensionNs="com.github.khopland.symbols">
+        <iconDecorator implementation="com.github.khopland.symbols.node.NodeStereotypeDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.badges.EnvironmentVariantDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.badges.UnignoredSecretDecorator"/>
         <iconDecorator implementation="com.github.khopland.symbols.badges.ConfigDriftDecorator"/>

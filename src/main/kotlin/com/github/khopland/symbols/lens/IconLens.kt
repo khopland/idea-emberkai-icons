@@ -2,6 +2,7 @@ package com.github.khopland.symbols.lens
 
 import com.github.khopland.symbols.badges.SecretFileExposure
 import com.github.khopland.symbols.badges.KubernetesSecrets
+import com.github.khopland.symbols.badges.RegistryTokens
 import com.github.khopland.symbols.badges.SecretFileNames
 import com.github.khopland.symbols.ownership.CodeOwners
 import com.github.khopland.symbols.settings.EmberkaiScope
@@ -55,7 +56,8 @@ internal enum class IconLens(
         if (file.isDirectory) return false
         if (scopes.any { it.contains(file, project) }) return true
         return exposedSecrets &&
-            (SecretFileNames.isCandidate(file) || KubernetesSecrets.plaintext(file, project).isNotEmpty()) &&
+            (SecretFileNames.isCandidate(file) || KubernetesSecrets.plaintext(file, project).isNotEmpty() ||
+                RegistryTokens.literal(file).isNotEmpty()) &&
             SecretFileExposure.getInstance(project)?.isExposed(file) == true
     }
 }

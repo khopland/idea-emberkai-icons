@@ -23,17 +23,25 @@ internal data class PlaintextSecretFact(val secrets: List<PlaintextSecret>) : Ic
     override val tooltipOrder: Int get() = 90
 }
 
+/** npm or Yarn registry credentials in a file VCS would commit. */
+internal data class RegistryTokenFact(val tokens: List<RegistryToken>) : IconFact {
+    override val label: String
+        get() = if (tokens.size == 1) "registry token not ignored by VCS" else "${tokens.size} registry tokens not ignored by VCS"
+    override val tooltipOrder: Int get() = 90
+}
+
 /**
- * Warns about likely credentials that VCS would pick up: files named like keys and credentials, and
- * Kubernetes manifests with plaintext Secrets. Both checks read only the name or cached content
- * before any VCS lookup.
+ * Warns about likely credentials that VCS would pick up: files named like keys and credentials,
+ * Kubernetes manifests with plaintext Secrets, and `.npmrc` or `.yarnrc.yml` files with literal
+ * registry tokens. Every check reads only the name or cached content before any VCS lookup.
  */
 internal class UnignoredSecretDecorator : IconDecorator {
     override fun decorateFile(resolution: IconResolution, file: VirtualFile, project: Project?): IconResolution {
         val settings = EmberkaiIconsSettings.getInstance()
         if (!settings.isEnabled(IconRuleCategory.UNIGNORED_SECRETS)) return resolution
         val secrets = if (SecretFileNames.isCandidate(file)) null else KubernetesSecrets.plaintext(file, project)
-        if (secrets != null && secrets.isEmpty()) return resolution
+        val tokens = if (secrets == null || secrets.isNotEmpty()) emptyList() else RegistryTokens.literal(file)
+        if (secrets != null && secrets.isEmpty() && tokens.isEmpty()) return resolution
         if (project == null || project.isDisposed || project.isDefault) return resolution
         val exposure = SecretFileExposure.getInstance(project) ?: return resolution
         if (!exposure.isExposed(file)) return resolution
@@ -46,6 +54,17 @@ internal class UnignoredSecretDecorator : IconDecorator {
                 "A red warning badge marks a file that usually holds credentials " +
                     "or private keys and is inside a VCS root without being ignored, so it could be committed. " +
                     "Ignore it in VCS (for example in .gitignore) to clear the badge.",
+            )
+        }
+        if (tokens.isNotEmpty()) {
+            return resolution.decorated(
+                badge,
+                RegistryTokenFact(tokens),
+                "A red warning badge marks package registry credentials written into this file, in a VCS " +
+                    "root without being ignored: " +
+                    tokens.joinToString("; ") { "line ${it.line}: ${it.key}" } +
+                    ". Reference an environment variable instead, such as \${NPM_TOKEN}, or ignore the " +
+                    "file in VCS to clear the badge.",
             )
         }
         return resolution.decorated(
