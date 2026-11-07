@@ -143,6 +143,12 @@ tasks.test {
         systemProperty("emberkai.screenshots.dir", layout.projectDirectory.dir("design/screenshots").asFile.absolutePath)
         outputs.upToDateWhen { false }
     }
+    // ./gradlew test --tests '*IconSourcesTest' -PwriteIcons regenerates src/main/resources/emberkai/icons
+    // from design/icons.
+    if (providers.gradleProperty("writeIcons").isPresent) {
+        systemProperty("emberkai.writeIcons", "true")
+        outputs.upToDateWhen { false }
+    }
     // ./gradlew test --tests '*IconContactSheet' -PiconSheet=changed.txt -PiconSheetBase=base renders
     // build/reports/icon-sheet/icons.png for the SVG paths listed in changed.txt.
     val iconSheet = providers.gradleProperty("iconSheet")

@@ -1,0 +1,14 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g data-theme="light">
+<circle cx="4" cy="4" r="2.85" stroke="white" stroke-width="2.4"/>
+<circle cx="4" cy="4" r="2.85" fill="pink-400" stroke="slate-800" stroke-width="0.9"/>
+<circle cx="4" cy="4" r="1" fill="pink-100" stroke="slate-800" stroke-width="0.7"/>
+</g>
+<g data-theme="dark">
+<g transform="translate(-0.5 -0.5) scale(1.12)">
+<circle cx="4" cy="4" r="2.85" stroke="ide-dark-background" stroke-width="1.6"/>
+<circle cx="4" cy="4" r="2.85" fill="pink-400" stroke="pink-400" stroke-width="0.8"/>
+<circle cx="4" cy="4" r="1" fill="pink-100" stroke="slate-800" stroke-width="0.7"/>
+</g>
+</g>
+</svg>

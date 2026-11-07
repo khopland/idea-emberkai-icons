@@ -115,7 +115,7 @@ Folder icons use the Symbols shape with IntelliJ-style role cues: blue corner sq
 
 Content detection reads at most 256 KiB and caches results by modification stamp, including unsaved editor changes. Structured metadata checks only top-level YAML/JSON fields; bounded text signatures identify infrastructure templates and Ansible playbooks. Incomplete, unsupported, or oversized metadata keeps the normal format icon; canonical filenames still identify their tools. No builds, dependency resolution, or network calls run during icon lookup.
 
-Custom SVGs use matching `_dark.svg` variants when the two themes need different colors. Neutral slate outlines and ink details get lighter in dark themes. Thin accent strokes use a deeper shade in light themes, such as blue-600 instead of blue-400, because the bright dark-theme shade washes out on a light background. Brand-color fills stay shared between themes, and IntelliJ selects the dark variant automatically.
+Custom SVGs get a `_dark.svg` variant when the two themes need different colors. Neutral slate outlines and ink details get lighter in dark themes. Thin accent strokes use a deeper shade in light themes, such as blue-600 instead of blue-400, because the bright dark-theme shade washes out on a light background. Brand-color fills stay shared between themes, and IntelliJ selects the dark variant automatically. Both variants are generated from one source per icon; see [Icon sources](#icon-sources).
 
 ## Install
 
@@ -140,7 +140,7 @@ Upstream files stay in `src/main/resources/symbols/`. All local configuration an
 
 - `icons.properties` contains additional mappings, using absolute classpath paths such as `/symbols/icons/files/github.svg` or `/emberkai/icons/maven.svg`.
 - `native.properties` lists native file extensions, tool-script exceptions, folder names, and native folder trees.
-- `icons/` contains custom SVG artwork.
+- `icons/` contains custom SVG artwork, generated from `design/icons/` (see [Icon sources](#icon-sources)).
 
 
 Local mappings take precedence over upstream mappings. A key such as `extension..github/workflows/yml` matches YAML files directly inside `.github/workflows/`, wherever the checkout is located. For a given filename or extension, the longest matching parent suffix wins. `folder.role.*` keys choose artwork for IntelliJ root/package roles. Project root roles and native-type policies take precedence over generic filename rules.
@@ -148,6 +148,22 @@ Local mappings take precedence over upstream mappings. A key such as `extension.
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. `IconResolver.recognizedCategory` feeds the `EmberkaiScopes` scopes; override `recognizesFile` when a tool's canonical filenames are drawn by static mappings but should still join its scope. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
 
 To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons, but it does not evaluate content-aware rules. Use **Tools > Audit Project Icon Coverage** in the IDE to audit the icons selected by the real resolver.
+
+### Icon sources
+
+Emberkai's artwork is written once, in `design/icons/`, and `src/main/resources/emberkai/icons/` is generated from it, so an icon's light and dark versions cannot drift apart. A source is an ordinary SVG that names its colors instead of spelling them in hex:
+
+- a palette name from `design/palette.properties`, such as `fill="green-400"`, is the same color in both themes;
+- a token from `design/tokens.properties`, such as `stroke="$ink"` or `stroke="$blue"`, is one palette color in light themes and another in dark ones (`ink` is slate-800 on light and slate-200 on dark);
+- `<g data-theme="light">` and `<g data-theme="dark">` keep their content in only that theme, for the few icons whose shapes differ, such as the larger dark-theme stereotype badges.
+
+Each source becomes `<name>.svg`, plus `<name>_dark.svg` when the two themes come out different. After editing a source or a token, regenerate the artwork:
+
+```sh
+./gradlew test --tests '*IconSourcesTest' -PwriteIcons
+```
+
+`IconSourcesTest` fails when the generated artwork is stale, missing, or has no source, so a hand edit to a generated SVG is caught. Changing a token, say making `outline` slate-400 in dark themes, retints every icon that uses it.
 
 ### Artwork checks
 
