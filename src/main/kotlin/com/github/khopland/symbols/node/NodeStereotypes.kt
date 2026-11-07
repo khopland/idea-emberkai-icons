@@ -23,9 +23,13 @@ internal object NodeStereotypes {
     private val DECORATED_PACKAGES = setOf("@nestjs/common", "@nestjs/core", "typeorm", "@mikro-orm/core")
 
     /** App Router files that answer HTTP requests besides `page` and `route`. */
-    private val METADATA_ROUTES = setOf(
-        "sitemap", "robots", "manifest", "opengraph-image", "twitter-image", "icon", "apple-icon",
-    )
+    private val METADATA_ROUTES = setOf("sitemap", "opengraph-image", "twitter-image", "icon", "apple-icon")
+
+    /** Metadata routes Next.js serves only from the root of `app/`. */
+    private val ROOT_METADATA_ROUTES = setOf("robots", "manifest")
+
+    /** Files that sit beside pages without being routes; catch-alls such as `[...slug]` keep their dots. */
+    private val NOT_A_PAGE = Regex("""\.(?:test|spec|stories|story)$""")
 
     private class Decorator(val modules: Set<String>, val stereotype: ClassStereotype)
 
@@ -43,7 +47,8 @@ internal object NodeStereotypes {
         "Timeout" to Decorator(setOf("@nestjs/schedule"), ClassStereotype.SCHEDULED),
         "Injectable" to Decorator(setOf("@nestjs/common"), ClassStereotype.SERVICE),
         "Module" to Decorator(setOf("@nestjs/common"), ClassStereotype.CONFIGURATION),
-        "Entity" to Decorator(setOf("typeorm", "@mikro-orm/core"), ClassStereotype.ENTITY),
+        // MikroORM 7 moved its decorators to @mikro-orm/decorators/legacy and /es.
+        "Entity" to Decorator(setOf("typeorm", "@mikro-orm/core", "@mikro-orm/decorators"), ClassStereotype.ENTITY),
         "Schema" to Decorator(setOf("@nestjs/mongoose"), ClassStereotype.ENTITY),
     )
 
@@ -56,10 +61,6 @@ internal object NodeStereotypes {
         """\bimplements\s+[^{]*\b(?:CanActivate|PipeTransform|NestInterceptor|ExceptionFilter|NestMiddleware)\b""",
     )
 
-    private val BLOCK_COMMENT = Regex("""/\*[\s\S]*?\*/""")
-
-    // Not after a colon, so URLs in strings such as 'https://…' survive.
-    private val LINE_COMMENT = Regex("""(?<![:\\])//[^\n]*""")
     private val NAMED_IMPORT =
         Regex("""\bimport\s+(?:type\s+)?(?:[\w$]+\s*,\s*)?\{([^}]*)}\s*from\s*['"]([^'"]+)['"]""")
     private val NAMESPACE_IMPORT = Regex("""\bimport\s+\*\s+as\s+([\w$]+)\s+from\s*['"]([^'"]+)['"]""")
@@ -119,11 +120,12 @@ internal object NodeStereotypes {
                 "page" -> web("Next.js page")
                 "route" -> web("Next.js route handler")
                 in METADATA_ROUTES -> web("Next.js metadata route")
+                in ROOT_METADATA_ROUTES -> if (folders.size == 1) web("Next.js metadata route") else null
                 else -> null
             }
             // Tests and stories, such as index.test.tsx, sit beside pages without being routes.
             "pages" -> when {
-                '.' in name -> null
+                NOT_A_PAGE.containsMatchIn(name) -> null
                 folders.getOrNull(1) == "api" -> web("Next.js API route")
                 else -> web("Next.js page")
             }
@@ -135,7 +137,7 @@ internal object NodeStereotypes {
 
     /** The highest-priority decorator whose name, alias, or namespace is imported from a module that defines it. */
     internal fun decorated(source: String, baseName: String = ""): StereotypeMatch? {
-        val text = source.replace(BLOCK_COMMENT, " ").replace(LINE_COMMENT, "")
+        val text = withoutComments(source)
         val named = HashMap<String, Pair<String, String>>()
         for (statement in NAMED_IMPORT.findAll(text) + REQUIRE.findAll(text)) {
             val module = statement.groupValues[2]
@@ -161,5 +163,47 @@ internal object NodeStereotypes {
             if (plumbing && imported == "Injectable") return@mapNotNull null
             StereotypeMatch(decorator.stereotype, "@$imported")
         }.minByOrNull { it.stereotype.ordinal }
+    }
+
+    /**
+     * [source] with line and block comments blanked out. Strings and template literals are kept, so
+     * a glob or a URL inside quotes does not start a comment.
+     */
+    internal fun withoutComments(source: String): String {
+        val out = StringBuilder(source.length)
+        var index = 0
+        var quote: Char? = null
+        while (index < source.length) {
+            val char = source[index]
+            val next = source.getOrNull(index + 1)
+            when {
+                quote != null -> {
+                    out.append(char)
+                    if (char == '\\' && next != null) {
+                        out.append(next)
+                        index++
+                    } else if (char == quote) {
+                        quote = null
+                    }
+                }
+                char == '\'' || char == '"' || char == '`' -> {
+                    quote = char
+                    out.append(char)
+                }
+                char == '/' && next == '/' -> {
+                    while (index < source.length && source[index] != '\n') index++
+                    continue
+                }
+                char == '/' && next == '*' -> {
+                    val end = source.indexOf("*/", index + 2)
+                    index = if (end < 0) source.length else end + 2
+                    out.append(' ')
+                    continue
+                }
+                else -> out.append(char)
+            }
+            index++
+        }
+        return out.toString()
     }
 }

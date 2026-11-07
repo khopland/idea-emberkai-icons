@@ -10,6 +10,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.NewVirtualFile
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** A folder with a `package.json`, and the names of the packages it depends on. */
 internal class NodePackage(val root: VirtualFile, val dependencies: Set<String>) {
@@ -87,11 +88,22 @@ internal object NodePackages {
  */
 internal class NodePackageListener : BulkFileListener {
     override fun after(events: List<VFileEvent>) {
-        if (isRelevant(events)) ApplicationManager.getApplication().invokeLater { RefreshProjectIconPresentations.refresh() }
+        // An install writes thousands of manifests in many batches; repaint once per burst.
+        if (isRelevant(events) && refreshPending.compareAndSet(false, true)) {
+            ApplicationManager.getApplication().invokeLater {
+                refreshPending.set(false)
+                RefreshProjectIconPresentations.refresh()
+            }
+        }
     }
 
+    /** Manifests and configs of the project's own packages; installed packages never decide a badge. */
     internal fun isRelevant(events: List<VFileEvent>): Boolean = events.any { event ->
         val name = event.path.substringAfterLast('/')
-        name == NodePackages.MANIFEST || name in NodePackages.NEXT_CONFIGS
+        (name == NodePackages.MANIFEST || name in NodePackages.NEXT_CONFIGS) && "/node_modules/" !in event.path
+    }
+
+    private companion object {
+        val refreshPending = AtomicBoolean(false)
     }
 }

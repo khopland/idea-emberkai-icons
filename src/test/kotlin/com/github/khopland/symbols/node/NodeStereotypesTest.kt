@@ -41,6 +41,12 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             "web/app/blog/opengraph-image.tsx" to "Next.js metadata route",
             "web/pages/index.tsx" to "Next.js page",
             "web/pages/api/orders/[id].ts" to "Next.js API route",
+            // Catch-all routes and file-like routes keep their dots.
+            "web/pages/docs/[...slug].tsx" to "Next.js page",
+            "web/pages/shop/[[...slug]].tsx" to "Next.js page",
+            "web/pages/api/auth/[...nextauth].ts" to "Next.js API route",
+            "web/pages/sitemap.xml.ts" to "Next.js page",
+            "web/app/robots.ts" to "Next.js metadata route",
             "web/middleware.ts" to "Next.js middleware",
             "web/proxy.ts" to "Next.js proxy",
         )
@@ -51,7 +57,9 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
         for (path in listOf(
             "web/app/layout.tsx", "web/app/_components/page.tsx", "web/pages/_app.tsx", "web/app/page.css",
             "web/components/page.tsx", "web/lib/middleware.ts", "web/app/page.d.ts", "web/pages/index.test.tsx",
-            "web/pages/index.stories.tsx",
+            "web/pages/index.stories.tsx", "web/pages/index.spec.tsx",
+            // Next.js serves robots and manifest only from the root of app/.
+            "web/app/blog/robots.ts",
             // Next.js ignores src/app when app/ sits next to src/.
             "web/src/app/page.tsx",
         )) {
@@ -112,6 +120,11 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
                 to (ClassStereotype.WEB to "@Controller"),
             "const { Controller: Route } = require('@nestjs/common');\n@Route()\nclass E {}"
                 to (ClassStereotype.WEB to "@Controller"),
+            // Globs and URLs in strings do not open comments.
+            "import { Module } from '@nestjs/common';\nconst ENTITIES = 'dist/*.entity.js';\nconst API = 'https://x.dev';\n" +
+                "@Module({})\nexport class AppModule {} /** end */"
+                to (ClassStereotype.CONFIGURATION to "@Module"),
+            nest("Entity", "@mikro-orm/decorators/legacy") to (ClassStereotype.ENTITY to "@Entity"),
             // Entry points outrank the roles a class plays inside a service.
             "import { Injectable } from '@nestjs/common';\nimport { Cron } from '@nestjs/schedule';\n" +
                 "@Injectable()\nexport class Cleanup {\n  @Cron('0 * * * *')\n  run() {}\n}"
@@ -128,6 +141,7 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
             // Commented-out code and documentation are not decorators.
             "// import { Controller } from '@nestjs/common';\n// @Controller()\nexport class F {}",
             "import { Controller } from '@nestjs/common';\n/** Use @Controller() on handlers. */\nexport const G = 1",
+            "import { Controller } from '@nestjs/common';\n// TODO: @Controller('later')\nexport class H {}",
         )
         unmatched.forEachIndexed { index, source -> assertNull(source, match(file("api/src/other$index.ts", source))) }
     }
@@ -144,12 +158,13 @@ internal class NodeStereotypesTest : IconProviderTestCase() {
 
     fun testPackageAndConfigChangesRepaintIcons() {
         val listener = NodePackageListener()
-        val events = listOf("api/package.json", "web/next.config.mjs", "web/app/page.tsx").map { path ->
+        val events = listOf("api/package.json", "web/next.config.mjs", "web/app/page.tsx", "api/node_modules/x/package.json").map { path ->
             VFileContentChangeEvent(null, file(path, "{}"), 0, 0)
         }
         assertTrue(listener.isRelevant(events.subList(0, 1)))
         assertTrue(listener.isRelevant(events.subList(1, 2)))
         assertFalse(listener.isRelevant(events.subList(2, 3)))
+        assertFalse("Installs do not repaint the project", listener.isRelevant(events.subList(3, 4)))
     }
 
     fun testNestJsSourcesAreReadOnlyInNestPackages() {
