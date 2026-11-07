@@ -33,13 +33,13 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
 
         val values = myFixture.addFileToProject("values-staging.yml", "replicas: 2")
         assertEnvironmentBadge(
-            "symbols/icons/files/yaml.svg", EnvironmentVariant.STAGING,
+            "emberkai/icons/originals/files/yaml.svg", EnvironmentVariant.STAGING,
             provider.getIcon(values, 0),
         )
 
         val spring = myFixture.addFileToProject("application-test.yaml", "server: {}")
         assertEnvironmentBadge(
-            "symbols/icons/files/yaml.svg", EnvironmentVariant.TEST,
+            "emberkai/icons/originals/files/yaml.svg", EnvironmentVariant.TEST,
             provider.getIcon(spring, 0),
         )
 
@@ -47,7 +47,7 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
         val dotenvBadge = provider.getIcon(dotenv, 0) as? EnvironmentVariantBadgeIcon
         assertNotNull("The .env base icon receives the local badge", dotenvBadge)
         assertEquals(EnvironmentVariant.LOCAL, dotenvBadge!!.variant)
-        assertResourceIcon("symbols/icons/files/gear.svg", dotenvBadge.baseIcon)
+        assertResourceIcon("emberkai/icons/originals/files/gear.svg", dotenvBadge.baseIcon)
     }
 
     fun testUnknownEnvironmentNamesKeepTheirBaseIcons() {
@@ -114,7 +114,7 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
         assertEquals(EnvironmentVariant.PRODUCTION, folderBadge!!.variant)
 
         val patch = myFixture.addFileToProject("deploy/overlays/production/replicas.yaml", "replicas: 3")
-        assertEnvironmentBadge("symbols/icons/files/yaml.svg", EnvironmentVariant.PRODUCTION, provider.getIcon(patch, 0))
+        assertEnvironmentBadge("emberkai/icons/originals/files/yaml.svg", EnvironmentVariant.PRODUCTION, provider.getIcon(patch, 0))
 
         val resolution = IconResolver.resolveWithDetails(patch.virtualFile, project)
         assertTrue(resolution.detail, "inherits it from the overlays/production/ environment folder" in resolution.detail)
@@ -127,12 +127,12 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
 
         settings.setEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS, false)
         assertFalse(provider.getIcon(folder, 0, project) is EnvironmentVariantBadgeIcon)
-        assertResourceIcon("symbols/icons/files/yaml.svg", provider.getIcon(patch, 0))
+        assertResourceIcon("emberkai/icons/originals/files/yaml.svg", provider.getIcon(patch, 0))
     }
 
     private fun assertYamlIcon(icon: Icon?) {
         assertNotNull(icon)
         assertFalse("Unknown environment names should not be decorated", icon is EnvironmentVariantBadgeIcon)
-        assertResourceIcon("symbols/icons/files/yaml.svg", icon)
+        assertResourceIcon("emberkai/icons/originals/files/yaml.svg", icon)
     }
 }
