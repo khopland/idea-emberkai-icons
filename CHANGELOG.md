@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+- Added feature presets to the settings page. **Preset**, at the top of the page, picks **Icons only** (tool icons, no badges, markers, or tooltips), **Recommended** (the defaults), or **Everything** (also module accents and JVM architecture folders). Presets never change native Java/Kotlin icons, service-folder colors, the palette, or accessibility options. The single feature toggles moved under **Advanced**, which shows how many are on; the filter still finds them, and the picker shows **Custom** when they no longer match a preset. Existing settings are kept.
 - Argo CD and Nomad icons no longer fade into light themes: their lines and outlines use a deeper shade there, and dark themes keep the brighter one.
 - Removed the unused upstream Redis folder icon, which embedded an 800-pixel bitmap that IntelliJ could not render.
 
