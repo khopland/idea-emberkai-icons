@@ -70,12 +70,25 @@ path="pr-$pr/$HEAD_SHA.png"
 payload="${RUNNER_TEMP:-/tmp}/icon-sheet-upload.json"
 base64 < "$SHEET" | tr -d '\n' | jq -Rn --arg message "Icon sheet for #$pr at $short" --arg branch "$branch" \
   '{message: $message, branch: $branch, content: input}' > "$payload"
-# A rerun of the same commit replaces the image, which needs the current blob SHA.
-existing=$(gh api "repos/$REPO/contents/$path?ref=$branch" --jq .sha 2>/dev/null || true)
-if [[ -n "$existing" ]]; then
-  jq --arg sha "$existing" '. + {sha: $sha}' "$payload" > "$payload.tmp" && mv "$payload.tmp" "$payload"
-fi
-gh api -X PUT "repos/$REPO/contents/$path" --input "$payload" > /dev/null
+# Runs for different pull requests commit to the same branch, so one can move it under another; GitHub
+# then answers 409 and the upload is retried on the new branch head.
+for attempt in 1 2 3 4 5; do
+  # A rerun of the same commit replaces the image, which needs the current blob SHA.
+  existing=$(gh api "repos/$REPO/contents/$path?ref=$branch" --jq .sha 2>/dev/null || true)
+  upload="$payload"
+  if [[ -n "$existing" ]]; then
+    upload="$payload.update"
+    jq --arg sha "$existing" '. + {sha: $sha}' "$payload" > "$upload"
+  fi
+  if gh api -X PUT "repos/$REPO/contents/$path" --input "$upload" > /dev/null; then
+    break
+  fi
+  if [[ "$attempt" -eq 5 ]]; then
+    echo "::error::Could not store the icon contact sheet on $branch." >&2
+    exit 1
+  fi
+  sleep $((attempt * 3 + RANDOM % 3))
+done
 
 post "$marker
 ### Changed icons
