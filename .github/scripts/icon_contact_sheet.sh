@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # Renders build/reports/icon-sheet/icons.png for the SVGs a pull request changes, with each icon's
 # version from BASE (the merge commit's base parent by default) as the "before" row, and outputs how
-# many SVGs changed. Renders nothing when none did. Locally: BASE=main bash .github/scripts/icon_contact_sheet.sh
+# many SVGs changed. Renders nothing when none did. Locally, BASE=main compares with where the branch
+# left main, so later commits on main do not show up as changes.
 set -euo pipefail
 
-base="${BASE:-HEAD^1}"
+if [[ -n "${BASE:-}" ]]; then
+  base=$(git merge-base "$BASE" HEAD)
+else
+  base="HEAD^1"
+fi
 work="${RUNNER_TEMP:-$(mktemp -d)}/icon-sheet"
 rm -rf "$work"
 mkdir -p "$work/base"

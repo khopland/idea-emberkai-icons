@@ -153,7 +153,7 @@ To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon
 
 Each rule is also run against known-bad artwork, so a rule that stops finding anything fails too.
 
-On pull requests that change SVGs, CI renders each changed icon before and after at 100%, 150%, and 200% on both themes, labels new and deleted icons, and links the **icon-contact-sheet** artifact from the job summary. It renders after a failed build too, since a failing lint is when the picture helps most, and shows at most 100 rows. Locally, run `BASE=main bash .github/scripts/icon_contact_sheet.sh`; the sheet is written to `build/reports/icon-sheet/icons.png`.
+On pull requests that change SVGs, CI renders each changed icon before and after at 100%, 150%, and 200% on both themes, labels new and deleted icons, and links the **icon-contact-sheet** artifact from the job summary. It renders after a failed build too, since a failing lint is when the picture helps most, and shows at most 100 rows. Locally, run `BASE=main bash .github/scripts/icon_contact_sheet.sh`, which compares with where the branch left `main`; the sheet is written to `build/reports/icon-sheet/icons.png`.
 
 ## Release
 

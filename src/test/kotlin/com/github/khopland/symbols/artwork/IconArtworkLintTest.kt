@@ -65,9 +65,10 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
             assertNotNull("not 16px", structureProblem(svg("b.svg", square, """width="24" height="24" viewBox="0 0 24 24"""")))
             assertNotNull("not XML", structureProblem(File(dir, "c.svg").apply { writeText("<svg") }))
             assertNotNull("odd grid", gridProblem(svg("d.svg", square, """width="16" height="16" viewBox="0 0 20 20"""")))
+            assertNotNull("not 16px", gridProblem(svg("d2.svg", square, """width="24" height="24" viewBox="0 0 24 24"""")))
             for (paint in listOf(
                 """fill="#123456"""", """fill="#FB923C80"""", """stroke="orange"""", """fill="rgb(1,2,3)"""",
-                """style="fill:hsl(0,0%,0%)"""",
+                """style="fill:hsl(0,0%,0%)"""", """fill="url(#g) red"""",
             )) {
                 assertFalse(paint, paletteProblems(svg("e.svg", """<rect width="4" height="4" $paint/>""")).isEmpty())
             }
@@ -78,7 +79,7 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
                     svg(
                         "f.svg",
                         """<defs><mask id="m"><rect width="16" height="16" fill="#fff"/><rect fill="#000"/></mask></defs>""" +
-                            """<rect width="4" height="4" fill="url(#m)" stroke="none" style="fill: #1E293B; stroke: currentColor"/>""",
+                            """<rect width="4" height="4" fill="url(#m) #1E293B" stroke="none" style="fill: #1E293B !important; stroke: currentColor"/>""",
                     ),
                 ),
             )
@@ -133,8 +134,9 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
             val paints = PAINT_ATTRIBUTES.map { it to element.getAttribute(it) } +
                 declarations.filter { it.first in PAINT_ATTRIBUTES }
             for ((name, raw) in paints) {
-                val value = raw.trim()
-                if (value.isEmpty() || value in NON_COLORS || value.startsWith("url(")) continue
+                // A paint server reference may carry a fallback color, as in url(#g) #1E293B; check the fallback.
+                val value = raw.replace(PAINT_SERVER, "").replace(IMPORTANT, "").trim()
+                if (value.isEmpty() || value in NON_COLORS) continue
                 problems += when {
                     !HEX_COLOR.matches(value) -> "${file.label}: $name=\"$value\" is not a #RGB or #RRGGBB palette color"
                     normalize(value) !in PALETTE -> "${file.label}: ${normalize(value)} is not in design/palette.properties"
@@ -219,6 +221,8 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
         val PAINT_ATTRIBUTES = setOf("fill", "stroke", "stop-color", "flood-color", "lighting-color", "color")
         val NON_COLORS = setOf("none", "currentColor", "inherit")
         val HEX_COLOR = Regex("#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})")
+        val PAINT_SERVER = Regex("""^\s*url\([^)]*\)""")
+        val IMPORTANT = Regex("""\s*!important\s*$""")
         val PALETTE: Set<String> by lazy {
             Properties().apply { File("design/palette.properties").reader().use(::load) }
                 .values.map { normalize(it as String) }.toSet()
