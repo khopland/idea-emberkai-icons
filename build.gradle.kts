@@ -143,4 +143,22 @@ tasks.test {
         systemProperty("emberkai.screenshots.dir", layout.projectDirectory.dir("design/screenshots").asFile.absolutePath)
         outputs.upToDateWhen { false }
     }
+    // ./gradlew test --tests '*IconContactSheet' -PiconSheet=changed.txt -PiconSheetBase=base renders
+    // build/reports/icon-sheet/icons.png for the SVG paths listed in changed.txt.
+    val iconSheet = providers.gradleProperty("iconSheet")
+    if (iconSheet.isPresent) {
+        systemProperty("emberkai.iconSheet.list", file(iconSheet.get()).absolutePath)
+        providers.gradleProperty("iconSheetBase").orNull?.let {
+            systemProperty("emberkai.iconSheet.base", file(it).absolutePath)
+        }
+        systemProperty(
+            "emberkai.iconSheet.output",
+            layout.buildDirectory.file("reports/icon-sheet/icons.png").get().asFile.absolutePath,
+        )
+        // Keep the full suite's reports from the earlier run; CI uploads those after rendering.
+        reports.html.outputLocation = layout.buildDirectory.dir("reports/icon-sheet/tests")
+        reports.junitXml.outputLocation = layout.buildDirectory.dir("icon-sheet/test-results")
+        binaryResultsDirectory = layout.buildDirectory.dir("icon-sheet/test-results/binary")
+        outputs.upToDateWhen { false }
+    }
 }
