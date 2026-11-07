@@ -1,6 +1,7 @@
 package com.github.khopland.symbols.generated
 
 import com.github.khopland.symbols.core.IconRuleCategory
+import com.github.khopland.symbols.rules.ContentIndex
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.isEnabled
 import com.github.khopland.symbols.tooltips.SemanticTooltipDecorator
@@ -56,16 +57,19 @@ internal object GeneratedFiles {
     /** Why [file] is generated, such as `header says "DO NOT EDIT"`, or null when it looks hand-written. */
     fun reason(file: VirtualFile, project: Project): String? {
         if (file.isDirectory || !file.isValid) return null
-        headerMarker(file)?.let { return "header says \"$it\"" }
+        headerMarker(file, project)?.let { return "header says \"$it\"" }
         val inGeneratedRoot = GeneratedSourcesFilter.EP_NAME.extensionList
             .any { it !is EmberkaiGeneratedSourcesFilter && it.isGeneratedSource(file, project) }
         return if (inGeneratedRoot) "in a generated source root" else null
     }
 
-    /** The phrase in [file]'s header that marks it as generated, as written. */
-    fun headerMarker(file: VirtualFile): String? {
-        if (file.isDirectory || !file.isValid || file.fileType.isBinary) return null
-        if (file.extension?.lowercase(Locale.ROOT) in PROSE_EXTENSIONS) return null
+    /**
+     * The phrase in [file]'s header that marks it as generated, as written. With a [project],
+     * background callers read it from [ContentIndex] instead of the file.
+     */
+    fun headerMarker(file: VirtualFile, project: Project? = null): String? {
+        if (!file.isValid || !appliesTo(file)) return null
+        ContentIndex.facts(file, project)?.let { return it.generatedMarker }
         val document = FileDocumentManager.getInstance().getCachedDocument(file)
         val stamp = document?.modificationStamp ?: file.modificationStamp
         file.getUserData(HEADER)?.takeIf { it.stamp == stamp && it.fromDocument == (document != null) }?.let { return it.marker }
@@ -79,6 +83,10 @@ internal object GeneratedFiles {
         file.putUserData(HEADER, Header(stamp, document != null, marker))
         return marker
     }
+
+    /** Whether [file] can carry a generated header; prose and binary files cannot. */
+    fun appliesTo(file: VirtualFile): Boolean =
+        !file.isDirectory && !file.fileType.isBinary && file.extension?.lowercase(Locale.ROOT) !in PROSE_EXTENSIONS
 
     fun find(header: String): String? {
         val leading by lazy(LazyThreadSafetyMode.NONE) { leadingComments(header) }
@@ -122,11 +130,11 @@ internal object GeneratedFiles {
  */
 class EmberkaiGeneratedSourcesFilter : GeneratedSourcesFilter() {
     override fun isGeneratedSource(file: VirtualFile, project: Project): Boolean =
-        enabled() && GeneratedFiles.headerMarker(file) != null
+        enabled() && GeneratedFiles.headerMarker(file, project) != null
 
     override fun getNotificationText(file: VirtualFile, project: Project): String? {
         if (!enabled()) return null
-        val marker = GeneratedFiles.headerMarker(file) ?: return null
+        val marker = GeneratedFiles.headerMarker(file, project) ?: return null
         return "This file's header says \"$marker\": it is generated, and edits will be lost when it is generated again."
     }
 

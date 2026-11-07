@@ -1,5 +1,7 @@
 package com.github.khopland.symbols.core
 
+import com.github.khopland.symbols.rules.ContentIndex
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.StringReader
@@ -19,7 +21,6 @@ internal enum class StructuredFileKind {
 
     companion object {
         private val CACHE: Key<FileContentCache.Inspection<Metadata>> = Key.create("emberkai.structuredKind")
-        private val UNKNOWN = Metadata(NONE, null)
         private val EXTENSIONS = setOf("yaml", "yml", "json")
         private val OPEN_API_VERSION = Pattern.compile("3\\.\\d+(?:\\.\\d+)?(?:[-+][A-Za-z0-9.-]+)?")
         private val ASYNC_API_VERSION = Pattern.compile("[23]\\.\\d+\\.\\d+(?:[-+][A-Za-z0-9.-]+)?")
@@ -47,18 +48,22 @@ internal enum class StructuredFileKind {
         )
         private const val BUNDLE = "bundle"
 
-        fun of(file: VirtualFile): StructuredFileKind = metadata(file).kind
+        /** With a [project], background callers read the kind from [ContentIndex] instead of the file. */
+        fun of(file: VirtualFile, project: Project? = null): StructuredFileKind = metadata(file, project).kind
 
         /**
          * Lowercase resource kind for [KUBERNETES] files with dedicated artwork, `bundle` when
          * documents declare different kinds, or null for the generic Kubernetes icon.
          */
-        fun kubernetesResource(file: VirtualFile): String? = metadata(file).resource
+        fun kubernetesResource(file: VirtualFile, project: Project? = null): String? = metadata(file, project).resource
 
-        private fun metadata(file: VirtualFile): Metadata {
-            val extension = file.extension
-            if (extension == null || extension.lowercase(Locale.ROOT) !in EXTENSIONS) return UNKNOWN
-            return FileContentCache.inspect(file, CACHE, UNKNOWN, ::parse)
+        /** Whether [file]'s name allows a structured kind; [parse] decides which. */
+        fun appliesTo(file: VirtualFile): Boolean = file.extension?.lowercase(Locale.ROOT) in EXTENSIONS
+
+        private fun metadata(file: VirtualFile, project: Project?): Metadata {
+            if (!appliesTo(file)) return Metadata.UNKNOWN
+            ContentIndex.facts(file, project)?.let { return it.structured }
+            return FileContentCache.inspect(file, CACHE, Metadata.UNKNOWN, ::parse)
         }
 
         /** Names a document's resource; kinds without artwork keep a `~` prefix so they still compare. */
@@ -67,7 +72,7 @@ internal enum class StructuredFileKind {
             return if (RESOURCES[kind]?.contains(group) == true) kind.lowercase(Locale.ROOT) else "~$kind"
         }
 
-        private fun parse(text: String): Metadata {
+        internal fun parse(text: String): Metadata {
             val options = LoaderOptions()
             options.codePointLimit = FileContentCache.MAX_FILE_SIZE
             options.nestingDepthLimit = 32
@@ -85,7 +90,7 @@ internal enum class StructuredFileKind {
                     val keys = HashSet<String>()
                     for (tuple in document.value) {
                         val key = tuple.keyNode as? ScalarNode ?: continue
-                        if (!keys.add(key.value)) return resource?.let { Metadata(KUBERNETES, null) } ?: UNKNOWN
+                        if (!keys.add(key.value)) return resource?.let { Metadata(KUBERNETES, null) } ?: Metadata.UNKNOWN
                         val value = tuple.valueNode as? ScalarNode ?: continue
                         fields[key.value] = value.value
                     }
@@ -118,11 +123,15 @@ internal enum class StructuredFileKind {
                 }
             } catch (_: YAMLException) {
                 // Incomplete documents retain their format icon, or the generic icon after a Kubernetes match.
-                return resource?.let { Metadata(KUBERNETES, null) } ?: UNKNOWN
+                return resource?.let { Metadata(KUBERNETES, null) } ?: Metadata.UNKNOWN
             }
-            return resource?.let { Metadata(KUBERNETES, it.takeUnless { it.startsWith('~') }) } ?: UNKNOWN
+            return resource?.let { Metadata(KUBERNETES, it.takeUnless { it.startsWith('~') }) } ?: Metadata.UNKNOWN
         }
     }
 
-    private class Metadata(val kind: StructuredFileKind, val resource: String?)
+    internal data class Metadata(val kind: StructuredFileKind, val resource: String?) {
+        companion object {
+            val UNKNOWN = Metadata(NONE, null)
+        }
+    }
 }

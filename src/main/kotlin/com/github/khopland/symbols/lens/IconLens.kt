@@ -55,7 +55,7 @@ internal enum class IconLens(
         if (file.isDirectory) return false
         if (scopes.any { it.contains(file, project) }) return true
         return exposedSecrets &&
-            (SecretFileNames.isCandidate(file) || KubernetesSecrets.plaintext(file).isNotEmpty()) &&
+            (SecretFileNames.isCandidate(file) || KubernetesSecrets.plaintext(file, project).isNotEmpty()) &&
             SecretFileExposure.getInstance(project)?.isExposed(file) == true
     }
 }
