@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.changelog") version "2.5.0"
 }
 
-group = "com.github.khopland.symbols"
+group = "com.github.khopland.emberkai"
 version = providers.gradleProperty("pluginVersion").get()
 
 kotlin {

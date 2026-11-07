@@ -2,19 +2,19 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Without Git no branch comparison exists, so the Changed on this branch lens is not offered. -->
         <projectService
-            serviceInterface="com.github.khopland.symbols.lens.BranchChanges"
-            serviceImplementation="com.github.khopland.symbols.lens.GitBranchChanges"/>
+            serviceInterface="com.github.khopland.emberkai.lens.BranchChanges"
+            serviceImplementation="com.github.khopland.emberkai.lens.GitBranchChanges"/>
         <projectService
-            serviceInterface="com.github.khopland.symbols.lens.Hotspots"
-            serviceImplementation="com.github.khopland.symbols.lens.GitHotspots"/>
+            serviceInterface="com.github.khopland.emberkai.lens.Hotspots"
+            serviceImplementation="com.github.khopland.emberkai.lens.GitHotspots"/>
         <!-- Without Git, migrations get duplicate-version warnings only, not out-of-order ones. -->
         <projectService
-            serviceInterface="com.github.khopland.symbols.badges.MigrationBranchBase"
-            serviceImplementation="com.github.khopland.symbols.badges.GitMigrationBranchBase"/>
+            serviceInterface="com.github.khopland.emberkai.badges.MigrationBranchBase"
+            serviceImplementation="com.github.khopland.emberkai.badges.GitMigrationBranchBase"/>
     </extensions>
     <actions>
         <action id="com.github.khopland.symbols.FindBranchReviewers"
-                class="com.github.khopland.symbols.ownership.FindBranchReviewersAction"
+                class="com.github.khopland.emberkai.ownership.FindBranchReviewersAction"
                 text="Find Reviewers for This Branch"
                 description="List the CODEOWNERS owners of every file this branch changes">
             <add-to-group group-id="ToolsMenu" anchor="last"/>

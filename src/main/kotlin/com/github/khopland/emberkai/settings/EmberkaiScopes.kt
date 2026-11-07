@@ -1,0 +1,140 @@
+package com.github.khopland.emberkai.settings
+
+import com.github.khopland.emberkai.badges.EnvironmentVariant
+import com.github.khopland.emberkai.core.IconResolver
+import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.generated.GeneratedFiles
+import com.github.khopland.emberkai.ownership.CodeOwners
+import com.github.khopland.emberkai.ownership.CodeOwnersRule
+import com.github.khopland.emberkai.node.NodeStereotypes
+import com.github.khopland.emberkai.stereotypes.ClassStereotypes
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadActionBlocking
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.packageDependencies.DependencyValidationManager
+import com.intellij.psi.search.scope.packageSet.AbstractPackageSet
+import com.intellij.psi.search.scope.packageSet.CustomScopesProvider
+import com.intellij.psi.search.scope.packageSet.NamedScope
+import com.intellij.psi.search.scope.packageSet.NamedScopesHolder
+import com.intellij.util.concurrency.AppExecutorUtil
+
+/** IDE scopes built from the resolver's context rules; folders are never members themselves. */
+internal enum class EmberkaiScope(val displayName: String, private val categories: Set<IconRuleCategory>) {
+    MIGRATIONS("Database migrations", setOf(IconRuleCategory.MIGRATION)),
+    INFRASTRUCTURE("Infrastructure", setOf(IconRuleCategory.INFRASTRUCTURE, IconRuleCategory.ANSIBLE, IconRuleCategory.SOPS)),
+    KUBERNETES(
+        "Kubernetes & GitOps",
+        setOf(IconRuleCategory.KUBERNETES, IconRuleCategory.HELM, IconRuleCategory.GITOPS),
+    ),
+    API_CONTRACTS("API contracts", setOf(IconRuleCategory.API_SPECIFICATION)),
+    CI_PIPELINES("CI pipelines", setOf(IconRuleCategory.CI)),
+    SPRING_CONFIGURATION("Spring configuration", setOf(IconRuleCategory.SPRING_BOOT)),
+    PRODUCTION_CONFIG("Production config", emptySet()),
+    ENTRY_POINTS("Entry points", emptySet()),
+    GENERATED("Generated files", emptySet()),
+    ;
+
+    val scopeName: String get() = "Emberkai: $displayName"
+
+    fun contains(file: VirtualFile, project: Project): Boolean {
+        if (file.isDirectory || !file.isValid || project.isDisposed) return false
+        if (this == PRODUCTION_CONFIG) return EnvironmentVariant.fromFile(file) == EnvironmentVariant.PRODUCTION
+        if (this == ENTRY_POINTS) {
+            return NodeStereotypes.isEntryPoint(file, project) || ClassStereotypes.isEntryPoint(file, project)
+        }
+        if (this == GENERATED) return runReadActionBlocking { GeneratedFiles.reason(file, project) } != null
+        // Rules read VFS children and cached documents; Find in Files may call from a pooled thread.
+        return runReadActionBlocking { IconResolver.recognizedCategory(file, project) } in categories
+    }
+}
+
+/**
+ * The fixed Emberkai scopes, plus one "Owned by" scope per owner named in the project's CODEOWNERS
+ * file. Owner scopes are rebuilt only when the parsed CODEOWNERS rules change, and capped so a
+ * large organization does not flood scope pickers. Finding and reading CODEOWNERS can load VFS
+ * children and file content, which the EDT forbids, so EDT callers get the last built scopes while
+ * a background pass rebuilds them and notifies scope listeners if they changed.
+ */
+class EmberkaiScopesProvider(private val project: Project) : CustomScopesProvider {
+    private val scopes: List<NamedScope> = EmberkaiScope.entries.map { scope ->
+        NamedScope(scope.scopeName, EmberkaiPackageSet(scope))
+    }
+
+    /** The rules the owner scopes were built from, null without a CODEOWNERS file, and the scopes. */
+    @Volatile
+    private var ownerScopes: Pair<List<CodeOwnersRule>?, List<NamedScope>>? = null
+
+    /** The owner scopes EDT callers see; scope listeners are notified whenever they change. EDT only. */
+    private var publishedOwnerScopes: List<NamedScope> = emptyList()
+
+    override fun getCustomScopes(): List<NamedScope> = scopes + ownerScopes()
+
+    private fun ownerScopes(): List<NamedScope> {
+        if (project.isDisposed) return emptyList()
+        if (!ApplicationManager.getApplication().isDispatchThread) return runReadActionBlocking { buildOwnerScopes() }
+        rebuildInBackground()
+        return publishedOwnerScopes
+    }
+
+    private fun rebuildInBackground() {
+        // Each EDT call cancels the pending pass, so compare against what EDT callers last saw.
+        ReadAction.nonBlocking<List<NamedScope>> { buildOwnerScopes() }
+            .expireWith(project)
+            .coalesceBy(this)
+            .finishOnUiThread(ModalityState.any()) { built ->
+                if (built === publishedOwnerScopes) return@finishOnUiThread
+                publishedOwnerScopes = built
+                DependencyValidationManager.getInstance(project).fireScopeListeners()
+            }
+            .submit(AppExecutorUtil.getAppExecutorService())
+    }
+
+    /** Requires a read action. */
+    private fun buildOwnerScopes(): List<NamedScope> {
+        val rules = project.guessProjectDir()?.let(CodeOwners::fileAt)?.let(CodeOwners::rules)
+        ownerScopes?.takeIf { it.first === rules }?.let { return it.second }
+        val built = if (rules == null) {
+            emptyList()
+        } else {
+            listOf(NamedScope(UNOWNED_SCOPE, UnownedPackageSet())) +
+                rules.flatMap { it.owners }.distinct()
+                    .sortedBy { it.lowercase() }
+                    .take(MAX_OWNER_SCOPES)
+                    .map { owner -> NamedScope(ownerScopeName(owner), OwnerPackageSet(owner)) }
+        }
+        ownerScopes = rules to built
+        return built
+    }
+
+    internal companion object {
+        const val MAX_OWNER_SCOPES = 50
+        const val UNOWNED_SCOPE = "Emberkai: No code owners"
+
+        fun ownerScopeName(owner: String): String = "Emberkai: Owned by $owner"
+    }
+}
+
+private class OwnerPackageSet(private val owner: String) : AbstractPackageSet("emberkai:owner:$owner") {
+    override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean {
+        if (file.isDirectory || !file.isValid || project.isDisposed) return false
+        return runReadActionBlocking { CodeOwners.ownership(file) }?.owners?.contains(owner) == true
+    }
+}
+
+private class UnownedPackageSet : AbstractPackageSet("emberkai:unowned") {
+    override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean {
+        if (file.isDirectory || !file.isValid || project.isDisposed) return false
+        return runReadActionBlocking { CodeOwners.isUnowned(file) }
+    }
+}
+
+private class EmberkaiPackageSet(
+    private val scope: EmberkaiScope,
+) : AbstractPackageSet("emberkai:${scope.name.lowercase()}") {
+    override fun contains(file: VirtualFile, project: Project, holder: NamedScopesHolder?): Boolean =
+        scope.contains(file, project)
+}
