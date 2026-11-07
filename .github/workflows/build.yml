@@ -61,17 +61,30 @@ jobs:
       - name: Test and build
         run: ./gradlew check verifyPluginProjectConfiguration verifyPluginStructure buildPlugin --console=plain
       - name: Render changed icons
+        id: render-icons
         if: github.event_name == 'pull_request'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: bash .github/scripts/icon_contact_sheet.sh
       - name: Upload icon contact sheet
+        id: icon-sheet
         if: github.event_name == 'pull_request' && hashFiles('build/reports/icon-sheet/icons.png') != ''
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: icon-contact-sheet
           path: build/reports/icon-sheet/icons.png
           retention-days: 14
+      - name: Link icon contact sheet
+        if: steps.icon-sheet.outputs.artifact-url != ''
+        env:
+          CHANGED: ${{ steps.render-icons.outputs.changed }}
+          SHEET_URL: ${{ steps.icon-sheet.outputs.artifact-url }}
+        run: |
+          {
+            echo "### Changed icons"
+            echo
+            echo "$CHANGED SVG file(s) changed. [Download the contact sheet]($SHEET_URL) to compare each icon before and after at 100%, 150% and 200% on both themes."
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Upload test reports
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

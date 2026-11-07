@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Renders build/reports/icon-sheet/icons.png for the SVGs a pull request changes, with each icon's
-# version from BASE_SHA as the "before" row. Prints nothing and renders nothing when no SVG changed.
+# version from BASE_SHA as the "before" row, and outputs how many SVGs changed. Renders nothing when none did.
 set -euo pipefail
 
 : "${BASE_SHA:?set BASE_SHA to the base commit of the pull request}"
@@ -29,11 +29,7 @@ done < "$work/changed.txt"
 
 ./gradlew test --tests '*IconContactSheet' -PiconSheet="$work/changed.txt" -PiconSheetBase="$work/base" --console=plain
 
-if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   count=$(wc -l < "$work/changed.txt")
-  {
-    echo "### Changed icons"
-    echo
-    echo "${count// /} SVG file(s) changed. Download the **icon-contact-sheet** artifact to compare them before and after at 100%, 150% and 200% on both themes."
-  } >> "$GITHUB_STEP_SUMMARY"
+  echo "changed=${count// /}" >> "$GITHUB_OUTPUT"
 fi

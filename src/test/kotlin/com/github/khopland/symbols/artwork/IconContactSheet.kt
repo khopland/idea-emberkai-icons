@@ -32,10 +32,14 @@ internal class IconContactSheet : BasePlatformTestCase() {
                 .map { it.removeSuffix(DARK_SUFFIX).removeSuffix(".svg") }
                 .distinct().sorted()
             val rows = icons.flatMap { icon ->
-                listOfNotNull(
-                    baseDir?.let { Row(icon, "before", it.resolve("$icon.svg"), it.resolve("$icon$DARK_SUFFIX")) },
-                    Row(icon, "after", File("$icon.svg"), File("$icon$DARK_SUFFIX")),
-                ).filter { it.light.isFile || it.dark.isFile }
+                val before = baseDir?.let { Row(icon, "before", it.resolve("$icon.svg"), it.resolve("$icon$DARK_SUFFIX")) }
+                    ?.takeIf { it.exists }
+                val after = Row(icon, "after", File("$icon.svg"), File("$icon$DARK_SUFFIX")).takeIf { it.exists }
+                when {
+                    before == null -> listOfNotNull(after?.copy(label = "added"))
+                    after == null -> listOf(before.copy(label = "removed"))
+                    else -> listOf(before, after)
+                }
             }
             val sheet = render(rows)
             val target = checkNotNull(output) { "emberkai.iconSheet.output is not set" }
@@ -106,7 +110,9 @@ internal class IconContactSheet : BasePlatformTestCase() {
         }
     }
 
-    private class Row(val icon: String, val label: String, val light: File, val dark: File)
+    private data class Row(val icon: String, val label: String, val light: File, val dark: File) {
+        val exists: Boolean get() = light.isFile || dark.isFile
+    }
 
     private companion object {
         const val DARK_SUFFIX = "_dark.svg"
