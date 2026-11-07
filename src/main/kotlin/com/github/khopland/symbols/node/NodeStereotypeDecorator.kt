@@ -15,6 +15,7 @@ import com.github.khopland.symbols.stereotypes.StereotypeMatch
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.icons.IconReplacer
 import java.awt.Graphics2D
 import java.util.Locale
 import javax.swing.Icon
@@ -25,15 +26,25 @@ internal data class SourceStereotypeFact(val match: StereotypeMatch) : IconFact 
     override val tooltipOrder: Int get() = 15
 }
 
-/** The class stereotype glyph, which draws itself in the top-left corner, over file artwork. */
-internal class StereotypeBadgeIcon(baseIcon: Icon, val stereotype: ClassStereotype) : BadgedIcon(baseIcon) {
+/**
+ * The class stereotype glyph, which draws itself in the top-left corner, over file artwork. Icon
+ * replacements, such as the dark variants a theme preview asks for, reach the glyph too.
+ */
+internal class StereotypeBadgeIcon(
+    baseIcon: Icon,
+    val stereotype: ClassStereotype,
+    internal val glyph: Icon = stereotype.icon,
+) : BadgedIcon(baseIcon) {
     override val slot: BadgeSlot get() = BadgeSlot.ROLE
 
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
-        stereotype.icon.paintIcon(null, g, x, y)
+        glyph.paintIcon(null, g, x, y)
     }
 
-    override fun withBase(base: Icon): BadgedIcon = StereotypeBadgeIcon(base, stereotype)
+    override fun withBase(base: Icon): BadgedIcon = StereotypeBadgeIcon(base, stereotype, glyph)
+
+    override fun replaced(replacer: IconReplacer): BadgedIcon =
+        StereotypeBadgeIcon(replacer.replaceIcon(baseIcon), stereotype, replacer.replaceIcon(glyph))
 }
 
 /**
@@ -48,7 +59,7 @@ internal class NodeStereotypeDecorator : IconDecorator {
         if (project == null || project.isDisposed || !ProjectFileIndex.getInstance(project).isInContent(file)) {
             return resolution
         }
-        val match = NodeStereotypes.match(file) ?: return resolution
+        val match = NodeStereotypes.match(file, project) ?: return resolution
         val baseIcon = resolution.iconOrFileTypeIcon(file) ?: return resolution
         return resolution.decorated(
             StereotypeBadgeIcon(baseIcon, match.stereotype),

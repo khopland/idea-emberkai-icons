@@ -3,6 +3,7 @@ package com.github.khopland.symbols.node
 import com.github.khopland.symbols.core.FileContentCache
 import com.github.khopland.symbols.stereotypes.ClassStereotype
 import com.github.khopland.symbols.stereotypes.StereotypeMatch
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
@@ -46,9 +47,9 @@ internal object NodeStereotypes {
             !name.endsWith(".d.ts") && !name.endsWith(".d.mts") && !name.endsWith(".d.cts")
     }
 
-    fun match(file: VirtualFile): StereotypeMatch? {
+    fun match(file: VirtualFile, project: Project): StereotypeMatch? {
         if (!isCandidate(file)) return null
-        val nodePackage = NodePackages.nearest(file) ?: return null
+        val nodePackage = NodePackages.nearest(file, project) ?: return null
         if ("next" in nodePackage.dependencies) nextRoute(file, nodePackage.root)?.let { return it }
         if (!nodePackage.dependsOnAny(DECORATED_PACKAGES)) return null
         return FileContentCache.inspect(file, SOURCE_MATCH, null, ::decorated)
