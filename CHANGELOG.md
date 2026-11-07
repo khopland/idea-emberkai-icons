@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Argo CD and Nomad icons no longer fade into light themes: their lines and outlines use a deeper shade there, and dark themes keep the brighter one.
+- Removed the unused upstream Redis folder icon, which embedded an 800-pixel bitmap that IntelliJ could not render. Icon updates now skip such icons.
+
 ## [0.8.0] - 2026-11-05
 
 - Added support for IntelliJ IDEA 2026.3. It moved version control out of the core into its own plugin, which left the Git lenses, out-of-order migration warnings, **Find Reviewers for This Branch**, and unignored secret warning badges unable to load their VCS classes.
