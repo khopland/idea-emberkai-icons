@@ -374,7 +374,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "ci/azurepipelines", "ci/bitbucket",
             "gitops/argocd", "gitops/flux",
             "sdkman", "pre-commit", "just", "mise", "snapshot", "openapi_dark",
-            "sdkman_dark", "infrastructure_dark", "folder-helm_dark",
+            "infrastructure_dark", "folder-helm_dark",
             "folders/folder-ansible", "folders/folder-argocd", "folders/folder-azurepipelines",
             "folders/folder-bitbucket", "folders/folder-flux", "folders/folder-migration",
             "folders/folder-api", "folders/folder-api_dark", "folders/folder-kubernetes",
