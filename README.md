@@ -135,13 +135,25 @@ Upstream files stay in `src/main/resources/symbols/`. All local configuration an
 - `native.properties` lists native file extensions, tool-script exceptions, folder names, and native folder trees.
 - `icons/` contains custom SVG artwork.
 
-`IconArtworkLintTest` checks every bundled SVG in `./gradlew test`: it must parse, have a viewBox, and paint at 16×16 in IntelliJ. Emberkai artwork must also be 16×16 on a `0 0 16 16` or `0 0 24 24` grid, use only colors named in `design/palette.properties` (masks excepted), pair each `_dark.svg` with light artwork on the same grid, and stay legible: at least 12% of its painted pixels must reach 3:1 contrast against the New UI Project view background, light artwork on the light theme and the dark variant (or the light artwork when there is none) on the dark theme. On pull requests that change SVGs, CI renders each changed icon before and after at 100%, 150%, and 200% on both themes and uploads it as the **icon-contact-sheet** artifact; locally, run `./gradlew test --tests '*IconContactSheet' -PiconSheet=changed.txt -PiconSheetBase=base`, where `changed.txt` lists SVG paths and `base/` holds their previous versions at the same paths.
 
 Local mappings take precedence over upstream mappings. A key such as `extension..github/workflows/yml` matches YAML files directly inside `.github/workflows/`, wherever the checkout is located. For a given filename or extension, the longest matching parent suffix wins. `folder.role.*` keys choose artwork for IntelliJ root/package roles. Project root roles and native-type policies take precedence over generic filename rules.
 
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. `IconResolver.recognizedCategory` feeds the `EmberkaiScopes` scopes; override `recognizesFile` when a tool's canonical filenames are drawn by static mappings but should still join its scope. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
 
 To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons, but it does not evaluate content-aware rules. Use **Tools > Audit Project Icon Coverage** in the IDE to audit the icons selected by the real resolver.
+
+### Artwork checks
+
+`IconArtworkLintTest` runs with `./gradlew test` and checks every icon SVG under `src/main/resources/emberkai/` and `src/main/resources/symbols/` (the Marketplace plugin icon in `META-INF/` is not an icon theme asset and is skipped). Each must parse, have a viewBox, and paint at 16×16 in IntelliJ. Emberkai artwork must also:
+
+- be 16×16 on a `0 0 16 16` or `0 0 24 24` grid;
+- paint only with colors named in `design/palette.properties` (`#RGB` or `#RRGGBB`, in attributes or `style`; `none`, `currentColor`, and `url(#…)` references are allowed, and masks are exempt). The palette holds the Tailwind families, white, black, the IDE's dark background for halos, and a few logo colors;
+- pair each `_dark.svg` with light artwork on the same grid;
+- stay legible: at 100% and at 200%, at least 12% of its painted pixels must reach 3:1 contrast against the New UI Project view background, light artwork on the light theme and the dark variant (or the light artwork when there is none) on the dark theme. Every icon 0.8.0 fixed by hand scored 0%; the weakest current icon scores about 14% at 100%, so the floor catches artwork that has nearly vanished rather than artwork that is merely pale.
+
+Each rule is also run against known-bad artwork, so a rule that stops finding anything fails too.
+
+On pull requests that change SVGs, CI renders each changed icon before and after at 100%, 150%, and 200% on both themes, labels new and deleted icons, and links the **icon-contact-sheet** artifact from the job summary. It renders after a failed build too, since a failing lint is when the picture helps most, and shows at most 100 rows. Locally, run `BASE=main bash .github/scripts/icon_contact_sheet.sh`; the sheet is written to `build/reports/icon-sheet/icons.png`.
 
 ## Release
 

@@ -23,37 +23,46 @@ internal class IconContactSheet : BasePlatformTestCase() {
     private val baseDir = System.getProperty("emberkai.iconSheet.base")?.let(::File)
     private val output = System.getProperty("emberkai.iconSheet.output")?.let(::File)
 
-    fun testRenderContactSheet() {
-        val list = changedList ?: return
+    override fun setUp() {
+        super.setUp()
         if (GraphicsEnvironment.isHeadless()) IconLoader.activate()
+    }
+
+    override fun tearDown() {
         try {
-            // A changed dark variant is shown with its light artwork, and the other way round.
-            val icons = list.readLines().map(String::trim).filter { it.endsWith(".svg") }
-                .map { it.removeSuffix(DARK_SUFFIX).removeSuffix(".svg") }
-                .distinct().sorted()
-            val rows = icons.flatMap { icon ->
-                val before = baseDir?.let { Row(icon, "before", it.resolve("$icon.svg"), it.resolve("$icon$DARK_SUFFIX")) }
-                    ?.takeIf { it.exists }
-                val after = Row(icon, "after", File("$icon.svg"), File("$icon$DARK_SUFFIX")).takeIf { it.exists }
-                when {
-                    before == null -> listOfNotNull(after?.copy(label = "added"))
-                    after == null -> listOf(before.copy(label = "removed"))
-                    else -> listOf(before, after)
-                }
-            }
-            val sheet = render(rows)
-            val target = checkNotNull(output) { "emberkai.iconSheet.output is not set" }
-            target.parentFile.mkdirs()
-            ImageIO.write(sheet, "png", target)
-        } finally {
             if (GraphicsEnvironment.isHeadless()) IconLoader.deactivate()
+        } finally {
+            super.tearDown()
         }
     }
 
-    private fun render(rows: List<Row>): BufferedImage {
+    fun testRenderContactSheet() {
+        val list = changedList ?: return
+        // A changed dark variant is shown with its light artwork, and the other way round.
+        val icons = list.readLines().map(String::trim).filter { it.endsWith(".svg") }
+            .map { it.removeSuffix(DARK_SUFFIX).removeSuffix(".svg") }
+            .distinct().sorted()
+        val rows = icons.flatMap { icon ->
+            val before = baseDir?.let { Row(icon, "before", it.resolve("$icon.svg"), it.resolve("$icon$DARK_SUFFIX")) }
+                ?.takeIf { it.exists }
+            val after = Row(icon, "after", File("$icon.svg"), File("$icon$DARK_SUFFIX")).takeIf { it.exists }
+            when {
+                before == null -> listOfNotNull(after?.copy(label = "added"))
+                after == null -> listOf(before.copy(label = "removed"))
+                else -> listOf(before, after)
+            }
+        }
+        // An upstream icon refresh can touch hundreds of icons; nobody reviews those row by row.
+        val sheet = render(rows.take(MAX_ROWS), hidden = (rows.size - MAX_ROWS).coerceAtLeast(0))
+        val target = checkNotNull(output) { "emberkai.iconSheet.output is not set" }
+        target.parentFile.mkdirs()
+        ImageIO.write(sheet, "png", target)
+    }
+
+    private fun render(rows: List<Row>, hidden: Int): BufferedImage {
         val cellWidth = SCALES.sumOf { (16 * it).toInt() + GAP } + GAP
         val width = LABEL_WIDTH + 2 * cellWidth
-        val height = HEADER + rows.size.coerceAtLeast(1) * ROW
+        val height = HEADER + (rows.size + if (hidden > 0) 1 else 0).coerceAtLeast(1) * ROW
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
         val g = image.createGraphics()
         try {
@@ -80,6 +89,10 @@ internal class IconContactSheet : BasePlatformTestCase() {
                 paintScales(g, row.light, LABEL_WIDTH + GAP, top)
                 paintScales(g, row.dark.takeIf(File::isFile) ?: row.light, LABEL_WIDTH + cellWidth + GAP, top)
             }
+            if (hidden > 0) {
+                g.color = MUTED
+                g.drawString("…and $hidden more rows not shown", GAP, HEADER + rows.size * ROW + 20)
+            }
         } finally {
             g.dispose()
         }
@@ -101,7 +114,7 @@ internal class IconContactSheet : BasePlatformTestCase() {
             } catch (e: Throwable) {
                 // The lint reports why; the sheet only has to show that this artwork does not render.
                 g.color = FAILED
-                g.drawString("does not render", left, top + 28)
+                g.drawString("does not render", x, top + 28)
                 return
             } finally {
                 copy.dispose()
@@ -121,6 +134,7 @@ internal class IconContactSheet : BasePlatformTestCase() {
         const val LABEL_WIDTH = 320
         const val HEADER = 28
         const val ROW = 48
+        const val MAX_ROWS = 100
         val LIGHT = Color(0xF7F8FA)
         val DARK = Color(0x2B2D30)
         val TEXT = Color(0x1E1F22)

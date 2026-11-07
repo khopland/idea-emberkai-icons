@@ -97,7 +97,7 @@ while IFS= read -r -d '' svg; do
     [[ "$relative" =~ ^(files|folders)/[A-Za-z0-9._+-]+\.svg$ ]] || fail "Unexpected SVG path: $relative"
     # IntelliJ cannot render embedded raster images; a mapping to a skipped icon fails below.
     if grep -q '<image' "$svg"; then
-        printf 'Skipping %s: it embeds a raster image.\n' "$relative"
+        printf 'Skipping %s: it embeds a raster image.\n' "$relative" >&2
         continue
     fi
     mkdir -p "$staged/symbols/icons/$(dirname -- "$relative")"

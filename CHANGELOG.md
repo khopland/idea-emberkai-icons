@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 - Argo CD and Nomad icons no longer fade into light themes: their lines and outlines use a deeper shade there, and dark themes keep the brighter one.
-- Removed the unused upstream Redis folder icon, which embedded an 800-pixel bitmap that IntelliJ could not render. Icon updates now skip such icons.
+- Removed the unused upstream Redis folder icon, which embedded an 800-pixel bitmap that IntelliJ could not render.
 
 ## [0.8.0] - 2026-11-05
 

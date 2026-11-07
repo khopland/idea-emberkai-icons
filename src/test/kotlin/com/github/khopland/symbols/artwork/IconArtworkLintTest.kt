@@ -5,17 +5,20 @@ import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.awt.GraphicsEnvironment
 import java.awt.image.BufferedImage
 import java.io.File
+import java.nio.file.Files
 import java.util.Locale
 import java.util.Properties
 import javax.swing.Icon
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.math.pow
+import org.w3c.dom.Element
 
 /**
- * Checks every bundled SVG before it ships. All artwork must parse and paint at 16px; Emberkai's
- * own artwork must also use the named palette in design/palette.properties and stay legible on
- * both IDE themes, which is what 0.8.0 had to fix by hand. Upstream Symbols artwork is mid-tone by
- * design, so it is held to the structural checks only.
+ * Checks the icon SVGs before they ship. All artwork must parse and paint at 16px; Emberkai's own
+ * artwork must also use the named palette in design/palette.properties and stay legible on both IDE
+ * themes, which is what 0.8.0 had to fix by hand. Upstream Symbols artwork is mid-tone by design, so
+ * it is held to the structural checks only. Each rule is also run against known-bad artwork, so a
+ * rule that stops finding anything fails here rather than passing quietly.
  */
 internal class IconArtworkLintTest : BasePlatformTestCase() {
     override fun setUp() {
@@ -32,93 +35,161 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     }
 
     fun testEveryIconPaintsAt16Pixels() {
-        val problems = (EMBERKAI.svgs() + SYMBOLS.svgs()).mapNotNull { file ->
-            val root = runCatching { parse(file) }.getOrElse { return@mapNotNull "${file.label}: ${it.message}" }
-            val viewBox = root.getAttribute("viewBox")
-            val size = runCatching { load(file)?.let { it.iconWidth to it.iconHeight } }
-                .getOrElse { return@mapNotNull "${file.label}: IntelliJ failed to render it: ${it.message}" }
-            when {
-                root.tagName != "svg" -> "${file.label}: root element is <${root.tagName}>"
-                viewBox.isEmpty() -> "${file.label}: no viewBox, so the artwork cannot scale"
-                size == null -> "${file.label}: IntelliJ could not load it"
-                size != (16 to 16) -> "${file.label}: paints at ${size.first}x${size.second}, not 16x16"
-                else -> null
-            }
-        }
-        assertNoProblems(problems)
+        assertNoProblems((EMBERKAI.svgs() + SYMBOLS.svgs()).mapNotNull(::structureProblem))
     }
 
     fun testEmberkaiArtworkUsesSquareGrids() {
-        val problems = EMBERKAI.svgs().mapNotNull { file ->
-            val root = parse(file)
-            val size = root.getAttribute("width") to root.getAttribute("height")
-            val viewBox = root.getAttribute("viewBox")
-            when {
-                size != ("16" to "16") -> "${file.label}: width and height must be 16, found ${size.first}x${size.second}"
-                viewBox !in GRIDS -> "${file.label}: viewBox \"$viewBox\" is not one of $GRIDS"
-                else -> null
-            }
-        }
-        assertNoProblems(problems)
+        assertNoProblems(EMBERKAI.svgs().mapNotNull(::gridProblem))
     }
 
     fun testEmberkaiArtworkUsesThePalette() {
-        val palette = Properties().apply { File("design/palette.properties").reader().use(::load) }
-            .values.map { normalize(it as String) }.toSet()
-        val problems = EMBERKAI.svgs().flatMap { file ->
-            // Masks only cut shapes out; their black and white never reach the screen.
-            val paint = file.readText().replace(MASK, "")
-            COLOR.findAll(paint).map { normalize(it.value) }.distinct()
-                .filter { it !in palette }
-                .map { "${file.label}: $it is not in design/palette.properties" }
-                .toList()
-        }
-        assertNoProblems(problems)
+        assertNoProblems(EMBERKAI.svgs().flatMap(::paletteProblems))
     }
 
     fun testDarkVariantsMatchTheirLightArtwork() {
-        val problems = EMBERKAI.svgs().filter { it.name.endsWith(DARK_SUFFIX) }.mapNotNull { dark ->
-            val light = File(dark.parentFile, dark.name.removeSuffix(DARK_SUFFIX) + ".svg")
-            when {
-                !light.isFile -> "${dark.label}: no light artwork named ${light.name}"
-                parse(light).getAttribute("viewBox") != parse(dark).getAttribute("viewBox") ->
-                    "${dark.label}: viewBox differs from ${light.name}"
-                else -> null
+        assertNoProblems(EMBERKAI.svgs().filter { it.name.endsWith(DARK_SUFFIX) }.mapNotNull(::darkVariantProblem))
+    }
+
+    fun testEmberkaiArtworkIsLegibleInBothThemes() {
+        assertNoProblems(EMBERKAI.svgs().filterNot { it.name.endsWith(DARK_SUFFIX) }.flatMap(::legibilityProblems))
+    }
+
+    fun testEachRuleRejectsKnownBadArtwork() {
+        val dir = Files.createTempDirectory("emberkai-lint").toFile()
+        try {
+            fun svg(name: String, body: String, root: String = """width="16" height="16" viewBox="0 0 16 16""""): File =
+                File(dir, name).apply { writeText("""<svg $root fill="none" xmlns="http://www.w3.org/2000/svg">$body</svg>""") }
+            val square = """<rect x="2" y="2" width="12" height="12" fill="#1E293B"/>"""
+
+            assertNotNull("no viewBox", structureProblem(svg("a.svg", square, """width="16" height="16"""")))
+            assertNotNull("not 16px", structureProblem(svg("b.svg", square, """width="24" height="24" viewBox="0 0 24 24"""")))
+            assertNotNull("not XML", structureProblem(File(dir, "c.svg").apply { writeText("<svg") }))
+            assertNotNull("odd grid", gridProblem(svg("d.svg", square, """width="16" height="16" viewBox="0 0 20 20"""")))
+            for (paint in listOf(
+                """fill="#123456"""", """fill="#FB923C80"""", """stroke="orange"""", """fill="rgb(1,2,3)"""",
+                """style="fill:hsl(0,0%,0%)"""",
+            )) {
+                assertFalse(paint, paletteProblems(svg("e.svg", """<rect width="4" height="4" $paint/>""")).isEmpty())
             }
+            assertEquals(
+                "Palette colors, none, currentColor, references, and masks are allowed",
+                emptyList<String>(),
+                paletteProblems(
+                    svg(
+                        "f.svg",
+                        """<defs><mask id="m"><rect width="16" height="16" fill="#fff"/><rect fill="#000"/></mask></defs>""" +
+                            """<rect width="4" height="4" fill="url(#m)" stroke="none" style="fill: #1E293B; stroke: currentColor"/>""",
+                    ),
+                ),
+            )
+            assertNotNull("orphan dark variant", darkVariantProblem(svg("g_dark.svg", square)))
+            assertFalse(
+                "pale on light",
+                legibilityProblems(svg("h.svg", """<rect x="2" y="2" width="12" height="12" fill="#FEF08A"/>""")).isEmpty(),
+            )
+            assertFalse("dark on dark", legibilityProblems(svg("i.svg", square)).isEmpty())
+            svg("i_dark.svg", """<rect x="2" y="2" width="12" height="12" fill="#E2E8F0"/>""")
+            assertEquals("a dark variant fixes the dark theme", emptyList<String>(), legibilityProblems(File(dir, "i.svg")))
+        } finally {
+            dir.deleteRecursively()
         }
-        assertNoProblems(problems)
+    }
+
+    private fun structureProblem(file: File): String? {
+        val root = runCatching { parse(file) }.getOrElse { return "${file.label}: ${it.message}" }
+        val size = runCatching { load(file)?.let { it.iconWidth to it.iconHeight } }
+            .getOrElse { return "${file.label}: IntelliJ failed to render it: ${it.message}" }
+        return when {
+            root.tagName != "svg" -> "${file.label}: root element is <${root.tagName}>"
+            root.getAttribute("viewBox").isEmpty() -> "${file.label}: no viewBox, so the artwork cannot scale"
+            size == null -> "${file.label}: IntelliJ could not load it"
+            size != (16 to 16) -> "${file.label}: paints at ${size.first}x${size.second}, not 16x16"
+            else -> null
+        }
+    }
+
+    private fun gridProblem(file: File): String? {
+        val root = runCatching { parse(file) }.getOrElse { return "${file.label}: ${it.message}" }
+        val size = root.getAttribute("width") to root.getAttribute("height")
+        val viewBox = root.getAttribute("viewBox")
+        return when {
+            size != ("16" to "16") -> "${file.label}: width and height must be 16, found ${size.first}x${size.second}"
+            viewBox !in GRIDS -> "${file.label}: viewBox \"$viewBox\" is not one of $GRIDS"
+            else -> null
+        }
+    }
+
+    /** Every paint value outside masks, in attributes or `style`, must be a palette color or a non-color. */
+    private fun paletteProblems(file: File): List<String> {
+        val root = runCatching { parse(file) }.getOrElse { return listOf("${file.label}: ${it.message}") }
+        val problems = mutableListOf<String>()
+        fun visit(element: Element) {
+            // Masks only cut shapes out; their black and white never reach the screen.
+            if (element.tagName == "mask") return
+            if (element.tagName == "style") problems += "${file.label}: <style> is not supported; use attributes"
+            val declarations = element.getAttribute("style").split(';').mapNotNull { declaration ->
+                declaration.split(':', limit = 2).takeIf { it.size == 2 }?.let { (name, value) -> name.trim() to value }
+            }
+            val paints = PAINT_ATTRIBUTES.map { it to element.getAttribute(it) } +
+                declarations.filter { it.first in PAINT_ATTRIBUTES }
+            for ((name, raw) in paints) {
+                val value = raw.trim()
+                if (value.isEmpty() || value in NON_COLORS || value.startsWith("url(")) continue
+                problems += when {
+                    !HEX_COLOR.matches(value) -> "${file.label}: $name=\"$value\" is not a #RGB or #RRGGBB palette color"
+                    normalize(value) !in PALETTE -> "${file.label}: ${normalize(value)} is not in design/palette.properties"
+                    else -> continue
+                }
+            }
+            val children = element.childNodes
+            for (index in 0 until children.length) (children.item(index) as? Element)?.let(::visit)
+        }
+        visit(root)
+        return problems.distinct()
+    }
+
+    private fun darkVariantProblem(dark: File): String? {
+        val light = File(dark.parentFile, dark.name.removeSuffix(DARK_SUFFIX) + ".svg")
+        return when {
+            !light.isFile -> "${dark.label}: no light artwork named ${light.name}"
+            parse(light).getAttribute("viewBox") != parse(dark).getAttribute("viewBox") ->
+                "${dark.label}: viewBox differs from ${light.name}"
+            else -> null
+        }
     }
 
     /**
      * Light artwork is measured on the light tree background, and the dark variant (or the light
      * artwork when there is none) on the dark one. At least [MIN_LEGIBLE_INK] of the painted pixels
-     * must reach WCAG's 3:1 contrast for graphics; every icon 0.8.0 fixed by hand had none.
+     * must reach WCAG's 3:1 contrast for graphics at both 100% and 200%; thin strokes blur at 100%,
+     * so it usually decides. Every icon 0.8.0 fixed by hand had none.
      */
-    fun testEmberkaiArtworkIsLegibleInBothThemes() {
-        val problems = EMBERKAI.svgs().filterNot { it.name.endsWith(DARK_SUFFIX) }.flatMap { light ->
-            val dark = File(light.parentFile, light.name.removeSuffix(".svg") + DARK_SUFFIX).takeIf(File::isFile)
-            listOf(Theme.LIGHT to light, Theme.DARK to (dark ?: light)).mapNotNull { (theme, file) ->
-                val share = legibleInk(load(file) ?: return@mapNotNull null, theme.background)
-                if (share >= MIN_LEGIBLE_INK) return@mapNotNull null
-                val fix = if (theme == Theme.DARK && dark == null) "; add ${light.name.removeSuffix(".svg")}$DARK_SUFFIX" else ""
-                "${file.label}: only ${percent(share)} of its pixels reach 3:1 on the ${theme.label} theme$fix"
-            }
+    private fun legibilityProblems(light: File): List<String> {
+        val dark = File(light.parentFile, light.name.removeSuffix(".svg") + DARK_SUFFIX).takeIf(File::isFile)
+        return listOf(Theme.LIGHT to light, Theme.DARK to (dark ?: light)).mapNotNull { (theme, file) ->
+            // Artwork that does not load or render is reported by testEveryIconPaintsAt16Pixels.
+            val icon = runCatching { load(file) }.getOrNull() ?: return@mapNotNull null
+            val share = runCatching { SCALES.minOf { legibleInk(icon, theme.background, it) } }
+                .getOrElse { return@mapNotNull "${file.label}: IntelliJ failed to render it: ${it.message}" }
+            if (share >= MIN_LEGIBLE_INK) return@mapNotNull null
+            val fix = if (theme == Theme.DARK && dark == null) "; add ${light.name.removeSuffix(".svg")}$DARK_SUFFIX" else ""
+            "${file.label}: only ${percent(share)} of its pixels reach 3:1 on the ${theme.label} theme$fix"
         }
-        assertNoProblems(problems)
     }
 
-    private fun legibleInk(icon: Icon, background: Int): Double {
-        val image = BufferedImage(SAMPLE_SIZE, SAMPLE_SIZE, BufferedImage.TYPE_INT_ARGB)
+    private fun legibleInk(icon: Icon, background: Int, scale: Int): Double {
+        val size = 16 * scale
+        val image = BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
         val g = image.createGraphics()
         try {
-            g.scale(SAMPLE_SIZE / 16.0, SAMPLE_SIZE / 16.0)
+            g.scale(scale.toDouble(), scale.toDouble())
             icon.paintIcon(null, g, 0, 0)
         } finally {
             g.dispose()
         }
         var ink = 0.0
         var legible = 0.0
-        for (y in 0 until SAMPLE_SIZE) for (x in 0 until SAMPLE_SIZE) {
+        for (y in 0 until size) for (x in 0 until size) {
             val pixel = image.getRGB(x, y)
             val alpha = (pixel ushr 24) / 255.0
             if (alpha < 0.05) continue
@@ -142,24 +213,33 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
         val EMBERKAI = File("src/main/resources/emberkai")
         val SYMBOLS = File("src/main/resources/symbols")
         const val DARK_SUFFIX = "_dark.svg"
-        const val SAMPLE_SIZE = 32
+        val SCALES = listOf(1, 2)
         const val MIN_LEGIBLE_INK = 0.12
         val GRIDS = setOf("0 0 16 16", "0 0 24 24")
-        val COLOR = Regex("#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\\b")
-        val MASK = Regex("<mask\\b.*?</mask>", RegexOption.DOT_MATCHES_ALL)
+        val PAINT_ATTRIBUTES = setOf("fill", "stroke", "stop-color", "flood-color", "lighting-color", "color")
+        val NON_COLORS = setOf("none", "currentColor", "inherit")
+        val HEX_COLOR = Regex("#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})")
+        val PALETTE: Set<String> by lazy {
+            Properties().apply { File("design/palette.properties").reader().use(::load) }
+                .values.map { normalize(it as String) }.toSet()
+        }
 
-        val File.label: String get() = relativeTo(File("src/main/resources")).path
+        val File.label: String
+            get() = if (startsWith(File("src/main/resources"))) relativeTo(File("src/main/resources")).path else name
 
         fun File.svgs(): List<File> = walk().filter { it.isFile && it.extension == "svg" }.sorted().toList()
 
-        fun parse(file: File) = DocumentBuilderFactory.newInstance().apply { isNamespaceAware = true }
-            .newDocumentBuilder().parse(file).documentElement
+        /** Parses without fetching external DTDs, which editors such as Inkscape declare. */
+        fun parse(file: File): Element = DocumentBuilderFactory.newInstance().apply {
+            isNamespaceAware = true
+            setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+        }.newDocumentBuilder().parse(file).documentElement
 
         // Uncached: loading every bundled icon would evict the ones other tests compare by identity.
         fun load(file: File): Icon? = IconLoader.findIcon(file.toURI().toURL(), false)
 
         fun normalize(color: String): String {
-            val hex = color.removePrefix("#").uppercase(Locale.ROOT)
+            val hex = color.trim().removePrefix("#").uppercase(Locale.ROOT)
             return "#" + if (hex.length == 3) hex.map { "$it$it" }.joinToString("") else hex
         }
 

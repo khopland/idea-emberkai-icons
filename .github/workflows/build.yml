@@ -53,6 +53,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          # A pull request checks out its merge commit; the icon contact sheet compares it with the base parent.
+          fetch-depth: 2
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
@@ -60,22 +62,22 @@ jobs:
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - name: Test and build
         run: ./gradlew check verifyPluginProjectConfiguration verifyPluginStructure buildPlugin --console=plain
+      # Advisory, and most useful when the artwork lint fails, so it runs after failures too.
       - name: Render changed icons
         id: render-icons
-        if: github.event_name == 'pull_request'
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        continue-on-error: true
         run: bash .github/scripts/icon_contact_sheet.sh
       - name: Upload icon contact sheet
         id: icon-sheet
-        if: github.event_name == 'pull_request' && hashFiles('build/reports/icon-sheet/icons.png') != ''
+        if: ${{ !cancelled() && steps.render-icons.outputs.changed != '' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: icon-contact-sheet
           path: build/reports/icon-sheet/icons.png
           retention-days: 14
       - name: Link icon contact sheet
-        if: steps.icon-sheet.outputs.artifact-url != ''
+        if: ${{ !cancelled() && steps.icon-sheet.outputs.artifact-url != '' }}
         env:
           CHANGED: ${{ steps.render-icons.outputs.changed }}
           SHEET_URL: ${{ steps.icon-sheet.outputs.artifact-url }}

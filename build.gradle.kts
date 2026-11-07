@@ -155,6 +155,10 @@ tasks.test {
             "emberkai.iconSheet.output",
             layout.buildDirectory.file("reports/icon-sheet/icons.png").get().asFile.absolutePath,
         )
+        // Keep the full suite's reports from the earlier run; CI uploads those after rendering.
+        reports.html.outputLocation = layout.buildDirectory.dir("reports/icon-sheet/tests")
+        reports.junitXml.outputLocation = layout.buildDirectory.dir("icon-sheet/test-results")
+        binaryResultsDirectory = layout.buildDirectory.dir("icon-sheet/test-results/binary")
         outputs.upToDateWhen { false }
     }
 }
