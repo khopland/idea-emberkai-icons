@@ -2,6 +2,7 @@ package com.github.khopland.symbols.stereotypes
 
 import com.github.khopland.symbols.core.IconRuleCategory
 import com.github.khopland.symbols.core.NativeIconPolicy
+import com.github.khopland.symbols.node.NodeStereotypes
 import com.github.khopland.symbols.settings.EmberkaiIconsSettings
 import com.github.khopland.symbols.settings.isEnabled
 import com.intellij.ide.IconLayerProvider
@@ -236,10 +237,17 @@ internal object ClassStereotypes {
     }
 
     /**
-     * Whether [file]'s own class is an application, controller, listener, or scheduled job. Ignores
-     * the badge setting, like the other scopes. Reads stubs; safe from any thread.
+     * Whether [file]'s own class is an application, controller, listener, or scheduled job, or a
+     * TypeScript or JavaScript file plays one of those roles. Ignores the badge setting, like the
+     * other scopes. Reads stubs or bounded, cached content; safe from any thread.
      */
     fun isEntryPoint(file: VirtualFile, project: Project): Boolean {
+        if (NodeStereotypes.isCandidate(file)) {
+            return runReadActionBlocking {
+                !project.isDisposed && file.isValid && ProjectFileIndex.getInstance(project).isInContent(file) &&
+                    NodeStereotypes.match(file)?.stereotype?.isEntryPoint == true
+            }
+        }
         if (file.extension?.lowercase() !in SOURCE_EXTENSIONS) return false
         return runReadActionBlocking {
             if (project.isDisposed || !file.isValid) return@runReadActionBlocking false

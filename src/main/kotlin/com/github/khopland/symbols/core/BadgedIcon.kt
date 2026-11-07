@@ -15,6 +15,9 @@ import javax.swing.Icon
  * icons keep the top-left corner for their own marks and class stereotypes.
  */
 internal enum class BadgeSlot {
+    /** Top-left: the role a source file plays, such as a controller, on artwork that is not a native class icon. */
+    ROLE,
+
     /** Top-right: the one thing to act on or that is live now; the most urgent badge wins. */
     ATTENTION,
 
@@ -74,6 +77,7 @@ internal abstract class BadgedIcon(val baseIcon: Icon) : ReplaceableIcon {
         val right = x + iconWidth - size - inset
         val bottom = y + iconHeight - size - inset
         return when (slot) {
+            BadgeSlot.ROLE -> Point2D.Float(x + inset, y + inset)
             BadgeSlot.ATTENTION -> Point2D.Float(right, y + inset)
             BadgeSlot.ENVIRONMENT -> Point2D.Float(x + inset, bottom)
             BadgeSlot.ARTWORK -> Point2D.Float(right, bottom)
