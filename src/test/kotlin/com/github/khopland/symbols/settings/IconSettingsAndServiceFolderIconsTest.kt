@@ -9,12 +9,14 @@ import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
+import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBTextField
 import java.awt.Component
 import java.awt.Container
 import java.io.IOException
 import java.nio.file.Files
 import javax.swing.JCheckBox
+import javax.swing.JComboBox
 import javax.swing.JLabel
 
 internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
@@ -105,7 +107,56 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
             assertFalse(visible(CategoryGroup.WARNINGS.title))
 
             filter.text = ""
+            assertFalse("Single features stay under Advanced", visible(IconRuleCategory.HELM.displayName))
+            assertTrue(visible("Keep IntelliJ's native Java and Kotlin file icons"))
+            components(root).filterIsInstance<ActionLink>().single().doClick()
             assertTrue(components(root).filterIsInstance<JCheckBox>().all { it.isVisible })
+        } finally {
+            configurable.disposeUIResources()
+        }
+    }
+
+    fun testPresetsSetFeaturesButKeepLookAndAccessibility() {
+        val custom = EmberkaiIconsSettings.State(highContrastFolderIcons = true, serviceFolderPalette = "ACCESSIBLE")
+        assertEquals("The defaults are the recommended preset", SettingsPreset.RECOMMENDED, SettingsPreset.matching(EmberkaiIconsSettings.State()))
+
+        val iconsOnly = SettingsPreset.ICONS_ONLY.applyTo(custom)
+        assertTrue(iconsOnly.isEnabled(IconRuleCategory.HELM))
+        assertFalse("Off by default, so off in Icons only", iconsOnly.isEnabled(IconRuleCategory.ARCHITECTURE))
+        assertFalse(iconsOnly.isEnabled(IconRuleCategory.CONFIG_DRIFT))
+        assertFalse(iconsOnly.isEnabled(IconRuleCategory.STEREOTYPE_BADGES))
+        assertFalse(iconsOnly.semanticTooltips)
+        assertTrue(iconsOnly.highContrastFolderIcons)
+        assertEquals("ACCESSIBLE", iconsOnly.serviceFolderPalette)
+        assertEquals(SettingsPreset.ICONS_ONLY, SettingsPreset.matching(iconsOnly))
+
+        val everything = SettingsPreset.EVERYTHING.applyTo(custom)
+        assertTrue(SettingsPreset.PRESET_FLAGS.all { it.get(everything) })
+        assertTrue(everything.highContrastFolderIcons)
+
+        everything.helm = false
+        assertNull("A changed feature is a custom mix", SettingsPreset.matching(everything))
+    }
+
+    fun testConfigurablePresetPickerFollowsTheCheckboxes() {
+        settings.loadState(EmberkaiIconsSettings.State())
+        val configurable = EmberkaiIconsConfigurable()
+        try {
+            val root = configurable.createComponent()
+            val picker = components(root).filterIsInstance<JComboBox<*>>().single { it.accessibleContext.accessibleName == "Feature preset" }
+            assertEquals("Recommended", picker.selectedItem.toString())
+
+            picker.selectedIndex = SettingsPreset.ICONS_ONLY.ordinal
+            assertTrue(configurable.isModified)
+            assertFalse(checkBoxes(root).single { it.text == IconRuleCategory.CONFIG_DRIFT.displayName }.isSelected)
+
+            checkBoxes(root).single { it.text == IconRuleCategory.CONFIG_DRIFT.displayName }.doClick()
+            assertEquals("Custom", picker.selectedItem.toString())
+
+            configurable.apply()
+            assertTrue(settings.isEnabled(IconRuleCategory.CONFIG_DRIFT))
+            assertFalse(settings.isEnabled(IconRuleCategory.UNPINNED_REFERENCES))
+            assertNull(SettingsPreset.matching(settings.state))
         } finally {
             configurable.disposeUIResources()
         }
