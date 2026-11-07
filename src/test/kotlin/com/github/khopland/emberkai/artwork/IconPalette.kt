@@ -14,8 +14,8 @@ import kotlin.math.sin
 /**
  * Retints generated artwork for a theme palette in design/palettes, such as Nord. A palette gives
  * each Tailwind family (`blue`, `slate`, …) one color from the theme. Every shade of that family
- * takes the theme color's OKLCH hue, with its chroma scaled by how far the theme color is from the
- * family's 500 shade, and keeps its own luminance, so its contrast against both IDE backgrounds,
+ * takes the theme color's OKLCH hue, with its chroma softened toward the theme color's (to no less
+ * than 75% of its own, so bright shades never fade to grey), and keeps its own luminance, so its contrast against both IDE backgrounds,
  * which is what the legibility lint measures, does not change. So blue-600 stays a deep line on
  * light themes and blue-400 a bright one on dark themes, both in Nord's blue. White, black, the IDE
  * background and brand colors are left alone.
@@ -27,6 +27,7 @@ internal class IconPalette(val id: String, private val recolor: Map<String, Stri
     companion object {
         private val HEX = Regex("#[0-9A-Fa-f]{6}\\b")
         private val SHADE = Regex("([a-z]+)-(\\d+)")
+        private const val MIN_SATURATION = 0.75
 
         /** Every palette in design/palettes, by file name. */
         fun fromRepository(): List<IconPalette> {
@@ -56,7 +57,9 @@ internal class IconPalette(val id: String, private val recolor: Map<String, Stri
             val (l, c) = Lch.of(color)
             val ref = Lch.of(reference)
             val goal = Lch.of(target)
-            val chroma = if (ref.c < 1e-4) goal.c else c * goal.c / ref.c
+            // Muted themes such as Gruvbox and Nord would scale bright dark-theme shades down to grey, so the
+            // theme keeps at least MIN_SATURATION of each shade's chroma, and never raises it.
+            val chroma = if (ref.c < 1e-4) goal.c else c * (goal.c / ref.c).coerceIn(MIN_SATURATION, 1.0)
             val luminance = luminance(color)
             // Hue shifts change luminance a little at the same OKLCH lightness; search for the lightness that keeps it.
             var low = 0.0
