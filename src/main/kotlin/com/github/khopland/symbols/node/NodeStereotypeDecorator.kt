@@ -13,7 +13,6 @@ import com.github.khopland.symbols.settings.isEnabled
 import com.github.khopland.symbols.stereotypes.ClassStereotype
 import com.github.khopland.symbols.stereotypes.StereotypeMatch
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.icons.IconReplacer
 import java.awt.Graphics2D
@@ -38,7 +37,17 @@ internal class StereotypeBadgeIcon(
     override val slot: BadgeSlot get() = BadgeSlot.ROLE
 
     override fun paintBadge(g: Graphics2D, x: Int, y: Int) {
-        glyph.paintIcon(null, g, x, y)
+        // The glyph is drawn for a 16px icon; scaled artwork, such as a zoomed editor tab, scales it too.
+        val scale = iconWidth.toDouble() / glyph.iconWidth
+        if (scale == 1.0 || glyph.iconWidth <= 0) return glyph.paintIcon(null, g, x, y)
+        val scaled = g.create() as Graphics2D
+        try {
+            scaled.translate(x, y)
+            scaled.scale(scale, scale)
+            glyph.paintIcon(null, scaled, 0, 0)
+        } finally {
+            scaled.dispose()
+        }
     }
 
     override fun withBase(base: Icon): BadgedIcon = StereotypeBadgeIcon(base, stereotype, glyph)
@@ -56,9 +65,7 @@ internal class NodeStereotypeDecorator : IconDecorator {
     override fun decorateFile(resolution: IconResolution, file: VirtualFile, project: Project?): IconResolution {
         if (!NodeStereotypes.isCandidate(file)) return resolution
         if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) return resolution
-        if (project == null || project.isDisposed || !ProjectFileIndex.getInstance(project).isInContent(file)) {
-            return resolution
-        }
+        if (project == null || project.isDisposed) return resolution
         val match = NodeStereotypes.match(file, project) ?: return resolution
         val baseIcon = resolution.iconOrFileTypeIcon(file) ?: return resolution
         return resolution.decorated(
