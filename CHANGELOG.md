@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Moved the plugin's code from the `com.github.khopland.symbols` package to `com.github.khopland.emberkai`, to match the Emberkai name. The plugin ID, action IDs, and settings are unchanged, so upgrades, keymaps, and saved settings carry over. To see Emberkai's debug logs, use the category `#com.github.khopland.emberkai` instead.
+
 - Argo CD and Nomad icons no longer fade into light themes: their lines and outlines use a deeper shade there, and dark themes keep the brighter one.
 - Removed the unused upstream Redis folder icon, which embedded an 800-pixel bitmap that IntelliJ could not render.
 

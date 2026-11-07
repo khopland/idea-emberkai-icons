@@ -1,4 +1,9 @@
 <idea-plugin>
+    <!--
+        The code lives in com.github.khopland.emberkai, but the plugin ID and every ID under it (extension points,
+        actions, the configurable, the status bar widget) keep the original com.github.khopland.symbols prefix:
+        Marketplace upgrades, keymaps, toolbars, and saved widget settings refer to them.
+    -->
     <id>com.github.khopland.symbols</id>
     <name>Emberkai Icons</name>
     <vendor url="https://github.com/khopland/idea-emberkai-icons">khopland</vendor>
@@ -74,10 +79,10 @@
     <depends optional="true" config-file="kotlin-stereotypes.xml">org.jetbrains.kotlin</depends>
     <extensionPoints>
         <extensionPoint qualifiedName="com.github.khopland.symbols.classStereotypeSupport"
-                        interface="com.github.khopland.symbols.stereotypes.ClassStereotypeSupport"
+                        interface="com.github.khopland.emberkai.stereotypes.ClassStereotypeSupport"
                         dynamic="true"/>
         <extensionPoint qualifiedName="com.github.khopland.symbols.iconDecorator"
-                        interface="com.github.khopland.symbols.core.IconDecorator"
+                        interface="com.github.khopland.emberkai.core.IconDecorator"
                         dynamic="true"/>
     </extensionPoints>
     <!--
@@ -85,54 +90,54 @@
         corner holds one badge (see BadgeSlot), so which badge is drawn depends on urgency, not on this order.
     -->
     <extensions defaultExtensionNs="com.github.khopland.symbols">
-        <iconDecorator implementation="com.github.khopland.symbols.badges.EnvironmentVariantDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.badges.UnignoredSecretDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.badges.ConfigDriftDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.spring.ActiveSpringProfileDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.badges.MigrationConflictDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.badges.HelmLockDriftDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.badges.UnpinnedReferenceDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.accents.ModuleAccentDecorator"/>
-        <iconDecorator implementation="com.github.khopland.symbols.run.RunningServiceDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.badges.EnvironmentVariantDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.badges.UnignoredSecretDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.badges.ConfigDriftDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.spring.ActiveSpringProfileDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.badges.MigrationConflictDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.badges.HelmLockDriftDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.badges.UnpinnedReferenceDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.accents.ModuleAccentDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.run.RunningServiceDecorator"/>
     </extensions>
     <!-- The Kotlin stereotype support reads only stub-backed PSI, which both Kotlin plugin modes provide. -->
     <extensions defaultExtensionNs="org.jetbrains.kotlin">
         <supportsKotlinPluginMode supportsK2="true"/>
     </extensions>
     <applicationListeners>
-        <listener class="com.github.khopland.symbols.badges.FlywayMigrationCacheListener"
+        <listener class="com.github.khopland.emberkai.badges.FlywayMigrationCacheListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
-        <listener class="com.github.khopland.symbols.rules.OpenTofuSignalCacheListener"
+        <listener class="com.github.khopland.emberkai.rules.OpenTofuSignalCacheListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
-        <listener class="com.github.khopland.symbols.badges.HelmLockDriftListener"
+        <listener class="com.github.khopland.emberkai.badges.HelmLockDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
-        <listener class="com.github.khopland.symbols.badges.ConfigDriftListener"
+        <listener class="com.github.khopland.emberkai.badges.ConfigDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
     </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"
-            instance="com.github.khopland.symbols.settings.EmberkaiIconsConfigurable"
+            instance="com.github.khopland.emberkai.settings.EmberkaiIconsConfigurable"
             id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
             displayName="Emberkai Icons"/>
-        <iconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
-        <fileIconProvider implementation="com.github.khopland.symbols.core.SymbolsIconProvider" order="first"/>
-        <projectViewNodeDecorator implementation="com.github.khopland.symbols.tooltips.SemanticTooltipDecorator"/>
-        <projectViewNodeDecorator implementation="com.github.khopland.symbols.lens.IconLensDecorator"/>
-        <projectViewNodeDecorator implementation="com.github.khopland.symbols.generated.GeneratedFileDecorator"/>
+        <iconProvider implementation="com.github.khopland.emberkai.core.SymbolsIconProvider" order="first"/>
+        <fileIconProvider implementation="com.github.khopland.emberkai.core.SymbolsIconProvider" order="first"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.emberkai.lens.IconLensDecorator"/>
+        <projectViewNodeDecorator implementation="com.github.khopland.emberkai.generated.GeneratedFileDecorator"/>
         <statusBarWidgetFactory id="com.github.khopland.symbols.StatusBar"
-                                implementation="com.github.khopland.symbols.statusbar.EmberkaiStatusBarWidgetFactory"/>
-        <editorTabColorProvider implementation="com.github.khopland.symbols.badges.ProductionEditorTabColorProvider"/>
-        <editorNotificationProvider implementation="com.github.khopland.symbols.badges.ProductionEditorNotificationProvider"/>
-        <generatedSourcesFilter implementation="com.github.khopland.symbols.generated.EmberkaiGeneratedSourcesFilter"/>
-        <customScopesProvider implementation="com.github.khopland.symbols.settings.EmberkaiScopesProvider"/>
+                                implementation="com.github.khopland.emberkai.statusbar.EmberkaiStatusBarWidgetFactory"/>
+        <editorTabColorProvider implementation="com.github.khopland.emberkai.badges.ProductionEditorTabColorProvider"/>
+        <editorNotificationProvider implementation="com.github.khopland.emberkai.badges.ProductionEditorNotificationProvider"/>
+        <generatedSourcesFilter implementation="com.github.khopland.emberkai.generated.EmberkaiGeneratedSourcesFilter"/>
+        <customScopesProvider implementation="com.github.khopland.emberkai.settings.EmberkaiScopesProvider"/>
         <localInspection shortName="EmberkaiUnmatchedCodeOwnersPattern"
                          displayName="CODEOWNERS pattern matches nothing"
                          groupName="Emberkai"
                          enabledByDefault="true"
                          level="WARNING"
-                         implementationClass="com.github.khopland.symbols.ownership.UnmatchedCodeOwnersPatternInspection"/>
-        <iconLayerProvider implementation="com.github.khopland.symbols.stereotypes.ClassStereotypeLayerProvider"/>
+                         implementationClass="com.github.khopland.emberkai.ownership.UnmatchedCodeOwnersPatternInspection"/>
+        <iconLayerProvider implementation="com.github.khopland.emberkai.stereotypes.ClassStereotypeLayerProvider"/>
         <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
@@ -141,91 +146,91 @@
                text="Emberkai Icons"
                popup="true">
             <group id="com.github.khopland.symbols.IconLens"
-                   class="com.github.khopland.symbols.lens.IconLensActionGroup"
+                   class="com.github.khopland.emberkai.lens.IconLensActionGroup"
                    text="Lens"
                    description="Keep files that answer one question in full color and dim the rest of the Project view"
                    popup="true"/>
             <separator/>
             <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
-                    class="com.github.khopland.symbols.settings.ToggleServiceFolderColorsAction"
+                    class="com.github.khopland.emberkai.settings.ToggleServiceFolderColorsAction"
                     text="Color service folders"
                     description="Color folders that contain a Gradle, Maven, or Node package manifest"/>
             <action id="com.github.khopland.symbols.ToggleModuleAwareColors"
-                    class="com.github.khopland.symbols.settings.ToggleModuleAwareColorsAction"
+                    class="com.github.khopland.emberkai.settings.ToggleModuleAwareColorsAction"
                     text="Module-aware accent colors"
                     description="Give every IntelliJ module a stable folder accent color"/>
             <action id="com.github.khopland.symbols.ToggleHighContrastFolders"
-                    class="com.github.khopland.symbols.settings.ToggleHighContrastFoldersAction"
+                    class="com.github.khopland.emberkai.settings.ToggleHighContrastFoldersAction"
                     text="High-contrast folder markers"
                     description="Use shape-coded high-contrast folder markers"/>
             <action id="com.github.khopland.symbols.ToggleMonochromeFolders"
-                    class="com.github.khopland.symbols.settings.ToggleMonochromeFoldersAction"
+                    class="com.github.khopland.emberkai.settings.ToggleMonochromeFoldersAction"
                     text="Monochrome service folders"
                     description="Draw service folders without color"/>
             <action id="com.github.khopland.symbols.ToggleReducedFolderColor"
-                    class="com.github.khopland.symbols.settings.ToggleReducedFolderColorAction"
+                    class="com.github.khopland.emberkai.settings.ToggleReducedFolderColorAction"
                     text="Reduce service-folder color"
                     description="Use softer service-folder colors"/>
             <action id="com.github.khopland.symbols.ToggleArchitectureFolders"
-                    class="com.github.khopland.symbols.settings.ToggleArchitectureFoldersAction"
+                    class="com.github.khopland.emberkai.settings.ToggleArchitectureFoldersAction"
                     text="JVM architecture folders"
                     description="Show distinct icons for controller, service, repository, and similar packages"/>
             <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
-                    class="com.github.khopland.symbols.settings.ToggleStereotypeBadgesAction"
+                    class="com.github.khopland.emberkai.settings.ToggleStereotypeBadgesAction"
                     text="Class stereotype badges"
                     description="Badge native class icons for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, entities, and tests"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"
-                class="com.github.khopland.symbols.audit.ExplainIconAction"
+                class="com.github.khopland.emberkai.audit.ExplainIconAction"
                 text="Explain This Icon"
                 description="Show which Emberkai rule or mapping selected this icon">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AssignModuleAccentColor"
-                class="com.github.khopland.symbols.accents.AssignModuleAccentAction"
+                class="com.github.khopland.emberkai.accents.AssignModuleAccentAction"
                 text="Assign Module Accent Color…"
                 description="Pin a folder accent color for the module that owns this directory">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.ResetAllModuleAccentColors"
-                class="com.github.khopland.symbols.accents.ResetAllModuleAccentColorsAction"
+                class="com.github.khopland.emberkai.accents.ResetAllModuleAccentColorsAction"
                 text="Reset All Module Accent Colors"
                 description="Return every module to its automatic accent color">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AuditProjectIconCoverage"
-                class="com.github.khopland.symbols.audit.AuditProjectIconCoverageAction"
+                class="com.github.khopland.emberkai.audit.AuditProjectIconCoverageAction"
                 text="Audit Project Icon Coverage"
                 description="Find files that use generic or unmapped icons">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AuditDirectoryIconCoverage"
-                class="com.github.khopland.symbols.audit.AuditDirectoryIconCoverageAction"
+                class="com.github.khopland.emberkai.audit.AuditDirectoryIconCoverageAction"
                 text="Audit Icon Coverage"
                 description="Find generic or unmapped icons under this directory">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.OverrideIcon"
-                class="com.github.khopland.symbols.overrides.OverrideIconAction"
+                class="com.github.khopland.emberkai.overrides.OverrideIconAction"
                 text="Override This Icon…"
                 description="Create a project-local icon override for this file or folder">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.OpenIconOverrides"
-                class="com.github.khopland.symbols.overrides.OpenIconOverridesAction"
+                class="com.github.khopland.emberkai.overrides.OpenIconOverridesAction"
                 text="Open Icon Overrides File"
                 description="Open or create .idea/emberkai-icons.properties">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.ReloadIconOverrides"
-                class="com.github.khopland.symbols.overrides.ReloadIconOverridesAction"
+                class="com.github.khopland.emberkai.overrides.ReloadIconOverridesAction"
                 text="Reload Icon Overrides"
                 description="Reload project-local icon overrides">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.BrowseIconCatalog"
-                class="com.github.khopland.symbols.overrides.BrowseIconCatalogAction"
+                class="com.github.khopland.emberkai.overrides.BrowseIconCatalogAction"
                 text="Browse Bundled Icons"
                 description="Search every bundled icon and copy its mapping key or path">
             <add-to-group group-id="ToolsMenu" anchor="last"/>

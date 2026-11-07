@@ -2,20 +2,20 @@
     <projectListeners>
         <!-- Java run configurations carry the VM options, arguments, and environment Spring reads. -->
         <listener
-            class="com.github.khopland.symbols.spring.ActiveSpringProfileListener"
+            class="com.github.khopland.emberkai.spring.ActiveSpringProfileListener"
             topic="com.intellij.execution.RunManagerListener"/>
         <!-- Module-based and Gradle run configurations name the module folder a live session belongs to. -->
         <listener
-            class="com.github.khopland.symbols.run.RunningServiceListener"
+            class="com.github.khopland.emberkai.run.RunningServiceListener"
             topic="com.intellij.execution.ExecutionListener"/>
     </projectListeners>
     <extensions defaultExtensionNs="com.github.khopland.symbols">
-        <classStereotypeSupport implementation="com.github.khopland.symbols.stereotypes.JavaClassStereotypeSupport"/>
+        <classStereotypeSupport implementation="com.github.khopland.emberkai.stereotypes.JavaClassStereotypeSupport"/>
     </extensions>
     <actions>
         <!-- Listed by the Emberkai status bar widget; not added to any menu. -->
         <group id="com.github.khopland.symbols.SpringProfileRunConfigurations"
-               class="com.github.khopland.symbols.spring.SpringProfileRunConfigurationsGroup"
+               class="com.github.khopland.emberkai.spring.SpringProfileRunConfigurationsGroup"
                text="Spring Profiles"/>
     </actions>
 </idea-plugin>
