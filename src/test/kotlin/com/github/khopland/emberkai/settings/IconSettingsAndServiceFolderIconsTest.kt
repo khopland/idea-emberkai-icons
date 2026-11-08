@@ -109,7 +109,7 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
             filter.text = ""
             assertFalse("Single features stay under Advanced", visible(IconRuleCategory.HELM.displayName))
             assertTrue(visible("Keep IntelliJ's native Java and Kotlin file icons"))
-            components(root).filterIsInstance<ActionLink>().single().doClick()
+            components(root).filterIsInstance<ActionLink>().single { "legend" !in it.text }.doClick()
             assertTrue(components(root).filterIsInstance<JCheckBox>().all { it.isVisible })
         } finally {
             configurable.disposeUIResources()

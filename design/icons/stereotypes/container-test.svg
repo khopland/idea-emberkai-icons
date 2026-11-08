@@ -1,12 +1,12 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g data-theme="light">
 <rect x="0.5" y="1.5" width="6" height="4" stroke="white" stroke-width="3"/>
-<rect x="0.5" y="1.5" width="6" height="4" fill="orange-400" stroke="slate-800"/>
+<rect x="0.5" y="1.5" width="6" height="4" fill="fuchsia-400" stroke="slate-800"/>
 <path d="M2 2H3V5H2ZM4 2H5V5H4Z" fill="slate-800"/>
 </g>
 <g data-theme="dark">
 <rect x="0.5" y="1.5" width="6" height="4" stroke="ide-dark-background" stroke-width="3"/>
-<rect x="0.5" y="1.5" width="6" height="4" fill="orange-400" stroke="orange-400"/>
+<rect x="0.5" y="1.5" width="6" height="4" fill="fuchsia-400" stroke="fuchsia-400"/>
 <path d="M2 2H3V5H2ZM4 2H5V5H4Z" fill="slate-800"/>
 </g>
 </svg>

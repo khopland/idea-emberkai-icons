@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.audit
 
+import com.github.khopland.emberkai.core.BadgedIcon
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconPrecedence
 import com.github.khopland.emberkai.core.IconResolution
@@ -36,6 +37,8 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -51,11 +54,13 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JTextField
+import javax.swing.JTextArea
+import javax.swing.UIManager
+import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
-/** Project view action that describes how Emberkai selected an icon. */
+/** Project view and editor tab action that says what an icon's marks mean and how Emberkai selected it. */
 internal class ExplainIconAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -95,20 +100,28 @@ private class ExplainIconDialog(
 
     init {
         title = "Explain This Icon"
-        isResizable = false
+        isResizable = true
         setOKButtonText("Close")
         init()
     }
 
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
-        preferredSize = Dimension(640, 400)
+        preferredSize = JBUI.size(720, 560)
         add(JLabel("<html><b>${escapeXmlEntities(file.name)}</b><br>${escapeXmlEntities(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
         body.add(previewPanel(), BorderLayout.NORTH)
-        body.add(detailsPanel(), BorderLayout.CENTER)
-        add(body, BorderLayout.CENTER)
+        body.add(JPanel(BorderLayout(0, 8)).apply {
+            add(meaningPanel(), BorderLayout.NORTH)
+            add(detailsPanel(), BorderLayout.CENTER)
+        }, BorderLayout.CENTER)
+        // Wrapped values can outgrow the default height; scroll rather than cut off the bottom rows.
+        add(JBScrollPane(body).apply {
+            border = null
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            verticalScrollBar.unitIncrement = 16
+        }, BorderLayout.CENTER)
 
         val actions = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0))
         val copyKey = JButton("Copy mapping key")
@@ -153,6 +166,9 @@ private class ExplainIconDialog(
             val key = resolution.mappingKey ?: return@addActionListener
             if (store.removeOverride(key)) close(OK_EXIT_CODE) else status.text = "Could not update the overrides file."
         }
+        val legend = JButton("Icon Legend…")
+        legend.addActionListener { IconLegendDialog(project).show() }
+        actions.add(legend)
         actions.add(copyKey)
         actions.add(revealArtwork)
         actions.add(override)
@@ -186,7 +202,28 @@ private class ExplainIconDialog(
             add(image, BorderLayout.CENTER)
         }
 
+    /** What the user sees: each painted mark by corner, then everything Emberkai recognized. */
+    private fun meaningPanel(): JComponent = JPanel(GridBagLayout()).apply {
+        border = BorderFactory.createTitledBorder("What it means")
+        val marks = generateSequence(resolution.icon as? BadgedIcon) { it.baseIcon as? BadgedIcon }
+            .sortedBy { it.slot }
+            .toList()
+        for (mark in marks) {
+            val (name, meaning) = IconLegend.describe(mark)
+            addRow("${mark.slot.displayName} mark", "$name: $meaning")
+        }
+        // Java and Kotlin stereotypes come from icon layers, not the badge chain above.
+        stereotype?.match?.let { match ->
+            addRow("Top-left mark", stereotype.describe() + ". " + IconLegend.stereotypeMeaning(match.stereotype))
+        }
+        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
+        if (getComponentCount() == 0) {
+            addRow("Marks", "None. The icon is the artwork for this file type or folder.")
+        }
+    }
+
     private fun detailsPanel(): JComponent = JPanel(GridBagLayout()).apply {
+        border = BorderFactory.createTitledBorder("How it was chosen")
         val mapping = resolution.mappingKey ?: "No Emberkai mapping"
         val source = resolution.mappingSource?.displayName ?: "None; the IDE supplies the icon"
         val contextRule = resolution.contextRule?.displayName ?: "None"
@@ -197,14 +234,13 @@ private class ExplainIconDialog(
         } else {
             "Did not take precedence"
         }
-        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         addRow("Resolution", "${resolution.precedence.displayName}: ${resolution.detail}")
         addRow("Mapping key", mapping)
         addRow("Mapping source", source)
         addRow("Context rule", contextRule)
         addRow("Native policy", nativePolicy)
         addRow("Project role", projectRole)
-        stereotype?.let { addRow("Stereotype badge", it.describe()) }
+        stereotype?.takeIf { it.match == null }?.let { addRow("Stereotype badge", it.describe()) }
         ownership?.let {
             addRow(
                 "Code owners",
@@ -233,12 +269,22 @@ private class ExplainIconDialog(
             insets = Insets(4, 0, 4, 0)
         }
         add(JLabel("$name:"), labelConstraints)
-        add(JTextField(value).apply {
+        // Meanings are sentences, so values wrap instead of running past the dialog's edge.
+        add(JTextArea(value).apply {
             isEditable = false
+            lineWrap = true
+            wrapStyleWord = true
             border = null
             isOpaque = false
-            caretPosition = 0
+            font = UIManager.getFont("Label.font")
+            // A text area measures its wrapped height at its current width, so give it the column's width up front.
+            size = Dimension(JBUI.scale(VALUE_WIDTH), Short.MAX_VALUE.toInt())
         }, valueConstraints)
+    }
+
+    private companion object {
+        /** The value column's width in the dialog's default size. */
+        const val VALUE_WIDTH = 520
     }
 
     private fun findArtwork(resourcePath: String): VirtualFile? {

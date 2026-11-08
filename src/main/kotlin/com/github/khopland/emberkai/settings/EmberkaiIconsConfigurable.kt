@@ -2,6 +2,11 @@ package com.github.khopland.emberkai.settings
 
 import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.accents.ModuleAccentIcon
+import com.github.khopland.emberkai.audit.IconLegendDialog
+import com.github.khopland.emberkai.audit.LegendMode
+import com.github.khopland.emberkai.badges.EnvironmentVariant
+import com.github.khopland.emberkai.badges.EnvironmentVariantBadgeIcon
+import com.github.khopland.emberkai.badges.UnignoredSecretBadgeIcon
 import com.github.khopland.emberkai.core.ArtworkPalette
 import com.github.khopland.emberkai.core.ArtworkPalettePatcher
 import com.github.khopland.emberkai.core.CategoryGroup
@@ -156,13 +161,16 @@ class EmberkaiIconsConfigurable : Configurable {
         })
         previewPanel = JPanel(BorderLayout()).apply {
             alignmentX = Component.LEFT_ALIGNMENT
-            preferredSize = Dimension(420, 230)
+            preferredSize = Dimension(420, 280)
             minimumSize = Dimension(300, 160)
             border = BorderFactory.createEtchedBorder()
             accessibleContext.accessibleName = "Live project tree preview"
             accessibleContext.accessibleDescription = "Example project tree showing how current icon options will look."
         }
         root.add(previewPanel)
+        root.add(ActionLink("What do the marks mean? Open the icon legend") { IconLegendDialog(null, previewLegendMode()).show() }.apply {
+            alignmentX = Component.LEFT_ALIGNMENT
+        })
 
         // Single features sit behind a link; the preset picks them, and the filter still finds them.
         root.add(Box.createVerticalStrut(8))
@@ -457,6 +465,18 @@ class EmberkaiIconsConfigurable : Configurable {
         nodes.add(src)
 
         nodes.add(DefaultMutableTreeNode(PreviewItem("build.gradle.kts", IconMappings.get("extension.gradle.kts"))))
+        val profileIcon = IconMappings.get(if (isEnabled(IconRuleCategory.SPRING_BOOT)) "context.spring" else "extension.yml")
+        nodes.add(DefaultMutableTreeNode(PreviewItem(
+            "application-prod.yml",
+            profileIcon?.takeIf { isEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS) }
+                ?.let { EnvironmentVariantBadgeIcon(it, EnvironmentVariant.PRODUCTION) } ?: profileIcon,
+        )))
+        val envIcon = IconMappings.get("extension.env")
+        nodes.add(DefaultMutableTreeNode(PreviewItem(
+            ".env",
+            envIcon?.takeIf { isEnabled(IconRuleCategory.UNIGNORED_SECRETS) }
+                ?.let { UnignoredSecretBadgeIcon(it, settings.highContrast || settings.monochrome) } ?: envIcon,
+        )))
         val helm = isEnabled(IconRuleCategory.HELM)
         nodes.add(DefaultMutableTreeNode(PreviewItem("Chart.yaml", IconMappings.get(if (helm) "context.helm" else "extension.yaml"))))
         val kubernetes = isEnabled(IconRuleCategory.KUBERNETES)
@@ -473,7 +493,7 @@ class EmberkaiIconsConfigurable : Configurable {
             showsRootHandles = true
             rowHeight = 22
             accessibleContext.accessibleName = "Icon preview project tree"
-            accessibleContext.accessibleDescription = "Java, Gradle, Helm, Kubernetes, source, test, package, and service-root icon examples."
+            accessibleContext.accessibleDescription = "Java, Gradle, Spring profile, .env, Helm, Kubernetes, source, test, package, and service-root icon examples."
             cellRenderer = object : DefaultTreeCellRenderer() {
                 override fun getTreeCellRendererComponent(
                     tree: JTree?, value: Any?, selected: Boolean, expanded: Boolean,
@@ -497,6 +517,14 @@ class EmberkaiIconsConfigurable : Configurable {
         panel.revalidate()
         panel.repaint()
     }
+
+    /** The legend in the folder and accessibility options the form shows, applied or not. */
+    private fun previewLegendMode() = LegendMode(
+        palette = selectedPalette() ?: FolderIconPalette.EMBERKAI,
+        highContrast = isChecked(State::highContrastFolderIcons, false),
+        monochrome = isChecked(State::monochromeFolderIcons, false),
+        reducedFolderColor = isChecked(State::reducedFolderColor, false),
+    )
 
     private fun previewServiceIconKey(settings: PreviewSettings): String {
         val color = if (settings.moduleAware) {
