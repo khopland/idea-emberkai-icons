@@ -98,13 +98,13 @@ internal object IconLegend {
             ),
             LegendSection(
                 "Folder colors",
-                "A colored outline marks a source, test, or resources root. A colored fill or dot marks a service " +
+                "A colored outline marks a source or test root; resources roots add stacked lines. A colored fill or dot marks a service " +
                     "or module and tells them apart. Folder color is never a status.",
                 listOfNotNull(
                     folderEntry("folder.role.source", "Source root", "Outlined in the source color: production code."),
                     folderEntry("folder.role.test-source", "Test source root", "Outlined in the test color: test code."),
-                    folderEntry("folder.role.resources", "Resources root", "Outlined in the resources color: files shipped with the code."),
-                    folderEntry("folder.role.test-resources", "Test resources root", "Resources and test colors together: files for tests."),
+                    folderEntry("folder.role.resources", "Resources root", "Stacked lines in the resources color: files shipped with the code."),
+                    folderEntry("folder.role.test-resources", "Test resources root", "Test-colored outline with resources lines: files for tests."),
                     folderEntry(
                         service,
                         "Service folder",
