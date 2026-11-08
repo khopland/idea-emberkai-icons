@@ -1,14 +1,12 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g data-theme="light">
-<rect x="0.9" y="2.1" width="6.2" height="3.8" rx="1.9" stroke="white" stroke-width="2.4"/>
-<rect x="0.9" y="2.1" width="6.2" height="3.8" rx="1.9" fill="orange-400" stroke="slate-800" stroke-width="0.9"/>
-<circle cx="5.2" cy="4" r="1.15" fill="orange-50" stroke="slate-800" stroke-width="0.7"/>
+<rect x="0.5" y="1.5" width="6" height="4" rx="2" stroke="white" stroke-width="3"/>
+<rect x="0.5" y="1.5" width="6" height="4" rx="2" fill="orange-400" stroke="slate-800"/>
+<path d="M4 2H5.5V5H4Z" fill="orange-50"/>
 </g>
 <g data-theme="dark">
-<g transform="translate(-0.5 -0.5) scale(1.12)">
-<rect x="0.9" y="2.1" width="6.2" height="3.8" rx="1.9" stroke="ide-dark-background" stroke-width="1.6"/>
-<rect x="0.9" y="2.1" width="6.2" height="3.8" rx="1.9" fill="orange-400" stroke="orange-400" stroke-width="0.8"/>
-<circle cx="5.2" cy="4" r="1.15" fill="orange-50" stroke="slate-800" stroke-width="0.7"/>
-</g>
+<rect x="0.5" y="1.5" width="6" height="4" rx="2" stroke="ide-dark-background" stroke-width="3"/>
+<rect x="0.5" y="1.5" width="6" height="4" rx="2" fill="orange-400" stroke="orange-400"/>
+<path d="M4 2H5.5V5H4Z" fill="orange-50"/>
 </g>
 </svg>
