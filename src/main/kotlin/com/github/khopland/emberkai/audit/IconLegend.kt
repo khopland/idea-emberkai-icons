@@ -83,7 +83,7 @@ internal object IconLegend {
             ),
             LegendSection(
                 "Top-right: act on it, or live now",
-                "When several apply, the most urgent wins: a secret, then a warning, then a live marker, then the accent dot. The others still appear in the tooltip and Explain This Icon.",
+                "When several apply, the most urgent wins: a secret, then a warning, then a live marker, then the accent dot. The others are still listed in the tooltip and under Recognized as in Explain This Icon.",
                 badges(BadgeSlot.ATTENTION, all),
             ),
             LegendSection(

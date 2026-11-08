@@ -37,6 +37,7 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.FlowLayout
@@ -52,7 +53,8 @@ import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JPanel
-import javax.swing.JTextField
+import javax.swing.JTextArea
+import javax.swing.UIManager
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
@@ -96,14 +98,14 @@ private class ExplainIconDialog(
 
     init {
         title = "Explain This Icon"
-        isResizable = false
+        isResizable = true
         setOKButtonText("Close")
         init()
     }
 
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
-        preferredSize = Dimension(680, 520)
+        preferredSize = Dimension(720, 560)
         add(JLabel("<html><b>${escapeXmlEntities(file.name)}</b><br>${escapeXmlEntities(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
@@ -260,12 +262,22 @@ private class ExplainIconDialog(
             insets = Insets(4, 0, 4, 0)
         }
         add(JLabel("$name:"), labelConstraints)
-        add(JTextField(value).apply {
+        // Meanings are sentences, so values wrap instead of running past the dialog's edge.
+        add(JTextArea(value).apply {
             isEditable = false
+            lineWrap = true
+            wrapStyleWord = true
             border = null
             isOpaque = false
-            caretPosition = 0
+            font = UIManager.getFont("Label.font")
+            // A text area measures its wrapped height at its current width, so give it the column's width up front.
+            size = Dimension(JBUI.scale(VALUE_WIDTH), Short.MAX_VALUE.toInt())
         }, valueConstraints)
+    }
+
+    private companion object {
+        /** The value column's width in the dialog's default size. */
+        const val VALUE_WIDTH = 520
     }
 
     private fun findArtwork(resourcePath: String): VirtualFile? {

@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.util.text.StringUtil.escapeXmlEntities
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.IconUtil
+import com.intellij.util.ui.JBUI
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.GridBagConstraints
@@ -50,7 +51,7 @@ internal class IconLegendDialog(project: Project?, private val mode: LegendMode 
                 alignmentX = Component.LEFT_ALIGNMENT
                 border = EmptyBorder(12, 0, 2, 0)
             })
-            content.add(JLabel("<html>${escapeXmlEntities(section.hint)}</html>").apply {
+            content.add(JLabel(wrapped(escapeXmlEntities(section.hint), HINT_WIDTH)).apply {
                 alignmentX = Component.LEFT_ALIGNMENT
                 border = EmptyBorder(0, 0, 4, 0)
             })
@@ -76,10 +77,18 @@ internal class IconLegendDialog(project: Project?, private val mode: LegendMode 
             }
             add(JLabel(entry.icon), cell(0))
             add(JLabel(IconUtil.scale(entry.icon, null, 2f)), cell(1))
-            add(JLabel("<html><b>${escapeXmlEntities(entry.name)}</b> — ${escapeXmlEntities(entry.meaning)}</html>").apply {
+            add(JLabel(wrapped("<b>${escapeXmlEntities(entry.name)}</b> — ${escapeXmlEntities(entry.meaning)}", MEANING_WIDTH)).apply {
                 accessibleContext.accessibleName = "${entry.name}: ${entry.meaning}"
             }, cell(2, 1.0))
         }
         maximumSize = Dimension(Int.MAX_VALUE, preferredSize.height)
+    }
+
+    private companion object {
+        // The legend opens at 620px, so prose wraps inside it rather than scrolling sideways.
+        const val HINT_WIDTH = 560
+        const val MEANING_WIDTH = 470
+
+        fun wrapped(html: String, width: Int) = "<html><body style='width: ${JBUI.scale(width)}px'>$html</body></html>"
     }
 }

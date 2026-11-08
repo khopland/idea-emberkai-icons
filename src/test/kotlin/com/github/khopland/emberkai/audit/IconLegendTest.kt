@@ -37,7 +37,9 @@ internal class IconLegendTest : BasePlatformTestCase() {
     fun testStereotypeGlyphsHaveTheirOwnColors() {
         val fills = ClassStereotype.entries.associateWith { stereotype ->
             val source = File("design/icons/stereotypes/${stereotype.name.lowercase(Locale.ROOT).replace('_', '-')}.svg")
-            FILL.findAll(source.readText()).map { it.groupValues[1] }.first { it.endsWith("-400") || it == "spring-green" }
+            val fill = FILL.findAll(source.readText()).map { it.groupValues[1] }.firstOrNull { it.endsWith("-400") || it == "spring-green" }
+            assertNotNull("${source.name} needs a -400 fill that names its stereotype color", fill)
+            fill!!
         }
         val tests = ClassStereotype.entries.filter { it.name.endsWith("_TEST") }
         assertEquals("Test stereotypes share one hue", 1, tests.map(fills::getValue).toSet().size)
