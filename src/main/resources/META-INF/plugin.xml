@@ -49,7 +49,10 @@
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
         <b>View | Emberkai Icons</b>.</p>
-        <p>Right-click any file or folder and choose <b>Explain This Icon</b> to see which rule or
+        <p>Each corner of an icon means one thing: top-left what a class does, top-right something to act on
+        or live now, bottom-left the environment, bottom-right the artwork. <b>View | Emberkai Icons | Icon Legend</b>
+        shows every mark with its meaning. Right-click a file or folder in the Project view, or an editor tab,
+        and choose <b>Explain This Icon</b> to see what its marks mean and which rule or
         mapping selected it. Project view tooltips describe recognized tool files, project roles,
         environment variants, and module accents. Run <b>Tools | Audit Project Icon Coverage</b>
         to find files that still use generic icons.</p>
@@ -151,6 +154,13 @@
         <group id="com.github.khopland.symbols.EmberkaiQuickToggles"
                text="Emberkai Icons"
                popup="true">
+            <action id="com.github.khopland.symbols.ShowIconLegend"
+                    class="com.github.khopland.emberkai.audit.ShowIconLegendAction"
+                    text="Icon Legend…"
+                    description="Show what every Emberkai badge, corner mark, and folder color means">
+                <add-to-group group-id="ToolsMenu" anchor="last"/>
+            </action>
+            <separator/>
             <group id="com.github.khopland.symbols.IconLens"
                    class="com.github.khopland.emberkai.lens.IconLensActionGroup"
                    text="Lens"
@@ -190,8 +200,9 @@
         <action id="com.github.khopland.symbols.ExplainIcon"
                 class="com.github.khopland.emberkai.audit.ExplainIconAction"
                 text="Explain This Icon"
-                description="Show which Emberkai rule or mapping selected this icon">
+                description="Show what this icon's marks mean and which Emberkai rule or mapping selected it">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
         </action>
         <action id="com.github.khopland.symbols.AssignModuleAccentColor"
                 class="com.github.khopland.emberkai.accents.AssignModuleAccentAction"

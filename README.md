@@ -24,6 +24,21 @@ File and folder icons for JetBrains IDEs, named to complement the Emberkai theme
   </tr>
 </table>
 
+## Reading the icons
+
+Each corner of a 16px icon means one thing and shows at most one mark:
+
+| Corner | Means | Examples |
+| --- | --- | --- |
+| Top-left | What a class or source file does | leaf application, square web controller, cylinder repository, flask test |
+| Top-right | Something to act on, or live now; the most urgent wins | red stop sign for an unignored secret, amber triangle for a warning, ring for a running service or active profile |
+| Bottom-left | The environment | red circle production, amber diamond staging, green triangle test, blue square local |
+| Bottom-right | Part of the artwork | Kubernetes kinds, folder glyphs, Spring Modulith locks |
+
+A colored folder is a service, a folder with a Gradle, Maven, or Node manifest; the color tells services apart and is never a status. Test stereotypes share one magenta hue, so a test never looks like production code.
+
+In the IDE, **View > Emberkai Icons > Icon Legend…** (also under **Tools**) shows every mark drawn as the Project view draws it, in the current accessibility mode. Hover a file in the Project view for a short description, or right-click it, or its editor tab, and choose **Explain This Icon** to see what each of its marks means.
+
 Java and Kotlin declarations, source files, and compiled Java classes keep their native IntelliJ icons and modifier badges. Gradle Kotlin build scripts (`*.gradle.kts`) use Gradle icons; other files and folders use Symbols icons.
 
 IntelliJ supplies visibility, static/final, runnable/test markers, read status, and registered icon layers. Nested types keep their own icons. Specialized framework providers, including live test status, take priority; methods, fields, type parameters, and package/module descriptors retain their native presentation. Java source-root integration loads only when the IDE's Java plugin is available; Kotlin's native icons come from the Kotlin plugin. Other files and folders use Symbols icons.
@@ -68,7 +83,7 @@ Each badge has a fixed corner, and each corner shows one badge, so a 16px icon n
 
 Right-click a module folder and choose **Assign Module Accent Color…** to pin its accent, or pick **Automatic** to return to the module-name default. **Tools > Reset All Module Accent Colors** clears every override. Pinned colors are stored with the project in `.idea/emberkai-module-accents.xml`.
 
-In the Project view, right-click a file or folder and choose **Explain This Icon** to see its light/dark preview, winning mapping key and source, matching context rule, and whether native icon policy or a project role took precedence. Copy the mapping key, open the artwork, or choose **Override This Icon…** to create a project-local exception. Overrides live in `.idea/emberkai-icons.properties`, can reference bundled artwork or SVGs in `.idea/emberkai-icons/`, and can be committed with the repository. **Tools > Open Icon Overrides File**, **Reload Icon Overrides**, and **Browse Bundled Icons** manage them; native IDE icons still take precedence.
+In the Project view or on an editor tab, right-click a file or folder and choose **Explain This Icon** to see its light/dark preview, what each mark on it means, the winning mapping key and source, matching context rule, and whether native icon policy or a project role took precedence. Copy the mapping key, open the artwork, or choose **Override This Icon…** to create a project-local exception. Overrides live in `.idea/emberkai-icons.properties`, can reference bundled artwork or SVGs in `.idea/emberkai-icons/`, and can be committed with the repository. **Tools > Open Icon Overrides File**, **Reload Icon Overrides**, and **Browse Bundled Icons** manage them; native IDE icons still take precedence.
 
 Hovering a file or folder in the Project view shows what Emberkai recognized, such as *Kubernetes manifest*, *Flyway versioned migration*, *Helm chart values · production*, or *Test source root · module accent: payments*. Only context rules, project roles, environment variants, module accents, project icon overrides, and a few notable path mappings are described; plain extension matches add nothing, and existing IDE tooltips are kept with the description appended. Swing exposes a tree node's tooltip as its accessible description, so screen readers announce the same text. Turn it off with **Describe recognized files and folders in Project view tooltips**. Labels live in `IconDescriptions`, keyed by mapping key.
 
@@ -146,6 +161,13 @@ Upstream files stay in `src/main/resources/symbols/`. Emberkai is gradually redr
 Local mappings take precedence over upstream mappings. A key such as `extension..github/workflows/yml` matches YAML files directly inside `.github/workflows/`, wherever the checkout is located. For a given filename or extension, the longest matching parent suffix wins. `folder.role.*` keys choose artwork for IntelliJ root/package roles. Project root roles and native-type policies take precedence over generic filename rules.
 
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. `IconResolver.recognizedCategory` feeds the `EmberkaiScopes` scopes; override `recognizesFile` when a tool's canonical filenames are drawn by static mappings but should still join its scope. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
+
+To add a badge:
+
+1. Extend `BadgedIcon`, pick its `BadgeSlot` corner, and for the top-right set an `urgency` from `BadgedIcon`'s companion.
+2. Return it from an `IconDecorator` with an `IconFact` whose `label` reads well in a tooltip, and give the decorator a setting in `IconRuleCategory`.
+3. Add a sample to `IconLegend.sampleBadges` and a name and meaning to `IconLegend.describe`. `IconLegendTest` fails until you do, so every badge can be looked up in the legend and in Explain This Icon.
+4. A new stereotype glyph needs a fill no other stereotype uses; `IconLegendTest` checks that too.
 
 To find mapping gaps across a repository corpus, run `python3 scripts/audit-icon-coverage.py /path/to/repo [another/repo]` (Python 3.10+). It reports files with no static mapping and files mapped to generic format icons, but it does not evaluate content-aware rules. Use **Tools > Audit Project Icon Coverage** in the IDE to audit the icons selected by the real resolver.
 

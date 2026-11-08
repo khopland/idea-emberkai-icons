@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.audit
 
+import com.github.khopland.emberkai.core.BadgedIcon
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconPrecedence
 import com.github.khopland.emberkai.core.IconResolution
@@ -55,7 +56,7 @@ import javax.swing.JTextField
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
-/** Project view action that describes how Emberkai selected an icon. */
+/** Project view and editor tab action that says what an icon's marks mean and how Emberkai selected it. */
 internal class ExplainIconAction : AnAction(), DumbAware {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -102,12 +103,15 @@ private class ExplainIconDialog(
 
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
-        preferredSize = Dimension(640, 400)
+        preferredSize = Dimension(680, 520)
         add(JLabel("<html><b>${escapeXmlEntities(file.name)}</b><br>${escapeXmlEntities(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
         body.add(previewPanel(), BorderLayout.NORTH)
-        body.add(detailsPanel(), BorderLayout.CENTER)
+        body.add(JPanel(BorderLayout(0, 8)).apply {
+            add(meaningPanel(), BorderLayout.NORTH)
+            add(detailsPanel(), BorderLayout.CENTER)
+        }, BorderLayout.CENTER)
         add(body, BorderLayout.CENTER)
 
         val actions = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0))
@@ -153,6 +157,9 @@ private class ExplainIconDialog(
             val key = resolution.mappingKey ?: return@addActionListener
             if (store.removeOverride(key)) close(OK_EXIT_CODE) else status.text = "Could not update the overrides file."
         }
+        val legend = JButton("Icon Legend…")
+        legend.addActionListener { IconLegendDialog(project).show() }
+        actions.add(legend)
         actions.add(copyKey)
         actions.add(revealArtwork)
         actions.add(override)
@@ -186,7 +193,25 @@ private class ExplainIconDialog(
             add(image, BorderLayout.CENTER)
         }
 
+    /** What the user sees: each painted mark by corner, then everything Emberkai recognized. */
+    private fun meaningPanel(): JComponent = JPanel(GridBagLayout()).apply {
+        border = BorderFactory.createTitledBorder("What it means")
+        val marks = generateSequence(resolution.icon as? BadgedIcon) { it.baseIcon as? BadgedIcon }
+            .sortedBy { it.slot }
+            .toList()
+        for (mark in marks) {
+            val (name, meaning) = IconLegend.describe(mark)
+            addRow("${mark.slot.displayName} mark", "$name: $meaning")
+        }
+        stereotype?.let { addRow("Stereotype badge", it.describe()) }
+        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
+        if (getComponentCount() == 0) {
+            addRow("Marks", "None. The icon is the artwork for this file type or folder.")
+        }
+    }
+
     private fun detailsPanel(): JComponent = JPanel(GridBagLayout()).apply {
+        border = BorderFactory.createTitledBorder("How it was chosen")
         val mapping = resolution.mappingKey ?: "No Emberkai mapping"
         val source = resolution.mappingSource?.displayName ?: "None; the IDE supplies the icon"
         val contextRule = resolution.contextRule?.displayName ?: "None"
@@ -197,14 +222,12 @@ private class ExplainIconDialog(
         } else {
             "Did not take precedence"
         }
-        IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         addRow("Resolution", "${resolution.precedence.displayName}: ${resolution.detail}")
         addRow("Mapping key", mapping)
         addRow("Mapping source", source)
         addRow("Context rule", contextRule)
         addRow("Native policy", nativePolicy)
         addRow("Project role", projectRole)
-        stereotype?.let { addRow("Stereotype badge", it.describe()) }
         ownership?.let {
             addRow(
                 "Code owners",

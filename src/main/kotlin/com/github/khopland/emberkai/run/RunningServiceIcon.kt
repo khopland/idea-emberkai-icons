@@ -54,7 +54,8 @@ internal class RunningServiceIcon(
 
     private companion object {
         val RUNNING: Color = JBColor(Color(0x15, 0x80, 0x3D), Color(0x4A, 0xDE, 0x80))
-        val DEBUG: Color = JBColor(Color(0xB4, 0x53, 0x09), Color(0xFB, 0xBF, 0x24))
+        // Violet, not amber, so a debug session never reads as a warning.
+        val DEBUG: Color = JBColor(Color(0x6D, 0x28, 0xD9), Color(0xA7, 0x8B, 0xFA))
         val INK: Color = JBColor(Color(0x0F, 0x17, 0x2A), Color(0xE2, 0xE8, 0xF0))
         val HALO: Color = JBColor(Color.WHITE, Color(0x1E, 0x1F, 0x22))
     }

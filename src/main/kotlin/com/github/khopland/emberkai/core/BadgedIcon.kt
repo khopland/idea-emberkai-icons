@@ -14,18 +14,18 @@ import javax.swing.Icon
  * 16px icon never carries more than the artwork and two small marks. Native Java and Kotlin class
  * icons keep the top-left corner for their own marks and class stereotypes.
  */
-internal enum class BadgeSlot {
+internal enum class BadgeSlot(val displayName: String, val meaning: String) {
     /** Top-left: the role a source file plays, such as a controller, on artwork that is not a native class icon. */
-    ROLE,
+    ROLE("Top-left", "What a class or source file does, such as a web controller or a test."),
 
     /** Top-right: the one thing to act on or that is live now; the most urgent badge wins. */
-    ATTENTION,
+    ATTENTION("Top-right", "Something to act on, or something live now. The most urgent one wins."),
 
     /** Bottom-left: the environment a configuration file or folder belongs to. */
-    ENVIRONMENT,
+    ENVIRONMENT("Bottom-left", "The environment a configuration file or folder belongs to."),
 
     /** Bottom-right: part of the artwork, where Symbols folder glyphs and Kubernetes kinds already sit. */
-    ARTWORK,
+    ARTWORK("Bottom-right", "Part of the artwork, such as a Kubernetes kind or a folder's glyph."),
 }
 
 /**
