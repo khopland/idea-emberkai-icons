@@ -37,6 +37,7 @@ import com.intellij.openapi.vfs.JarFileSystem
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiManager
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -55,6 +56,7 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextArea
 import javax.swing.UIManager
+import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 import javax.swing.border.EmptyBorder
 
@@ -105,7 +107,7 @@ private class ExplainIconDialog(
 
     override fun createCenterPanel(): JComponent = JPanel(BorderLayout(0, 12)).apply {
         border = EmptyBorder(12, 16, 8, 16)
-        preferredSize = Dimension(720, 560)
+        preferredSize = JBUI.size(720, 560)
         add(JLabel("<html><b>${escapeXmlEntities(file.name)}</b><br>${escapeXmlEntities(file.path)}</html>"), BorderLayout.NORTH)
 
         val body = JPanel(BorderLayout(0, 12))
@@ -114,7 +116,12 @@ private class ExplainIconDialog(
             add(meaningPanel(), BorderLayout.NORTH)
             add(detailsPanel(), BorderLayout.CENTER)
         }, BorderLayout.CENTER)
-        add(body, BorderLayout.CENTER)
+        // Wrapped values can outgrow the default height; scroll rather than cut off the bottom rows.
+        add(JBScrollPane(body).apply {
+            border = null
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            verticalScrollBar.unitIncrement = 16
+        }, BorderLayout.CENTER)
 
         val actions = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0))
         val copyKey = JButton("Copy mapping key")

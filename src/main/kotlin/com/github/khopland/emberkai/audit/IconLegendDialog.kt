@@ -58,7 +58,7 @@ internal class IconLegendDialog(project: Project?, private val mode: LegendMode 
             content.add(entries(section.entries))
         }
         return JBScrollPane(content).apply {
-            preferredSize = Dimension(620, 560)
+            preferredSize = JBUI.size(620, 560)
             border = null
             verticalScrollBar.unitIncrement = 16
         }
