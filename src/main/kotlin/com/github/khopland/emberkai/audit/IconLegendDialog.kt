@@ -30,7 +30,7 @@ internal class ShowIconLegendAction : AnAction(), DumbAware {
 }
 
 /** Every mark, grouped by corner, at its real 16px size and enlarged so its shape is easy to learn. */
-internal class IconLegendDialog(project: Project?) : DialogWrapper(project) {
+internal class IconLegendDialog(project: Project?, private val mode: LegendMode = LegendMode.current()) : DialogWrapper(project) {
     init {
         title = "Emberkai Icon Legend"
         setOKButtonText("Close")
@@ -44,7 +44,7 @@ internal class IconLegendDialog(project: Project?) : DialogWrapper(project) {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
             border = EmptyBorder(8, 12, 8, 12)
         }
-        for (section in IconLegend.sections()) {
+        for (section in IconLegend.sections(mode)) {
             if (section.entries.isEmpty()) continue
             content.add(JLabel("<html><b>${escapeXmlEntities(section.title)}</b></html>").apply {
                 alignmentX = Component.LEFT_ALIGNMENT

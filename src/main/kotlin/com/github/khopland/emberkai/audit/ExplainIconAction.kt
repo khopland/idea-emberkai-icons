@@ -203,7 +203,11 @@ private class ExplainIconDialog(
             val (name, meaning) = IconLegend.describe(mark)
             addRow("${mark.slot.displayName} mark", "$name: $meaning")
         }
-        stereotype?.let { addRow("Stereotype badge", it.describe()) }
+        // Java and Kotlin stereotypes come from icon layers, not the badge chain above.
+        stereotype?.let { row ->
+            val meaning = row.match?.let { ". " + IconLegend.stereotypeMeaning(it.stereotype) }.orEmpty()
+            addRow("Top-left mark", row.describe() + meaning)
+        }
         IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         if (getComponentCount() == 0) {
             addRow("Marks", "None. The icon is the artwork for this file type or folder.")

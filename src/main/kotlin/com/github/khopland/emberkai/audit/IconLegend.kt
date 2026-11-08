@@ -12,6 +12,7 @@ import com.github.khopland.emberkai.core.BadgeSlot
 import com.github.khopland.emberkai.core.BadgedIcon
 import com.github.khopland.emberkai.core.IconMappings
 import com.github.khopland.emberkai.folders.FolderIconPalette
+import com.github.khopland.emberkai.folders.ServiceFolderIconStyle
 import com.github.khopland.emberkai.node.StereotypeBadgeIcon
 import com.github.khopland.emberkai.run.RunningServiceIcon
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
@@ -28,19 +29,38 @@ internal data class LegendEntry(val icon: Icon, val name: String, val meaning: S
 /** The marks that share one corner, or another group such as folder colors. */
 internal data class LegendSection(val title: String, val hint: String, val entries: List<LegendEntry>)
 
+/** The folder and accessibility options the legend draws with: saved settings, or the settings page's unsaved ones. */
+internal data class LegendMode(
+    val palette: FolderIconPalette,
+    val highContrast: Boolean,
+    val monochrome: Boolean,
+    val reducedFolderColor: Boolean,
+) {
+    /** Warning and secret badges turn ink in either mode, as their decorators draw them. */
+    val contrast: Boolean get() = highContrast || monochrome
+
+    companion object {
+        fun current(): LegendMode = EmberkaiIconsSettings.getInstance().let {
+            LegendMode(it.serviceFolderPalette, it.highContrastFolderIcons, it.monochromeFolderIcons, it.reducedFolderColor)
+        }
+    }
+}
+
 /**
  * Every mark Emberkai paints, drawn with the real badge classes over neutral artwork, so the legend
  * shows exactly what the Project view does in the current accessibility mode. [describe] names a
  * single badge for Explain This Icon from the same text.
  */
 internal object IconLegend {
-    fun sections(): List<LegendSection> {
-        val settings = EmberkaiIconsSettings.getInstance()
-        val contrast = settings.highContrastFolderIcons || settings.monochromeFolderIcons
+    fun sections(mode: LegendMode = LegendMode.current()): List<LegendSection> {
+        val contrast = mode.contrast
         val file = IconMappings.get("extension.yaml") ?: AllIcons.FileTypes.Text
         val folder = IconMappings.get("folder") ?: AllIcons.Nodes.Folder
         val badges = { slot: BadgeSlot, icons: List<BadgedIcon> -> icons.filter { it.slot == slot }.map(::entry) }
-        val all = sampleBadges(file, folder, contrast, settings.highContrastFolderIcons, settings.monochromeFolderIcons)
+        val all = sampleBadges(file, folder, contrast, mode.highContrast, mode.monochrome, mode.palette)
+        val service = mode.palette.colors.first().iconKey.let {
+            ServiceFolderIconStyle.styleKey(it, mode.palette, mode.highContrast, mode.monochrome, mode.reducedFolderColor)
+        }
         return listOf(
             LegendSection(
                 "Corners",
@@ -78,15 +98,26 @@ internal object IconLegend {
             ),
             LegendSection(
                 "Folder colors",
-                "Color names a service; it is never a status.",
+                "A colored outline marks a source, test, or resources root. A colored fill or dot marks a service " +
+                    "or module and tells them apart. Folder color is never a status.",
                 listOfNotNull(
-                    IconMappings.get(FolderIconPalette.EMBERKAI.colors.first().iconKey)?.let {
-                        LegendEntry(it, "Service folder", "Holds a Gradle, Maven, or Node package manifest. Each service gets its own color.")
-                    },
+                    folderEntry("folder.role.source", "Source root", "Blue outline: production code."),
+                    folderEntry("folder.role.test-source", "Test source root", "Green outline: test code."),
+                    folderEntry("folder.role.resources", "Resources root", "Amber outline: resources shipped with the code."),
+                    folderEntry("folder.role.test-resources", "Test resources root", "Amber and green outline: resources for tests."),
+                    folderEntry(
+                        service,
+                        "Service folder",
+                        "Holds a Gradle, Maven, or Node package manifest." +
+                            if (mode.monochrome) "" else " Each service gets its own color.",
+                    ),
                 ),
             ),
         )
     }
+
+    private fun folderEntry(key: String, name: String, meaning: String): LegendEntry? =
+        IconMappings.get(key)?.let { LegendEntry(it, name, meaning) }
 
     /** One of every badge class, in the order the legend lists them: most urgent first within a corner. */
     internal fun sampleBadges(
@@ -95,6 +126,7 @@ internal object IconLegend {
         contrast: Boolean,
         highContrast: Boolean,
         monochrome: Boolean,
+        palette: FolderIconPalette = FolderIconPalette.EMBERKAI,
     ): List<BadgedIcon> =
         ClassStereotype.entries.map { StereotypeBadgeIcon(AllIcons.Nodes.Class, it) } +
             listOf(
@@ -106,7 +138,7 @@ internal object IconLegend {
                 ActiveSpringProfileIcon(file, highContrast, monochrome),
                 RunningServiceIcon(folder, debug = false, highContrast, monochrome),
                 RunningServiceIcon(folder, debug = true, highContrast, monochrome),
-                ModuleAccentIcon(folder, FolderIconPalette.EMBERKAI.colors.first()),
+                ModuleAccentIcon(folder, palette.colors.first()),
             ) +
             EnvironmentVariant.entries.map { EnvironmentVariantBadgeIcon(file, it) } +
             ModulithLock.entries.map { ModulithFolderIcon(folder, it) }
@@ -148,7 +180,7 @@ internal object IconLegend {
         else -> badge.javaClass.simpleName to "Undocumented badge."
     }
 
-    private fun stereotypeMeaning(stereotype: ClassStereotype): String = when (stereotype) {
+    fun stereotypeMeaning(stereotype: ClassStereotype): String = when (stereotype) {
         ClassStereotype.APPLICATION -> "Leaf: the application's entry point, such as @SpringBootApplication."
         ClassStereotype.WEB -> "Square: handles HTTP requests, such as @RestController, JAX-RS @Path, or a Next.js route."
         ClassStereotype.LISTENER -> "Envelope: consumes messages, such as @KafkaListener or @RabbitListener."

@@ -3,6 +3,7 @@ package com.github.khopland.emberkai.settings
 import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.accents.ModuleAccentIcon
 import com.github.khopland.emberkai.audit.IconLegendDialog
+import com.github.khopland.emberkai.audit.LegendMode
 import com.github.khopland.emberkai.badges.EnvironmentVariant
 import com.github.khopland.emberkai.badges.EnvironmentVariantBadgeIcon
 import com.github.khopland.emberkai.badges.UnignoredSecretBadgeIcon
@@ -167,7 +168,7 @@ class EmberkaiIconsConfigurable : Configurable {
             accessibleContext.accessibleDescription = "Example project tree showing how current icon options will look."
         }
         root.add(previewPanel)
-        root.add(ActionLink("What do the marks mean? Open the icon legend") { IconLegendDialog(null).show() }.apply {
+        root.add(ActionLink("What do the marks mean? Open the icon legend") { IconLegendDialog(null, previewLegendMode()).show() }.apply {
             alignmentX = Component.LEFT_ALIGNMENT
         })
 
@@ -516,6 +517,14 @@ class EmberkaiIconsConfigurable : Configurable {
         panel.revalidate()
         panel.repaint()
     }
+
+    /** The legend in the folder and accessibility options the form shows, applied or not. */
+    private fun previewLegendMode() = LegendMode(
+        palette = selectedPalette() ?: FolderIconPalette.EMBERKAI,
+        highContrast = isChecked(State::highContrastFolderIcons, false),
+        monochrome = isChecked(State::monochromeFolderIcons, false),
+        reducedFolderColor = isChecked(State::reducedFolderColor, false),
+    )
 
     private fun previewServiceIconKey(settings: PreviewSettings): String {
         val color = if (settings.moduleAware) {
