@@ -204,9 +204,8 @@ private class ExplainIconDialog(
             addRow("${mark.slot.displayName} mark", "$name: $meaning")
         }
         // Java and Kotlin stereotypes come from icon layers, not the badge chain above.
-        stereotype?.let { row ->
-            val meaning = row.match?.let { ". " + IconLegend.stereotypeMeaning(it.stereotype) }.orEmpty()
-            addRow("Top-left mark", row.describe() + meaning)
+        stereotype?.takeIf { it.match != null }?.let { row ->
+            addRow("Top-left mark", row.describe() + ". " + IconLegend.stereotypeMeaning(row.match!!.stereotype))
         }
         IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         if (getComponentCount() == 0) {
@@ -232,6 +231,7 @@ private class ExplainIconDialog(
         addRow("Context rule", contextRule)
         addRow("Native policy", nativePolicy)
         addRow("Project role", projectRole)
+        stereotype?.takeIf { it.match == null }?.let { addRow("Stereotype badge", it.describe()) }
         ownership?.let {
             addRow(
                 "Code owners",

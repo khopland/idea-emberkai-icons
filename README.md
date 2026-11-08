@@ -31,11 +31,11 @@ Each corner of a 16px icon means one thing and shows at most one mark:
 | Corner | Means | Examples |
 | --- | --- | --- |
 | Top-left | What a class or source file does | leaf application, square web controller, cylinder repository, flask test |
-| Top-right | Something to act on, or live now; the most urgent wins | red stop sign for an unignored secret, amber triangle for a warning, ring for a running service or active profile |
+| Top-right | Something to act on, or live now; the most urgent wins | red stop sign for an unignored secret, amber triangle for a warning, ring for a running service or active profile, dot for the module accent |
 | Bottom-left | The environment | red circle production, amber diamond staging, green triangle test, blue square local |
 | Bottom-right | Part of the artwork | Kubernetes kinds, folder glyphs, Spring Modulith locks |
 
-A colored outline marks a source (blue), test (green), or resources (amber) root. A colored fill or dot marks a service, a folder with a Gradle, Maven, or Node manifest, or a module, and tells them apart. Folder color is never a status. Test stereotypes share one magenta hue, so a test never looks like production code.
+A colored outline marks a source, test, or resources root (blue, green, and amber in the default artwork colors). A colored fill or dot marks a service, a folder with a Gradle, Maven, or Node manifest, or a module, and tells them apart. Folder color is never a status. Test stereotypes share one magenta hue, so a test never looks like production code.
 
 In the IDE, **View > Emberkai Icons > Icon Legend…** (also under **Tools**) shows every mark drawn as the Project view draws it, in the current accessibility mode. Hover a file in the Project view for a short description, or right-click it, or its editor tab, and choose **Explain This Icon** to see what each of its marks means.
 

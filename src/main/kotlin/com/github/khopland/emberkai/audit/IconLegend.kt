@@ -83,7 +83,7 @@ internal object IconLegend {
             ),
             LegendSection(
                 "Top-right: act on it, or live now",
-                "When several apply, the first in this list wins; the others still appear in the tooltip and Explain This Icon.",
+                "When several apply, the most urgent wins: a secret, then a warning, then a live marker, then the accent dot. The others still appear in the tooltip and Explain This Icon.",
                 badges(BadgeSlot.ATTENTION, all),
             ),
             LegendSection(
@@ -101,10 +101,10 @@ internal object IconLegend {
                 "A colored outline marks a source, test, or resources root. A colored fill or dot marks a service " +
                     "or module and tells them apart. Folder color is never a status.",
                 listOfNotNull(
-                    folderEntry("folder.role.source", "Source root", "Blue outline: production code."),
-                    folderEntry("folder.role.test-source", "Test source root", "Green outline: test code."),
-                    folderEntry("folder.role.resources", "Resources root", "Amber outline: resources shipped with the code."),
-                    folderEntry("folder.role.test-resources", "Test resources root", "Amber and green outline: resources for tests."),
+                    folderEntry("folder.role.source", "Source root", "Outlined in the source color: production code."),
+                    folderEntry("folder.role.test-source", "Test source root", "Outlined in the test color: test code."),
+                    folderEntry("folder.role.resources", "Resources root", "Outlined in the resources color: files shipped with the code."),
+                    folderEntry("folder.role.test-resources", "Test resources root", "Resources and test colors together: files for tests."),
                     folderEntry(
                         service,
                         "Service folder",

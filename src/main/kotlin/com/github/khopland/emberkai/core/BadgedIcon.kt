@@ -19,7 +19,7 @@ internal enum class BadgeSlot(val displayName: String, val meaning: String) {
     ROLE("Top-left", "What a class or source file does, such as a web controller or a test."),
 
     /** Top-right: the one thing to act on or that is live now; the most urgent badge wins. */
-    ATTENTION("Top-right", "Something to act on, or something live now. The most urgent one wins."),
+    ATTENTION("Top-right", "Something to act on, something live now, or the module's accent dot. The most urgent one wins."),
 
     /** Bottom-left: the environment a configuration file or folder belongs to. */
     ENVIRONMENT("Bottom-left", "The environment a configuration file or folder belongs to."),
