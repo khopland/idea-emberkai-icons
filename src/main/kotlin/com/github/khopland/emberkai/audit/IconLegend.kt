@@ -56,6 +56,7 @@ internal object IconLegend {
         val contrast = mode.contrast
         val file = IconMappings.get("extension.yaml") ?: AllIcons.FileTypes.Text
         val folder = IconMappings.get("folder") ?: AllIcons.Nodes.Folder
+        val source = IconMappings.get("extension.ts") ?: file
         val badges = { slot: BadgeSlot, icons: List<BadgedIcon> -> icons.filter { it.slot == slot }.map(::entry) }
         val all = sampleBadges(file, folder, contrast, mode.highContrast, mode.monochrome, mode.palette)
         val service = mode.palette.colors.first().iconKey.let {
@@ -66,7 +67,7 @@ internal object IconLegend {
                 "Corners",
                 "Each corner of a 16px icon means one thing and shows at most one mark.",
                 listOf(
-                    LegendEntry(StereotypeBadgeIcon(AllIcons.Nodes.Class, ClassStereotype.WEB), "Top-left", BadgeSlot.ROLE.meaning),
+                    LegendEntry(StereotypeBadgeIcon(source, ClassStereotype.WEB), "Top-left", BadgeSlot.ROLE.meaning),
                     LegendEntry(UnignoredSecretBadgeIcon(file, contrast), "Top-right", BadgeSlot.ATTENTION.meaning),
                     LegendEntry(EnvironmentVariantBadgeIcon(file, EnvironmentVariant.PRODUCTION), "Bottom-left", BadgeSlot.ENVIRONMENT.meaning),
                     LegendEntry(
@@ -77,8 +78,13 @@ internal object IconLegend {
                 ),
             ),
             LegendSection(
-                "Top-left: what a class or file does",
-                "On Java and Kotlin class icons and on TypeScript and JavaScript files. Entry points come first.",
+                "Class icons: what a class does",
+                "A Java or Kotlin class with a role shows it in place of the native class icon, under the IDE's own marks. Entry points come first.",
+                ClassStereotype.entries.map { LegendEntry(it.classIcon, it.displayName, stereotypeMeaning(it)) },
+            ),
+            LegendSection(
+                "Top-left: what a source file does",
+                "The same roles as a small glyph on TypeScript and JavaScript file icons.",
                 badges(BadgeSlot.ROLE, all),
             ),
             LegendSection(
@@ -128,7 +134,7 @@ internal object IconLegend {
         monochrome: Boolean,
         palette: FolderIconPalette = FolderIconPalette.EMBERKAI,
     ): List<BadgedIcon> =
-        ClassStereotype.entries.map { StereotypeBadgeIcon(AllIcons.Nodes.Class, it) } +
+        ClassStereotype.entries.map { StereotypeBadgeIcon(IconMappings.get("extension.ts") ?: file, it) } +
             listOf(
                 UnignoredSecretBadgeIcon(file, contrast),
                 MigrationConflictBadgeIcon(file, contrast),
@@ -181,18 +187,18 @@ internal object IconLegend {
     }
 
     fun stereotypeMeaning(stereotype: ClassStereotype): String = when (stereotype) {
-        ClassStereotype.APPLICATION -> "Leaf: the application's entry point, such as @SpringBootApplication."
-        ClassStereotype.WEB -> "Square: handles HTTP requests, such as @RestController, JAX-RS @Path, or a Next.js route."
-        ClassStereotype.LISTENER -> "Envelope: consumes messages, such as @KafkaListener or @RabbitListener."
-        ClassStereotype.SCHEDULED -> "Hourglass: runs on a schedule, such as @Scheduled or NestJS @Cron."
-        ClassStereotype.CLIENT -> "Arrow tag: calls another service over HTTP, such as @FeignClient."
-        ClassStereotype.REPOSITORY -> "Cylinder: reads and writes a database, such as a Spring Data repository."
-        ClassStereotype.SERVICE -> "Ring: business logic, such as @Service or @Injectable."
-        ClassStereotype.CONFIGURATION -> "Toggle: configuration, such as @Configuration or @ConfigurationProperties."
-        ClassStereotype.ENTITY -> "Cube: a persistent entity, such as @Entity or MongoDB @Document."
-        ClassStereotype.CONTAINER_TEST -> "Shipping container: a test that starts containers, such as @Testcontainers."
-        ClassStereotype.APPLICATION_TEST -> "Flask: a test that starts the whole application, such as @SpringBootTest."
-        ClassStereotype.SLICE_TEST -> "Test tube: a test that starts part of it, such as @WebMvcTest or @DataJpaTest."
+        ClassStereotype.APPLICATION -> "The application's entry point, such as @SpringBootApplication."
+        ClassStereotype.WEB -> "Handles HTTP requests, such as @RestController, JAX-RS @Path, or a Next.js route."
+        ClassStereotype.LISTENER -> "Consumes messages, such as @KafkaListener or @RabbitListener."
+        ClassStereotype.SCHEDULED -> "Runs on a schedule, such as @Scheduled or NestJS @Cron."
+        ClassStereotype.CLIENT -> "Calls another service over HTTP, such as @FeignClient."
+        ClassStereotype.REPOSITORY -> "Reads and writes a database, such as a Spring Data repository."
+        ClassStereotype.SERVICE -> "Business logic, such as @Service or @Injectable."
+        ClassStereotype.CONFIGURATION -> "Configuration, such as @Configuration or @ConfigurationProperties."
+        ClassStereotype.ENTITY -> "A persistent entity, such as @Entity or MongoDB @Document."
+        ClassStereotype.CONTAINER_TEST -> "A test that starts containers, such as @Testcontainers."
+        ClassStereotype.APPLICATION_TEST -> "A test that starts the whole application, such as @SpringBootTest."
+        ClassStereotype.SLICE_TEST -> "A test that starts part of it, such as @WebMvcTest or @DataJpaTest."
     }
 
     private fun environmentName(variant: EnvironmentVariant): String =

@@ -31,7 +31,6 @@ import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
-import com.intellij.ui.LayeredIcon
 import com.intellij.ui.components.ActionLink
 import com.intellij.ui.components.JBTextField
 import java.awt.BorderLayout
@@ -455,7 +454,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val javaIcon = when {
             !isChecked(State::preserveNativeJavaKotlinIcons, true) -> IconMappings.get("extension.java")
             isEnabled(IconRuleCategory.STEREOTYPE_BADGES) ->
-                LayeredIcon.layeredIcon(arrayOf(AllIcons.Nodes.Class, ClassStereotype.APPLICATION.icon))
+                ClassStereotype.APPLICATION.classIcon
             else -> AllIcons.Nodes.Class
         }
         packageNode.add(DefaultMutableTreeNode(PreviewItem("Application.java", javaIcon)))

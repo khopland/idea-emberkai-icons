@@ -1,5 +1,6 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="1.5" y="2.5" width="13" height="11" rx="2.5" fill="slate-800" stroke="$outline-strong"/>
-<path d="M4 6h2v1h-2zM5 7h2v1h-2zM6 8h2v1h-2zM5 9h2v1h-2zM4 10h2v1h-2z" fill="teal-400"/>
-<path d="M9 10h4v1h-4z" fill="slate-100"/>
+<rect x="1" y="2" width="14" height="12" rx="3" fill="$night"/>
+<path d="M15 5V11A3 3 0 0 1 12 14H6Z" fill="$night-deep"/>
+<path d="M4 5.75L6.5 8L4 10.25" stroke="teal-400" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M8.5 10.5H12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
 </svg>

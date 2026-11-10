@@ -1,8 +1,8 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g data-theme="light">
 <circle cx="3.5" cy="3.5" r="3" stroke="white" stroke-width="3"/>
-<circle cx="3.5" cy="3.5" r="3" fill="pink-400" stroke="slate-800"/>
-<rect x="2.5" y="2.5" width="2" height="2" fill="pink-100" stroke="slate-800"/>
+<circle cx="3.5" cy="3.5" r="3" fill="pink-400" stroke="pink-700"/>
+<rect x="2.5" y="2.5" width="2" height="2" fill="pink-100" stroke="pink-700"/>
 </g>
 <g data-theme="dark">
 <circle cx="3.5" cy="3.5" r="3" stroke="ide-dark-background" stroke-width="3"/>
