@@ -1,21 +1,28 @@
 package com.github.khopland.emberkai.stereotypes
 
+import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.settings.isEnabled
+import com.intellij.ide.IconProvider
+import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiCompiledElement
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiModifier
 import com.intellij.psi.PsiTypeParameter
+import com.intellij.psi.impl.ElementPresentationUtil
 import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.ui.IconManager
+import javax.swing.Icon
 
 /** Reads Java class annotations and imports from stubs; registered only when the Java plugin is present. */
 internal class JavaClassStereotypeSupport : ClassStereotypeSupport {
-    // JavaFileIconPatcher draws a file with the badged class icon, so only classes get the layer.
+    // JavaFileIconPatcher draws a file with its class's icon, so only classes are matched here.
     override fun badgeFor(element: PsiElement): StereotypeMatch? =
         (element as? PsiClass)?.let(::stereotypeOf)
 
@@ -29,8 +36,6 @@ internal class JavaClassStereotypeSupport : ClassStereotypeSupport {
     private fun stereotypeOf(psiClass: PsiClass): StereotypeMatch? {
         // Kotlin light classes and compiled classes would need analysis or decompilation.
         if (psiClass is PsiCompiledElement || psiClass is PsiTypeParameter) return null
-        // The badge shares the top-left corner with Java's final mark; the native mark wins.
-        if (psiClass.hasModifierProperty(PsiModifier.FINAL)) return null
         val file = psiClass.containingFile as? PsiJavaFile ?: return null
         if (file is PsiCompiledElement) return null
         return CachedValuesManager.getCachedValue(psiClass, CACHE) {
@@ -66,5 +71,21 @@ internal class JavaClassStereotypeSupport : ClassStereotypeSupport {
 
     private companion object {
         val CACHE = Key.create<CachedValue<StereotypeMatch?>>("emberkai.javaStereotype")
+    }
+}
+
+/**
+ * Builds a stereotyped Java class's icon the way the platform builds the native one, with the
+ * stereotype's icon in place of the type icon, so the abstract, final, static, runnable, and test
+ * marks and the visibility column stay exactly as they were.
+ */
+internal class JavaStereotypeIconProvider : IconProvider(), DumbAware {
+    override fun getIcon(element: PsiElement, flags: Int): Icon? {
+        if (element !is PsiClass) return null
+        if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) return null
+        val stereotype = ClassStereotypes.badgeFor(element)?.stereotype ?: return null
+        val marked = IconManager.getInstance()
+            .createLayeredIcon(element, stereotype.classIcon, ElementPresentationUtil.getFlags(element, false))
+        return ElementPresentationUtil.addVisibilityIcon(element, flags, marked)
     }
 }

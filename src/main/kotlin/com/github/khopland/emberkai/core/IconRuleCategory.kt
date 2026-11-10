@@ -25,7 +25,7 @@ internal enum class IconRuleCategory(val displayName: String, val group: Categor
     ENVIRONMENT_VARIANTS("Environment variant badges", CategoryGroup.MARKERS),
     UNIGNORED_SECRETS("Unignored secret warning badges", CategoryGroup.WARNINGS),
     ACTIVE_SPRING_PROFILES("Active Spring profile markers", CategoryGroup.MARKERS),
-    STEREOTYPE_BADGES("Class stereotype badges", CategoryGroup.MARKERS),
+    STEREOTYPE_BADGES("Class stereotype icons", CategoryGroup.MARKERS),
     MIGRATION_CONFLICTS("Migration version conflict badges", CategoryGroup.WARNINGS),
     RUNNING_SERVICES("Running-service markers", CategoryGroup.MARKERS),
     LOCKFILE_DRIFT("Lockfile drift badges", CategoryGroup.WARNINGS),

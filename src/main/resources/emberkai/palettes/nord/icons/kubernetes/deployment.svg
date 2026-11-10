@@ -1,6 +1,7 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs><mask id="k8s-badge-cut"><rect width="16" height="16" fill="#FFFFFF"/><rect x="5" y="5" width="12" height="12" rx="3" fill="#000000"/></mask></defs>
-<g mask="url(#k8s-badge-cut)"><g transform="translate(-1.13 -1.13) scale(0.64)"><path d="M12.00 2.40 L19.51 6.01 L21.36 14.14 L16.17 20.65 L7.83 20.65 L2.64 14.14 L4.49 6.01Z" fill="#7DA6D8" stroke="#316FB6" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="12" r="4.6" stroke="#1E426B" stroke-width="2"/><path d="M12 12L12.00 5.40M12 12L17.16 7.88M12 12L18.43 13.47M12 12L14.86 17.95M12 12L9.14 17.95M12 12L5.57 13.47M12 12L6.84 7.88" stroke="#1E426B" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="1.9" fill="#F1F5FB"/></g></g>
-<rect x="6.5" y="6.5" width="9" height="9" rx="2" fill="#A9D085" stroke="#101728"/>
-<path d="M9.5 8.25L14 11L9.5 13.75Z" fill="#101728" stroke="#101728" stroke-width="1" stroke-linejoin="round"/>
+<defs><mask id="k8s-badge-cut"><rect width="16" height="16" fill="#FFFFFF"/><rect x="5" y="5" width="12" height="12" rx="3.5" fill="#000000"/></mask></defs>
+<g mask="url(#k8s-badge-cut)"><g transform="translate(-1.13 -1.13) scale(0.64)"><path d="M12.00 2.40 L19.51 6.01 L21.36 14.14 L16.17 20.65 L7.83 20.65 L2.64 14.14 L4.49 6.01Z" fill="#5387C7" stroke="#5387C7" stroke-width="1.2" stroke-linejoin="round"/><circle cx="12" cy="12" r="4.6" stroke="#FFFFFF" stroke-width="2"/><path d="M12 12L12.00 5.40M12 12L17.16 7.88M12 12L18.43 13.47M12 12L14.86 17.95M12 12L9.14 17.95M12 12L5.57 13.47M12 12L6.84 7.88" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="1.9" fill="#FFFFFF"/></g></g>
+<rect x="6" y="6" width="10" height="10" rx="2.5" fill="#8FB769"/>
+<path d="M16 9.5V13.5A2.5 2.5 0 0 1 13.5 16H9.5Z" fill="#759754"/>
+<path d="M9.5 8.25L14 11L9.5 13.75Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="1" stroke-linejoin="round"/>
 </svg>

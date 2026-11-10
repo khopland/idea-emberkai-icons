@@ -8,6 +8,7 @@ import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.EmberkaiScope
 import com.github.khopland.emberkai.settings.setEnabled
 import com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator
+import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
 import com.intellij.ide.projectView.impl.nodes.ClassTreeNode
@@ -23,6 +24,7 @@ import com.intellij.ui.DeferredIcon
 import com.intellij.ui.IconManager
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.RowIcon
+import org.jetbrains.kotlin.idea.KotlinIcons
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.kotlin.psi.KtFile
 import javax.swing.Icon
@@ -215,12 +217,12 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         assertNull(ClassStereotypes.fileStereotype(lookalike))
 
         val psiClass = (slice as PsiJavaFile).classes.single()
-        assertTrue(ClassStereotype.SLICE_TEST.icon in layers(psiClass.getIcon(Iconable.ICON_FLAG_VISIBILITY)))
+        assertTrue(ClassStereotype.SLICE_TEST.classIcon in layers(psiClass.getIcon(Iconable.ICON_FLAG_VISIBILITY)))
         for (file in listOf(application, slice, containers)) {
             assertFalse("Tests are not entry points", EmberkaiScope.ENTRY_POINTS.contains(file.virtualFile, project))
         }
         assertEquals(
-            "Test slice from @WebMvcTest; shown on the native class icon",
+            "Test slice from @WebMvcTest; shown as the class icon",
             StereotypeRow(ClassStereotypes.fileStereotype(slice)).describe(),
         )
     }
@@ -242,24 +244,25 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         assertJava(null, "import org.springframework.stereotype.*;", "@Deprecated")
     }
 
-    fun testJavaClassIconKeepsNativeLayersAndAddsTheBadge() {
+    fun testJavaClassIconSwapsTheTypeIconAndKeepsNativeMarks() {
         val psiClass = javaFile(
             "OrderService", "import org.springframework.stereotype.Service;", "@Service public class OrderService {}",
         ).classes.single()
         val layers = layers(psiClass.getIcon(Iconable.ICON_FLAG_VISIBILITY))
-        assertTrue(layers.toString(), ClassStereotype.SERVICE.icon in layers)
-        assertTrue("The native class icon should stay underneath", layers.size > 1)
-        assertEquals(1, layers.count { it === ClassStereotype.SERVICE.icon })
-        assertTrue("Editor tabs use the file icon", ClassStereotype.SERVICE.icon in layers(psiClass.containingFile.getIcon(0)))
+        assertEquals("The stereotype icon replaces the type icon", ClassStereotype.SERVICE.classIcon, layers.first())
+        assertTrue("The visibility column should stay", layers.size > 1)
+        assertTrue("The native class icon is gone", AllIcons.Nodes.Class !in layers)
+        assertTrue("Editor tabs use the file icon", ClassStereotype.SERVICE.classIcon in layers(psiClass.containingFile.getIcon(0)))
 
         val finalClass = javaFile(
             "Clock", "import org.springframework.stereotype.Service;", "@Service public final class Clock {}",
         ).classes.single()
         val finalLayers = layers(finalClass.getIcon(Iconable.ICON_FLAG_VISIBILITY))
-        assertTrue("Java's final mark keeps the top-left corner", ClassStereotype.SERVICE.icon !in finalLayers)
+        assertEquals(ClassStereotype.SERVICE.classIcon, finalLayers.first())
+        assertTrue("Java's final mark is layered over the stereotype icon", AllIcons.Nodes.FinalMark in finalLayers)
 
         settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, false)
-        assertNull(ClassStereotypeLayerProvider().getLayerIcon(psiClass, false))
+        assertNull(JavaStereotypeIconProvider().getIcon(psiClass, Iconable.ICON_FLAG_VISIBILITY))
     }
 
     fun testKotlinDeclarationsAndFiles() {
@@ -271,9 +274,9 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         val declaration = file.declarations.single() as KtClassOrObject
         assertEquals(ClassStereotype.WEB, ClassStereotypes.badgeFor(declaration)?.stereotype)
         assertEquals(ClassStereotype.WEB, ClassStereotypes.badgeFor(file)?.stereotype)
-        assertTrue(ClassStereotype.WEB.icon in layers(declaration.getIcon(Iconable.ICON_FLAG_VISIBILITY)))
-        assertTrue("Editor tabs use the file icon", ClassStereotype.WEB.icon in layers(file.getIcon(0)))
-        assertEquals(1, layers(file.getIcon(0)).count { it === ClassStereotype.WEB.icon })
+        assertEquals(ClassStereotype.WEB.classIcon, layers(declaration.getIcon(Iconable.ICON_FLAG_VISIBILITY)).first())
+        assertEquals("Editor tabs use the file icon", ClassStereotype.WEB.classIcon, layers(file.getIcon(0)).first())
+        assertTrue("The native Kotlin class icon is gone", KotlinIcons.CLASS !in layers(file.getIcon(0)))
 
         val repository = kotlinFile(
             "OrderRepository",
@@ -373,7 +376,7 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         assertEquals("Web controller stereotype (@Controller)", data.tooltip)
 
         val row = StereotypeRow(ClassStereotypes.fileStereotype(psiClass.containingFile))
-        assertEquals("Web controller from @Controller; shown on the native class icon", row.describe())
+        assertEquals("Web controller from @Controller; shown as the class icon", row.describe())
 
         settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, false)
         val disabled = PresentationData()

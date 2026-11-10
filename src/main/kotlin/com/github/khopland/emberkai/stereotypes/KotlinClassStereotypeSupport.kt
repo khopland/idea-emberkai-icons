@@ -7,13 +7,16 @@ import com.intellij.ide.IconProvider
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.PossiblyDumbAware
+import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.Key
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.CachedValue
 import com.intellij.psi.util.CachedValueProvider
 import com.intellij.psi.util.CachedValuesManager
+import com.intellij.ui.IconManager
 import com.intellij.ui.LayeredIcon
+import com.intellij.ui.icons.RowIcon
 import javax.swing.Icon
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtClassOrObject
@@ -24,12 +27,10 @@ import org.jetbrains.kotlin.psi.KtUserType
 
 /**
  * Reads Kotlin annotations, supertypes, and imports from stubs; registered only when the Kotlin
- * plugin is present. Kotlin icons skip platform layer providers, so [KotlinStereotypeIconProvider]
- * draws the badge for both declarations and single-class files.
+ * plugin is present. [KotlinStereotypeIconProvider] draws the icon for both declarations and
+ * single-class files.
  */
 internal class KotlinClassStereotypeSupport : ClassStereotypeSupport {
-    override val usesIconLayers: Boolean get() = false
-
     override fun badgeFor(element: PsiElement): StereotypeMatch? = when (element) {
         is KtClassOrObject -> stereotypeOf(element)
         is KtFile -> fileStereotype(element)
@@ -104,18 +105,33 @@ internal class KotlinClassStereotypeSupport : ClassStereotypeSupport {
 }
 
 /**
- * The Kotlin plugin's icon provider returns finished icons that the platform does not pass through
- * icon layer providers. This provider runs before it, asks the providers after it for the native
- * icon exactly as the platform would, and only adds the stereotype glyph on top, so Kotlin's type
- * icon, modifier marks, and visibility column stay as they were.
+ * Runs before the Kotlin plugin's icon provider, asks the providers after it for the native icon
+ * exactly as the platform would, and swaps only its type icon for the stereotype's, so Kotlin's
+ * modifier marks and visibility column stay as they were. The stereotype icon carries the small
+ * Kotlin mark that the native type icon had.
  */
 internal class KotlinStereotypeIconProvider : IconProvider(), DumbAware {
     override fun getIcon(element: PsiElement, flags: Int): Icon? {
         if (element !is KtClassOrObject && element !is KtFile) return null
         if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) return null
-        val badge = ClassStereotypes.badgeFor(element)?.stereotype?.icon ?: return null
+        val stereotype = ClassStereotypes.badgeFor(element)?.stereotype ?: return null
         val native = nativeIcon(element, flags) ?: return null
-        return LayeredIcon.layeredIcon(arrayOf(native, badge))
+        return withTypeIcon(native, LayeredIcon.layeredIcon(arrayOf(stereotype.classIcon, KOTLIN_MARK)))
+    }
+
+    /** [native] with the type icon at the bottom of its rows and layers replaced by [typeIcon]. */
+    private fun withTypeIcon(native: Icon, typeIcon: Icon): Icon = when (native) {
+        is RowIcon -> {
+            val icons = native.allIcons
+            if (icons.isEmpty()) typeIcon
+            else IconManager.getInstance().createRowIcon(withTypeIcon(icons.first(), typeIcon), *icons.drop(1).toTypedArray())
+        }
+        is LayeredIcon -> {
+            val layers = native.allLayers.filterNotNull()
+            if (layers.isEmpty()) typeIcon
+            else LayeredIcon.layeredIcon((listOf(withTypeIcon(layers.first(), typeIcon)) + layers.drop(1)).toTypedArray())
+        }
+        else -> typeIcon
     }
 
     private fun nativeIcon(element: PsiElement, flags: Int): Icon? {
@@ -125,5 +141,10 @@ internal class KotlinStereotypeIconProvider : IconProvider(), DumbAware {
             .drop(1)
             .filter { !dumb || it is DumbAware || (it as? PossiblyDumbAware)?.isDumbAware == true }
             .firstNotNullOfOrNull { it.getIcon(element, flags) }
+    }
+
+    private companion object {
+        val KOTLIN_MARK: Icon =
+            IconLoader.getIcon("/emberkai/icons/classes/kotlin-mark.svg", KotlinStereotypeIconProvider::class.java)
     }
 }

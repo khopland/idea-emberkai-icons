@@ -1,8 +1,7 @@
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="2.5" y="2.5" width="19" height="19" rx="4.5" fill="#DAECED" stroke="#32271B" stroke-width="1.4"/>
-<path d="M5.5 15A6.5 6.5 0 0 1 8.75 9.37" stroke="#EF4632" stroke-width="2.8" stroke-linecap="round"/>
-<path d="M8.75 9.37A6.5 6.5 0 0 1 15.25 9.37" stroke="#EEB119" stroke-width="2.8"/>
-<path d="M15.25 9.37A6.5 6.5 0 0 1 18.5 15" stroke="#AFB214" stroke-width="2.8" stroke-linecap="round"/>
-<path d="M12 15L16.2 10.8" stroke="#32271B" stroke-width="2" stroke-linecap="round"/>
-<circle cx="12" cy="15" r="1.8" fill="#32271B"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M2.25 10.5A5.75 5.75 0 0 1 5.125 5.52" stroke="#EF4632" stroke-width="2.25" stroke-linecap="round"/>
+<path d="M10.875 5.52A5.75 5.75 0 0 1 13.75 10.5" stroke="#AFB214" stroke-width="2.25" stroke-linecap="round"/>
+<path d="M5.125 5.52A5.75 5.75 0 0 1 10.875 5.52" stroke="#FBBF32" stroke-width="2.25"/>
+<path d="M8 10.75L10.75 8" stroke="#32271B" stroke-width="1.5" stroke-linecap="round"/>
+<circle cx="8" cy="10.75" r="1.5" fill="#32271B"/>
 </svg>

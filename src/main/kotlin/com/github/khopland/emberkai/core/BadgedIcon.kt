@@ -11,8 +11,8 @@ import javax.swing.Icon
 
 /**
  * The corner a badge paints in. Each corner means one thing and holds at most one badge, so a
- * 16px icon never carries more than the artwork and two small marks. Native Java and Kotlin class
- * icons keep the top-left corner for their own marks and class stereotypes.
+ * 16px icon never carries more than the artwork and two small marks. Java and Kotlin classes show
+ * their stereotype as the class icon itself and keep the corners for the platform's own marks.
  */
 internal enum class BadgeSlot(val displayName: String, val meaning: String) {
     /** Top-left: the role a source file plays, such as a controller, on artwork that is not a native class icon. */

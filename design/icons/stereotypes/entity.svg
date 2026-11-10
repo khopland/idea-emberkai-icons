@@ -1,7 +1,7 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g data-theme="light">
 <path d="M3.5 0.5L6.5 2V5L3.5 6.5L0.5 5V2Z" stroke-linejoin="round" stroke="white" stroke-width="3"/>
-<path d="M3.5 0.5L6.5 2V5L3.5 6.5L0.5 5V2Z" stroke-linejoin="round" fill="violet-400" stroke="slate-800"/>
+<path d="M3.5 0.5L6.5 2V5L3.5 6.5L0.5 5V2Z" stroke-linejoin="round" fill="violet-400" stroke="violet-700"/>
 <path d="M1.2 2L3.5 0.9L5.8 2L3.5 3.1Z" fill="violet-100"/>
 </g>
 <g data-theme="dark">

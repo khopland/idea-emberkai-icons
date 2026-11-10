@@ -4,13 +4,11 @@ import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.core.NativeIconPolicy
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.isEnabled
-import com.intellij.ide.IconLayerProvider
 import com.intellij.openapi.application.runReadActionBlocking
 import com.intellij.openapi.extensions.ExtensionPointName
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.util.IconLoader
-import com.intellij.openapi.util.Iconable
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -19,8 +17,9 @@ import com.intellij.psi.util.PsiUtilCore
 import javax.swing.Icon
 
 /**
- * Spring, Quarkus, Micronaut, and JPA roles shown as a small corner glyph on native class icons, in
- * priority order. Entry points, where work enters a service from outside it, outrank the roles a
+ * Spring, Quarkus, Micronaut, and JPA roles, in priority order. A Java or Kotlin class with a role
+ * shows [classIcon] in place of the native type icon; TypeScript and JavaScript sources carry the
+ * small [icon] glyph in the top-left corner of their file icon. Entry points, where work enters a service from outside it, outrank the roles a
  * class plays inside it, so a service with a scheduled method shows the hourglass. Test kinds come
  * last, most expensive first, so a slice that starts containers shows the container.
  */
@@ -38,7 +37,11 @@ internal enum class ClassStereotype(val displayName: String, icon: String, val i
     APPLICATION_TEST("Full application test", "application-test"),
     SLICE_TEST("Test slice", "slice-test");
 
+    /** The 7px glyph painted over file artwork and folder badges. */
     val icon: Icon = IconLoader.getIcon("/emberkai/icons/stereotypes/$icon.svg", ClassStereotype::class.java)
+
+    /** The full-size icon that takes the place of a class's native type icon. */
+    val classIcon: Icon = IconLoader.getIcon("/emberkai/icons/classes/$icon.svg", ClassStereotype::class.java)
 
     companion object {
         /** Spring Boot test slices, from their Spring Boot 3 packages and the Spring Boot 4 test modules. */
@@ -206,14 +209,11 @@ internal class SourceImports(
 
 /** Language integrations registered from the optional Java and Kotlin plugin descriptors. */
 internal interface ClassStereotypeSupport {
-    /** The stereotype for a declaration or file whose native icon should carry the badge. */
+    /** The stereotype for a declaration or file whose icon should show it. */
     fun badgeFor(element: PsiElement): StereotypeMatch?
 
     /** The stereotype of the class that IntelliJ uses for a source file's icon. */
     fun fileStereotype(file: PsiFile): StereotypeMatch?
-
-    /** False when the language's icons skip platform layer providers and are badged another way. */
-    val usesIconLayers: Boolean get() = true
 
     companion object {
         val EP_NAME = ExtensionPointName.create<ClassStereotypeSupport>("com.github.khopland.symbols.classStereotypeSupport")
@@ -222,11 +222,6 @@ internal interface ClassStereotypeSupport {
 
 internal object ClassStereotypes {
     private val SOURCE_EXTENSIONS = setOf("java", "kt")
-
-    fun badgeFor(element: PsiElement): StereotypeMatch? = badgeFor(element) { true }
-
-    /** The badge [ClassStereotypeLayerProvider] adds; other languages badge their own icons. */
-    fun layerFor(element: PsiElement): StereotypeMatch? = badgeFor(element) { it.usesIconLayers }
 
     fun fileStereotype(file: PsiFile): StereotypeMatch? {
         if (!file.isValid) return null
@@ -248,16 +243,13 @@ internal object ClassStereotypes {
         }
     }
 
-    /** Tooltip text for an element whose icon carries a badge; null when badges are off. */
+    /** Tooltip text for an element whose icon shows a stereotype; null when they are off. */
     fun describe(element: PsiElement): String? {
         if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) return null
         return badgeFor(element)?.let { "${it.stereotype.displayName} stereotype (${it.evidence})" }
     }
 
-    private inline fun badgeFor(
-        element: PsiElement,
-        accept: (ClassStereotypeSupport) -> Boolean,
-    ): StereotypeMatch? {
+    fun badgeFor(element: PsiElement): StereotypeMatch? {
         if (!element.isValid) return null
         if (element is PsiFile) {
             // Files shown with Emberkai artwork instead of native class icons stay undecorated.
@@ -266,7 +258,7 @@ internal object ClassStereotypes {
         }
         // Supports reject unrelated elements by type first, so most icons never reach the file index.
         return ClassStereotypeSupport.EP_NAME.extensionList
-            .firstNotNullOfOrNull { support -> support.takeIf(accept)?.badgeFor(element) }
+            .firstNotNullOfOrNull { it.badgeFor(element) }
             ?.takeIf { isProjectSource(element) }
     }
 
@@ -274,21 +266,4 @@ internal object ClassStereotypes {
         val file = PsiUtilCore.getVirtualFile(element) ?: return false
         return ProjectFileIndex.getInstance(element.project).isInSourceContent(file)
     }
-}
-
-/**
- * Adds the stereotype glyph as an extra layer when the platform builds a native element icon, so
- * IntelliJ's type icon, modifier marks, and visibility column stay exactly as they were. The glyph
- * sits in the top-left corner: static marks use the bottom-left, runnable and test marks the
- * top-right, and lock marks the bottom-right. Final Java classes, whose mark shares the top-left,
- * are left unbadged.
- */
-class ClassStereotypeLayerProvider : IconLayerProvider {
-    override fun getLayerIcon(element: Iconable, isLocked: Boolean): Icon? {
-        if (element !is PsiElement) return null
-        if (!EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) return null
-        return ClassStereotypes.layerFor(element)?.stereotype?.icon
-    }
-
-    override fun getLayerDescription(): String = "Class stereotype"
 }

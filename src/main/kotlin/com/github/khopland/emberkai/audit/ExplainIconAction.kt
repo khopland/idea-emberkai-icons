@@ -72,7 +72,7 @@ internal class ExplainIconAction : AnAction(), DumbAware {
         val project = event.project ?: return
         val file = event.getData(CommonDataKeys.VIRTUAL_FILE)?.takeIf { it.isValid } ?: return
         val resolution = runReadActionBlocking { IconResolver.resolveWithDetails(file, project) }
-        // Only Java and Kotlin classes carry stereotype badges; scripts and class files never do.
+        // Only Java and Kotlin classes show stereotype icons; scripts and class files never do.
         val stereotype = if (file.extension in STEREOTYPE_EXTENSIONS) {
             runReadActionBlocking<StereotypeRow> {
                 StereotypeRow(PsiManager.getInstance(project).findFile(file)?.let(ClassStereotypes::fileStereotype))
@@ -212,9 +212,9 @@ private class ExplainIconDialog(
             val (name, meaning) = IconLegend.describe(mark)
             addRow("${mark.slot.displayName} mark", "$name: $meaning")
         }
-        // Java and Kotlin stereotypes come from icon layers, not the badge chain above.
+        // Java and Kotlin stereotypes replace the class icon; they are not in the badge chain above.
         stereotype?.match?.let { match ->
-            addRow("Top-left mark", stereotype.describe() + ". " + IconLegend.stereotypeMeaning(match.stereotype))
+            addRow("Class icon", stereotype.describe() + ". " + IconLegend.stereotypeMeaning(match.stereotype))
         }
         IconDescriptions.describe(file, resolution)?.let { addRow("Recognized as", it) }
         if (getComponentCount() == 0) {
@@ -240,7 +240,7 @@ private class ExplainIconDialog(
         addRow("Context rule", contextRule)
         addRow("Native policy", nativePolicy)
         addRow("Project role", projectRole)
-        stereotype?.takeIf { it.match == null }?.let { addRow("Stereotype badge", it.describe()) }
+        stereotype?.takeIf { it.match == null }?.let { addRow("Stereotype icon", it.describe()) }
         ownership?.let {
             addRow(
                 "Code owners",
@@ -307,14 +307,14 @@ private class ExplainIconDialog(
     }
 }
 
-/** The class stereotype behind a source file's badge; present only for Java and Kotlin sources. */
+/** The class stereotype behind a source file's icon; present only for Java and Kotlin sources. */
 internal data class StereotypeRow(val match: StereotypeMatch?) {
     fun describe(): String {
-        val match = match ?: return "None; the file's class has no recognized Spring, Quarkus, Micronaut, JPA, or test annotation, or is a final Java class"
+        val match = match ?: return "None; the file's class has no recognized Spring, Quarkus, Micronaut, JPA, or test annotation"
         val state = if (EmberkaiIconsSettings.getInstance().isEnabled(IconRuleCategory.STEREOTYPE_BADGES)) {
-            "shown on the native class icon"
+            "shown as the class icon"
         } else {
-            "hidden because class stereotype badges are off"
+            "hidden because class stereotype icons are off"
         }
         return "${match.stereotype.displayName} from ${match.evidence}; $state"
     }

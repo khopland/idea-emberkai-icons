@@ -391,7 +391,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "frameworks/quarkus", "frameworks/micronaut", "frameworks/micronaut_dark", "frameworks/ktor",
             "quality/detekt", "quality/openrewrite", "quality/sonar", "contracts/asyncapi", "contracts/avro",
             "ci/circleci", "ci/circleci_dark", "ci/tekton", "ci/bazel", "devloop/skaffold", "devloop/tilt",
-            "devloop/dagger", "devloop/dagger_dark", "infra/packer", "infra/vagrant", "infra/nomad",
+            "devloop/dagger", "infra/packer", "infra/vagrant", "infra/nomad",
         )) {
             val path = "emberkai/icons/$name.svg"
             val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)

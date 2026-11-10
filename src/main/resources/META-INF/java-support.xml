@@ -12,6 +12,9 @@
     <extensions defaultExtensionNs="com.github.khopland.symbols">
         <classStereotypeSupport implementation="com.github.khopland.emberkai.stereotypes.JavaClassStereotypeSupport"/>
     </extensions>
+    <extensions defaultExtensionNs="com.intellij">
+        <iconProvider implementation="com.github.khopland.emberkai.stereotypes.JavaStereotypeIconProvider" order="first"/>
+    </extensions>
     <actions>
         <!-- Listed by the Emberkai status bar widget; not added to any menu. -->
         <group id="com.github.khopland.symbols.SpringProfileRunConfigurations"

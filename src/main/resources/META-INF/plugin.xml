@@ -40,11 +40,11 @@
         and profile, Helm values, and <code>.env</code> variants that lack a key all their siblings define.
         Generated files get a grey <i>generated</i> hint, and those marked by their header are reported to the IDE
         as generated, so it warns before you edit them.</p>
-        <p>Spring, Quarkus, Micronaut, and JPA classes keep their native Java/Kotlin class icons with a small
-        stereotype badge: controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
+        <p>Spring, Quarkus, Micronaut, and JPA classes show a stereotype icon in place of the letter on the
+        native Java/Kotlin class icon, under the IDE's own marks: applications, controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
         configuration classes, and entities. Test classes show whether they start containers, the whole
         application, or a Spring Boot test slice. Next.js routes and NestJS controllers, gateways, jobs, services,
-        modules, and TypeORM entities get the same badges on their TypeScript and JavaScript file icons.</p>
+        modules, and TypeORM entities get the same roles as a small badge on their TypeScript and JavaScript file icons.</p>
         <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
         with a live preview, including accessibility modes: a colorblind-friendly palette,
         high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
@@ -146,7 +146,6 @@
                          enabledByDefault="true"
                          level="WARNING"
                          implementationClass="com.github.khopland.emberkai.ownership.UnmatchedCodeOwnersPatternInspection"/>
-        <iconLayerProvider implementation="com.github.khopland.emberkai.stereotypes.ClassStereotypeLayerProvider"/>
         <!-- Sends exception and UI freeze reports to JetBrains Marketplace (Freezes/Exceptions tabs). -->
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
@@ -193,8 +192,8 @@
                     description="Show distinct icons for controller, service, repository, and similar packages"/>
             <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
                     class="com.github.khopland.emberkai.settings.ToggleStereotypeBadgesAction"
-                    text="Class stereotype badges"
-                    description="Badge native class icons for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, entities, and tests"/>
+                    text="Class stereotype icons"
+                    description="Show a role icon in place of the native class icon for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, entities, and tests"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>
         </group>
         <action id="com.github.khopland.symbols.ExplainIcon"
