@@ -15,6 +15,7 @@ class EmberkaiLensSettings : PersistentStateComponent<EmberkaiLensSettings.State
         var hotspotDays: Int = Hotspots.DEFAULT_DAYS,
         var hotspotLimit: Int = Hotspots.DEFAULT_LIMIT,
         var hotspotMinimumCommits: Int = Hotspots.DEFAULT_MINIMUM_COMMITS,
+        var showStatusBarWidget: Boolean = true,
     )
 
     /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
@@ -39,6 +40,10 @@ class EmberkaiLensSettings : PersistentStateComponent<EmberkaiLensSettings.State
     var hotspotMinimumCommits: Int
         get() = currentState.hotspotMinimumCommits.coerceIn(MINIMUM_COMMITS_RANGE)
         set(value) = update { it.hotspotMinimumCommits = value.coerceIn(MINIMUM_COMMITS_RANGE) }
+
+    var showStatusBarWidget: Boolean
+        get() = currentState.showStatusBarWidget
+        set(value) = update { it.showStatusBarWidget = value }
 
     private fun update(change: (State) -> Unit) {
         synchronized(this) {

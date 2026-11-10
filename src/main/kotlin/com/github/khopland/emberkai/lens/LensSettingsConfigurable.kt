@@ -1,9 +1,11 @@
 package com.github.khopland.emberkai.lens
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.bindIntValue
+import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 
 /** Settings > Appearance & Behavior > Emberkai Icons > Lenses. */
@@ -13,6 +15,10 @@ class LensSettingsConfigurable : BoundConfigurable("Lenses") {
         return panel {
             row {
                 comment("Choose a lens under View | Emberkai Icons | Lens or from the status bar.")
+            }
+            row {
+                checkBox("Show the active lens and Spring profile in the status bar")
+                    .bindSelected(settings::showStatusBarWidget)
             }
             group("Hotspots") {
                 row {
@@ -38,6 +44,7 @@ class LensSettingsConfigurable : BoundConfigurable("Lenses") {
         val changed = isModified
         super.apply()
         if (!changed) return
+        ApplicationManager.getApplication().messageBus.syncPublisher(LensSettingsListener.TOPIC).lensSettingsChanged()
         // An active Hotspots lens recounts; an inactive one counts with the new values when chosen.
         for (project in ProjectManager.getInstance().openProjects) {
             if (!project.isDisposed) Hotspots.getInstance(project)?.settingsChanged()

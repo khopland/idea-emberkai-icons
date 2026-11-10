@@ -121,6 +121,8 @@
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
         <listener class="com.github.khopland.emberkai.badges.ConfigDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+        <listener class="com.github.khopland.emberkai.statusbar.StatusBarWidgetVisibility"
+                  topic="com.github.khopland.emberkai.lens.LensSettingsListener"/>
     </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable

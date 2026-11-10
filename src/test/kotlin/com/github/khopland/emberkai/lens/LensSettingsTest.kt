@@ -1,8 +1,11 @@
 package com.github.khopland.emberkai.lens
 
 import com.github.khopland.emberkai.IconProviderTestCase
+import com.github.khopland.emberkai.statusbar.EmberkaiStatusBarWidgetFactory
+import com.intellij.openapi.application.ApplicationManager
 import java.awt.Component
 import java.awt.Container
+import javax.swing.JCheckBox
 import javax.swing.JSpinner
 
 internal class LensSettingsTest : IconProviderTestCase() {
@@ -49,10 +52,31 @@ internal class LensSettingsTest : IconProviderTestCase() {
             spinners[2].value = 3
             assertTrue(configurable.isModified)
             configurable.apply()
-            assertEquals(EmberkaiLensSettings.State(hotspotDays = 30, hotspotLimit = 10, hotspotMinimumCommits = 3), settings.state)
+            assertEquals(
+                EmberkaiLensSettings.State(hotspotDays = 30, hotspotLimit = 10, hotspotMinimumCommits = 3),
+                settings.state,
+            )
         } finally {
             configurable.disposeUIResources()
         }
+    }
+
+    fun testTheStatusBarSwitchHidesTheWidgetAndTellsListeners() {
+        val factory = EmberkaiStatusBarWidgetFactory()
+        assertTrue(factory.isAvailable(project))
+        var told = 0
+        ApplicationManager.getApplication().messageBus.connect(testRootDisposable)
+            .subscribe(LensSettingsListener.TOPIC, LensSettingsListener { told++ })
+        val configurable = LensSettingsConfigurable()
+        try {
+            components(configurable.createComponent()!!).filterIsInstance<JCheckBox>().single().isSelected = false
+            configurable.apply()
+        } finally {
+            configurable.disposeUIResources()
+        }
+        assertFalse(settings.showStatusBarWidget)
+        assertFalse(factory.isAvailable(project))
+        assertEquals(1, told)
     }
 
     fun testSelectingALensTellsListeners() {
