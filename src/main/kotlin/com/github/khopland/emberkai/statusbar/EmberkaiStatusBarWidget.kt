@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.statusbar
 
+import com.github.khopland.emberkai.lens.IconLensListener
 import com.github.khopland.emberkai.lens.IconLensService
 import com.github.khopland.emberkai.spring.ActiveSpringProfiles
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -24,6 +25,10 @@ import com.intellij.openapi.wm.WindowManager
  */
 internal class EmberkaiStatusBarWidget(private val project: Project) :
     StatusBarWidget, StatusBarWidget.MultipleTextValuesPresentation {
+    init {
+        project.messageBus.connect(this).subscribe(IconLensListener.TOPIC, IconLensListener { update(project) })
+    }
+
     override fun ID(): String = ID
 
     override fun getPresentation(): StatusBarWidget.WidgetPresentation = this

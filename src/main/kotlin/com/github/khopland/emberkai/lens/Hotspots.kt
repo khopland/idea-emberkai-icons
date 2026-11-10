@@ -13,20 +13,28 @@ internal interface Hotspots {
 
     fun forget()
 
+    /** Counts again with the current [EmberkaiLensSettings] if the lens is active, or later when it is chosen. */
+    fun settingsChanged()
+
     companion object {
-        const val DAYS = 90
-        const val LIMIT = 30
-        const val MINIMUM_COMMITS = 2
+        const val DEFAULT_DAYS = 90
+        const val DEFAULT_LIMIT = 30
+        const val DEFAULT_MINIMUM_COMMITS = 2
 
         fun getInstance(project: Project): Hotspots? = project.getService(Hotspots::class.java)
 
         /**
-         * The [LIMIT] paths with the most commits, keeping every path tied with the last one, and
-         * ignoring paths changed only once: churn, not a single edit, is what makes a hotspot.
+         * The [limit] paths with the most commits, keeping every path tied with the last one, and
+         * ignoring paths changed fewer than [minimumCommits] times: churn, not a single edit, is what
+         * makes a hotspot.
          */
-        fun rank(commitsPerPath: Map<String, Int>): Set<String> {
-            val ranked = commitsPerPath.filterValues { it >= MINIMUM_COMMITS }.entries.sortedByDescending { it.value }
-            val cutoff = ranked.getOrNull(LIMIT - 1)?.value ?: return ranked.mapTo(LinkedHashSet()) { it.key }
+        fun rank(
+            commitsPerPath: Map<String, Int>,
+            limit: Int = DEFAULT_LIMIT,
+            minimumCommits: Int = DEFAULT_MINIMUM_COMMITS,
+        ): Set<String> {
+            val ranked = commitsPerPath.filterValues { it >= minimumCommits }.entries.sortedByDescending { it.value }
+            val cutoff = ranked.getOrNull(limit - 1)?.value ?: return ranked.mapTo(LinkedHashSet()) { it.key }
             return ranked.takeWhile { it.value >= cutoff }.mapTo(LinkedHashSet()) { it.key }
         }
     }
