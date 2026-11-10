@@ -53,9 +53,10 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var runningServices: Boolean = true,
         var lockfileDrift: Boolean = true,
         var generatedFiles: Boolean = true,
-        var productionEditorWarnings: Boolean = true,
         var unpinnedReferences: Boolean = true,
         var configDrift: Boolean = true,
+        /** No longer a setting: read once by EmberkaiEditorSettings to carry an old "off" over. */
+        var productionEditorWarnings: Boolean = true,
     )
 
     /** Replaced, never mutated, so readers on any thread see a consistent snapshot. */
@@ -102,6 +103,10 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
 
     internal fun setEnabled(category: IconRuleCategory, enabled: Boolean) {
         updateState { it.setEnabled(category, enabled) }
+    }
+
+    internal fun clearLegacyProductionEditorWarnings() {
+        updateState { it.productionEditorWarnings = true }
     }
 
     private fun updateState(update: (State) -> Unit) {
@@ -162,7 +167,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.RUNNING_SERVICES -> State::runningServices
             IconRuleCategory.LOCKFILE_DRIFT -> State::lockfileDrift
             IconRuleCategory.GENERATED_FILES -> State::generatedFiles
-            IconRuleCategory.PRODUCTION_EDITOR_WARNINGS -> State::productionEditorWarnings
             IconRuleCategory.UNPINNED_REFERENCES -> State::unpinnedReferences
             IconRuleCategory.CONFIG_DRIFT -> State::configDrift
         }

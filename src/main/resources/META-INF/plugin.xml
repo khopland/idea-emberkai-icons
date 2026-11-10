@@ -27,7 +27,8 @@
         <p>Production, staging, test, and local variants of Spring profiles, Docker Compose files,
         Helm values, and <code>.env</code> files get shape-and-color environment badges, and so do
         environment folders such as <code>overlays/production/</code>, along with the configuration files inside them.
-        Production files open with a red-tinted editor tab and a warning banner.
+        Production files open with a red-tinted editor tab and a warning banner, each switched separately
+        under <b>Emberkai Icons | Editor Warnings</b>.
         Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
         without being ignored get a red stop-sign warning badge, and so do Kubernetes manifests that hold a
         plaintext Secret. Spring profile files activated by the
@@ -127,6 +128,11 @@
             instance="com.github.khopland.emberkai.settings.EmberkaiIconsConfigurable"
             id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
             displayName="Emberkai Icons"/>
+        <applicationConfigurable
+            parentId="com.github.khopland.symbols.EmberkaiIconsConfigurable"
+            instance="com.github.khopland.emberkai.editor.EditorWarningsConfigurable"
+            id="com.github.khopland.symbols.EditorWarnings"
+            displayName="Editor Warnings"/>
         <!-- Content facts for scopes, lenses, and badges; the EDT and dumb mode still read files directly. -->
         <fileBasedIndex implementation="com.github.khopland.emberkai.rules.ContentIndex"/>
         <iconProvider implementation="com.github.khopland.emberkai.core.SymbolsIconProvider" order="first"/>
@@ -136,8 +142,8 @@
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.generated.GeneratedFileDecorator"/>
         <statusBarWidgetFactory id="com.github.khopland.symbols.StatusBar"
                                 implementation="com.github.khopland.emberkai.statusbar.EmberkaiStatusBarWidgetFactory"/>
-        <editorTabColorProvider implementation="com.github.khopland.emberkai.badges.ProductionEditorTabColorProvider"/>
-        <editorNotificationProvider implementation="com.github.khopland.emberkai.badges.ProductionEditorNotificationProvider"/>
+        <editorTabColorProvider implementation="com.github.khopland.emberkai.editor.ProductionEditorTabColorProvider"/>
+        <editorNotificationProvider implementation="com.github.khopland.emberkai.editor.ProductionEditorNotificationProvider"/>
         <generatedSourcesFilter implementation="com.github.khopland.emberkai.generated.EmberkaiGeneratedSourcesFilter"/>
         <customScopesProvider implementation="com.github.khopland.emberkai.settings.EmberkaiScopesProvider"/>
         <localInspection shortName="EmberkaiUnmatchedCodeOwnersPattern"
