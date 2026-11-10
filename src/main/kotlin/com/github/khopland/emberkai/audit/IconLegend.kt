@@ -13,6 +13,7 @@ import com.github.khopland.emberkai.core.BadgedIcon
 import com.github.khopland.emberkai.core.IconMappings
 import com.github.khopland.emberkai.folders.FolderIconPalette
 import com.github.khopland.emberkai.folders.ServiceFolderIconStyle
+import com.github.khopland.emberkai.folders.serviceFolderPalette
 import com.github.khopland.emberkai.node.StereotypeBadgeIcon
 import com.github.khopland.emberkai.run.RunningServiceIcon
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings

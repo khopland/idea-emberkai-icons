@@ -1,4 +1,4 @@
-package com.github.khopland.emberkai.core
+package com.github.khopland.emberkai.settings
 
 /** Where a category's toggle sits on the settings page, by what turning it off hides. */
 internal enum class CategoryGroup(val title: String, val hint: String) {

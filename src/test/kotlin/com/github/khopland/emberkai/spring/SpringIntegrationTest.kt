@@ -1,7 +1,7 @@
 package com.github.khopland.emberkai.spring
 
 import com.github.khopland.emberkai.IconProviderTestCase
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.rules.SpringXmlConfigDetector
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.setEnabled

@@ -3,6 +3,7 @@ package com.github.khopland.emberkai.tooltips
 import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
+import com.github.khopland.emberkai.core.appendTooltip
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings
@@ -99,13 +100,13 @@ internal class SemanticTooltipTest : IconProviderTestCase() {
     }
 
     fun testAppendTooltipKeepsExistingText() {
-        assertEquals("Kubernetes manifest", SemanticTooltipDecorator.appendTooltip(null, "Kubernetes manifest"))
-        assertEquals("Read-only · Flux resource", SemanticTooltipDecorator.appendTooltip("Read-only", "Flux resource"))
+        assertEquals("Kubernetes manifest", appendTooltip(null, "Kubernetes manifest"))
+        assertEquals("Read-only · Flux resource", appendTooltip("Read-only", "Flux resource"))
         assertEquals(
             "<html><b>Module</b><br>A &amp; B</html>",
-            SemanticTooltipDecorator.appendTooltip("<html><b>Module</b></html>", "A & B"),
+            appendTooltip("<html><b>Module</b></html>", "A & B"),
         )
-        assertEquals("Source root", SemanticTooltipDecorator.appendTooltip("Source root", "Source root"))
+        assertEquals("Source root", appendTooltip("Source root", "Source root"))
     }
 
     private fun assertDescription(expected: String?, path: String, content: String?) {

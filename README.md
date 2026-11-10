@@ -162,6 +162,8 @@ Upstream files stay in `src/main/resources/symbols/`. Emberkai is gradually redr
 
 Local mappings take precedence over upstream mappings. A key such as `extension..github/workflows/yml` matches YAML files directly inside `.github/workflows/`, wherever the checkout is located. For a given filename or extension, the longest matching parent suffix wins. `folder.role.*` keys choose artwork for IntelliJ root/package roles. Project root roles and native-type policies take precedence over generic filename rules.
 
+The Kotlin packages sit in layers that can later become Gradle modules, and `PackageLayeringTest` fails when a package imports one above it: `settings` (state, the `IconRuleCategory` families, and artwork palettes); then icon resolution (`core`, `rules`, `folders`, `accents`, `overrides`, `generated`); then badges and project facts (`badges`, `spring`, `run`, `node`, `ownership`, `git`, `tooltips`, `stereotypes`, `scopes`); then `lens` and `editor`, which must not import each other; and on top `ui`, `audit`, and `statusbar`. A lower layer that needs to tell a higher one about a change publishes on a message-bus topic, such as `IconLensListener`, instead of calling it. Add a new package to a layer in that test.
+
 To add another tool, implement `ContextIconRule` and register it in `IconResolver.contextRules` in priority order. Rules return keys from `emberkai/icons.properties`, keeping detection logic independent of artwork. `IconResolver.recognizedCategory` feeds the `EmberkaiScopes` scopes; override `recognizesFile` when a tool's canonical filenames are drawn by static mappings but should still join its scope. Add ordinary filename or extension mappings directly to the configuration without changing Kotlin code.
 
 To add a badge:

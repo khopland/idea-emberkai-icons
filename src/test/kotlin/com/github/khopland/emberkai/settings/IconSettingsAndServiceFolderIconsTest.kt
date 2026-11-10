@@ -1,9 +1,8 @@
 package com.github.khopland.emberkai.settings
 
 import com.github.khopland.emberkai.IconProviderTestCase
-import com.github.khopland.emberkai.core.CategoryGroup
-import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.core.ProjectPathUtil
+import com.github.khopland.emberkai.ui.EmberkaiIconsConfigurable
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VfsUtil

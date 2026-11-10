@@ -1,7 +1,9 @@
-package com.github.khopland.emberkai.settings
+package com.github.khopland.emberkai.scopes
 
 import com.github.khopland.emberkai.IconProviderTestCase
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.settings.IconRuleCategory
+import com.github.khopland.emberkai.settings.setEnabled
 import com.intellij.psi.search.scope.packageSet.CustomScopesProvider
 import com.intellij.psi.search.scope.packageSet.NamedScope
 import com.intellij.psi.search.scope.packageSet.PackageSetBase

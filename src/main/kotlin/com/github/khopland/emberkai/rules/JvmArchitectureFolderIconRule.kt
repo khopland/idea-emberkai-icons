@@ -1,7 +1,7 @@
 package com.github.khopland.emberkai.rules
 
 import com.github.khopland.emberkai.core.FileContentCache
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.folders.ProjectFolderIcons
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectFileIndex

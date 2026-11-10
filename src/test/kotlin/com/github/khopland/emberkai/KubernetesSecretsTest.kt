@@ -6,11 +6,11 @@ import com.github.khopland.emberkai.badges.SecretFileExposure
 import com.github.khopland.emberkai.badges.UnignoredSecretBadgeIcon
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.lens.IconLens
 import com.github.khopland.emberkai.rules.SopsFiles
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
-import com.github.khopland.emberkai.settings.EmberkaiScope
+import com.github.khopland.emberkai.scopes.EmberkaiScope
 import com.github.khopland.emberkai.settings.setEnabled
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.testFramework.registerOrReplaceServiceInstance

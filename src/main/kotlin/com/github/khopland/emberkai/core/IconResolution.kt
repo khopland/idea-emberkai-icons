@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.core
 
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.intellij.openapi.vfs.VirtualFile
 import javax.swing.Icon
 

@@ -5,7 +5,7 @@ import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconPrecedence
 import com.github.khopland.emberkai.core.IconResolution
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.core.MappingSource
 import com.github.khopland.emberkai.overrides.IconOverrideDialog
 import com.github.khopland.emberkai.overrides.IconOverrideKeySuggestions

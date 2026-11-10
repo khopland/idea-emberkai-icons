@@ -6,12 +6,13 @@ import com.github.khopland.emberkai.core.IconMappings
 import com.github.khopland.emberkai.core.IconPrecedence
 import com.github.khopland.emberkai.core.IconResolution
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.core.MappingSource
 import com.github.khopland.emberkai.folders.FolderIconPalette
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.settings.isEnabled
 import com.github.khopland.emberkai.settings.setEnabled
+import com.github.khopland.emberkai.ui.EmberkaiSettingsFile
 import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
@@ -113,8 +114,8 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
         }
         val file = Files.createTempFile("emberkai-settings", ".properties")
         try {
-            EmberkaiIconsSettings.export(state, file)
-            val imported = EmberkaiIconsSettings.import(file)
+            EmberkaiSettingsFile.export(state, file)
+            val imported = EmberkaiSettingsFile.import(file)
             assertEquals("every exported setting round-trips", state, imported)
             assertFalse(imported.colorServiceFolders)
             assertTrue(imported.moduleAwareColors)
@@ -125,7 +126,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
 
             // Unknown or invalid values fall back to the defaults instead of failing the import.
             Files.writeString(file, "colorServiceFolders=maybe\nserviceFolderPalette=NOPE\nhelm=false\n")
-            val partial = EmberkaiIconsSettings.import(file)
+            val partial = EmberkaiSettingsFile.import(file)
             val defaults = EmberkaiIconsSettings.State()
             assertEquals(defaults.colorServiceFolders, partial.colorServiceFolders)
             assertEquals(defaults.serviceFolderPalette, partial.serviceFolderPalette)

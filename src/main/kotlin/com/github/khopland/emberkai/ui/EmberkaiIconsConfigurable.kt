@@ -1,4 +1,4 @@
-package com.github.khopland.emberkai.settings
+package com.github.khopland.emberkai.ui
 
 import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.accents.ModuleAccentIcon
@@ -7,17 +7,20 @@ import com.github.khopland.emberkai.audit.LegendMode
 import com.github.khopland.emberkai.badges.EnvironmentVariant
 import com.github.khopland.emberkai.badges.EnvironmentVariantBadgeIcon
 import com.github.khopland.emberkai.badges.UnignoredSecretBadgeIcon
-import com.github.khopland.emberkai.core.ArtworkPalette
-import com.github.khopland.emberkai.core.ArtworkPalettePatcher
-import com.github.khopland.emberkai.core.CategoryGroup
 import com.github.khopland.emberkai.core.IconMappings
-import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.core.RefreshProjectIconPresentations
 import com.github.khopland.emberkai.folders.FolderIconPalette
 import com.github.khopland.emberkai.folders.ServiceFolderIconStyle
+import com.github.khopland.emberkai.folders.serviceFolderPalette
 import com.github.khopland.emberkai.overrides.IconCatalogDialog
 import com.github.khopland.emberkai.overrides.ProjectIconOverrideStore
+import com.github.khopland.emberkai.settings.ArtworkPalette
+import com.github.khopland.emberkai.settings.ArtworkPalettePatcher
+import com.github.khopland.emberkai.settings.CategoryGroup
+import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings.State
+import com.github.khopland.emberkai.settings.IconRuleCategory
+import com.github.khopland.emberkai.settings.SettingsPreset
 import com.github.khopland.emberkai.stereotypes.ClassStereotype
 import com.intellij.icons.AllIcons
 import com.intellij.ide.DataManager
@@ -405,7 +408,7 @@ class EmberkaiIconsConfigurable : Configurable {
         val target = FileChooserFactory.getInstance().createSaveFileDialog(descriptor, parent)
             .save(null as java.nio.file.Path?, "emberkai-icons.properties") ?: return
         try {
-            EmberkaiIconsSettings.export(formState(), target.file.toPath())
+            EmberkaiSettingsFile.export(formState(), target.file.toPath())
             statusLabel?.text = "Exported settings to ${target.file.name}."
         } catch (exception: IOException) {
             Messages.showErrorDialog(filterField, "Could not export settings: ${exception.message}", "Emberkai Icons")
@@ -417,7 +420,7 @@ class EmberkaiIconsConfigurable : Configurable {
             .withTitle("Import Emberkai Icons Settings")
         val file = FileChooser.chooseFile(descriptor, filterField, activeProject(), null) ?: return
         try {
-            loadForm(EmberkaiIconsSettings.import(file.toNioPath()))
+            loadForm(EmberkaiSettingsFile.import(file.toNioPath()))
             statusLabel?.text = "Imported ${file.name}. Apply to keep these settings."
         } catch (exception: IOException) {
             Messages.showErrorDialog(filterField, "Could not import settings: ${exception.message}", "Emberkai Icons")

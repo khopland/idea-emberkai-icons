@@ -3,9 +3,9 @@ package com.github.khopland.emberkai.badges
 import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
-import com.github.khopland.emberkai.settings.EmberkaiScope
+import com.github.khopland.emberkai.scopes.EmberkaiScope
 import com.github.khopland.emberkai.settings.setEnabled
 import javax.swing.Icon
 

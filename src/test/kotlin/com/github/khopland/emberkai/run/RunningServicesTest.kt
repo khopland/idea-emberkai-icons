@@ -3,7 +3,7 @@ package com.github.khopland.emberkai.run
 import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.setEnabled
 import com.github.khopland.emberkai.spring.SpringServerPort

@@ -1,6 +1,6 @@
 package com.github.khopland.emberkai.accents
 
-import com.github.khopland.emberkai.core.ArtworkPalettePatcher
+import com.github.khopland.emberkai.settings.ArtworkPalettePatcher
 import com.github.khopland.emberkai.folders.FolderIconPalette
 import java.awt.Color
 import java.util.Locale

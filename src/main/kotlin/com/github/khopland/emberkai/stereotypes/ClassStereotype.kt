@@ -1,6 +1,6 @@
 package com.github.khopland.emberkai.stereotypes
 
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.core.NativeIconPolicy
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.isEnabled

@@ -2,6 +2,7 @@ package com.github.khopland.emberkai.accents
 
 import com.github.khopland.emberkai.core.RefreshProjectIconPresentations
 import com.github.khopland.emberkai.folders.FolderIconPalette
+import com.github.khopland.emberkai.folders.serviceFolderPalette
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

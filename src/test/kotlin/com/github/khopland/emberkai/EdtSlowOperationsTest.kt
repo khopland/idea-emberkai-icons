@@ -6,8 +6,8 @@ import com.github.khopland.emberkai.core.IconResolver
 import com.github.khopland.emberkai.lens.IconLens
 import com.github.khopland.emberkai.node.StereotypeBadgeIcon
 import com.github.khopland.emberkai.overrides.ProjectIconOverrideStore
-import com.github.khopland.emberkai.settings.EmberkaiScope
-import com.github.khopland.emberkai.settings.EmberkaiScopesProvider
+import com.github.khopland.emberkai.scopes.EmberkaiScope
+import com.github.khopland.emberkai.scopes.EmberkaiScopesProvider
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile

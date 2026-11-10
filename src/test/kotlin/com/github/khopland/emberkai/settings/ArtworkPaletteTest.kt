@@ -1,7 +1,8 @@
-package com.github.khopland.emberkai.core
+package com.github.khopland.emberkai.settings
 
 import com.github.khopland.emberkai.accents.ModuleAccentColor
-import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.core.IconMappings
+import com.github.khopland.emberkai.ui.EmberkaiSettingsFile
 import com.intellij.openapi.util.IconLoader
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import java.awt.GraphicsEnvironment
@@ -77,8 +78,8 @@ internal class ArtworkPaletteTest : BasePlatformTestCase() {
     fun testExportedSettingsKeepThePalette() {
         val file = kotlin.io.path.createTempFile(suffix = ".properties")
         try {
-            EmberkaiIconsSettings.export(EmberkaiIconsSettings.State(artworkPalette = "GRUVBOX"), file)
-            assertEquals("GRUVBOX", EmberkaiIconsSettings.import(file).artworkPalette)
+            EmberkaiSettingsFile.export(EmberkaiIconsSettings.State(artworkPalette = "GRUVBOX"), file)
+            assertEquals("GRUVBOX", EmberkaiSettingsFile.import(file).artworkPalette)
         } finally {
             java.nio.file.Files.deleteIfExists(file)
         }
