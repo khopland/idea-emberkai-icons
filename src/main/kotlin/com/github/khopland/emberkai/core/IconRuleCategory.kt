@@ -3,7 +3,7 @@ package com.github.khopland.emberkai.core
 /** Where a category's toggle sits on the settings page, by what turning it off hides. */
 internal enum class CategoryGroup(val title: String, val hint: String) {
     TOOL_ICONS("Tool icons", "Artwork for recognized tool files. Turning a family off keeps standard file icons."),
-    WARNINGS("Badges and warnings", "Badges and banners that flag something to check before it ships."),
+    WARNINGS("Badges and warnings", "Badges that flag something to check before it ships."),
     MARKERS("Markers and hints", "Badges that describe a file's role, environment, or live state."),
 }
 
@@ -30,7 +30,6 @@ internal enum class IconRuleCategory(val displayName: String, val group: Categor
     RUNNING_SERVICES("Running-service markers", CategoryGroup.MARKERS),
     LOCKFILE_DRIFT("Lockfile drift badges", CategoryGroup.WARNINGS),
     GENERATED_FILES("Generated file markers", CategoryGroup.MARKERS),
-    PRODUCTION_EDITOR_WARNINGS("Production editor warnings", CategoryGroup.WARNINGS),
     UNPINNED_REFERENCES("Unpinned image and action badges", CategoryGroup.WARNINGS),
     CONFIG_DRIFT("Config key drift badges", CategoryGroup.WARNINGS),
 }
