@@ -1,9 +1,9 @@
 package com.github.khopland.emberkai.generated
 
 import com.github.khopland.emberkai.IconProviderTestCase
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
-import com.github.khopland.emberkai.settings.EmberkaiScope
+import com.github.khopland.emberkai.scopes.EmberkaiScope
 import com.github.khopland.emberkai.settings.setEnabled
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings

@@ -4,6 +4,7 @@ import com.github.khopland.emberkai.core.IconDecorator
 import com.github.khopland.emberkai.core.IconFact
 import com.github.khopland.emberkai.core.IconResolution
 import com.github.khopland.emberkai.core.decorated
+import com.github.khopland.emberkai.folders.serviceFolderPalette
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile

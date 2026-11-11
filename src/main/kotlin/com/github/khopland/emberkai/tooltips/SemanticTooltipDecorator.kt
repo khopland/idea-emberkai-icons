@@ -2,6 +2,7 @@ package com.github.khopland.emberkai.tooltips
 
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
+import com.github.khopland.emberkai.core.appendTooltip
 import com.github.khopland.emberkai.ownership.CodeOwners
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.stereotypes.ClassStereotypes
@@ -48,15 +49,5 @@ class SemanticTooltipDecorator : ProjectViewNodeDecorator {
     internal companion object {
         fun describeOwners(owners: List<String>): String =
             if (owners.isEmpty()) "No code owners" else "Owned by ${owners.joinToString(", ")}"
-
-        fun appendTooltip(existing: String?, description: String): String {
-            if (existing.isNullOrBlank()) return description
-            if (description in existing) return existing
-            val closing = existing.lastIndexOf("</html>", ignoreCase = true)
-            if (closing >= 0) {
-                return existing.substring(0, closing) + "<br>" + escapeXmlEntities(description) + existing.substring(closing)
-            }
-            return "$existing · $description"
-        }
     }
 }

@@ -1,7 +1,6 @@
 package com.github.khopland.emberkai.spring
 
 import com.github.khopland.emberkai.core.RefreshProjectIconPresentations
-import com.github.khopland.emberkai.statusbar.EmberkaiStatusBarWidget
 import com.intellij.execution.CommonJavaRunConfigurationParameters
 import com.intellij.execution.CommonProgramRunConfigurationParameters
 import com.intellij.execution.RunManager
@@ -51,7 +50,7 @@ internal class ActiveSpringProfileListener(private val project: Project) : RunMa
         ApplicationManager.getApplication().invokeLater(
             {
                 RefreshProjectIconPresentations.refresh(project)
-                EmberkaiStatusBarWidget.update(project)
+                if (!project.isDisposed) project.messageBus.syncPublisher(ActiveSpringProfilesListener.TOPIC).profilesChanged()
             },
             project.disposed,
         )

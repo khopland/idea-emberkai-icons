@@ -5,7 +5,7 @@ import com.github.khopland.emberkai.lens.LensSnapshot
 import com.github.khopland.emberkai.lens.OwnerLens
 import com.github.khopland.emberkai.lens.UnownedLens
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
-import com.github.khopland.emberkai.settings.EmberkaiScopesProvider
+import com.github.khopland.emberkai.scopes.EmberkaiScopesProvider
 import com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ViewSettings

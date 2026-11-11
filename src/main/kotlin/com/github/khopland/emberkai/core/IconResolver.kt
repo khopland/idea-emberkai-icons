@@ -21,6 +21,7 @@ import com.github.khopland.emberkai.rules.SpringBootIconRule
 import com.github.khopland.emberkai.rules.SpringXmlConfigDetector
 import com.github.khopland.emberkai.rules.TerraformIconRule
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.settings.isEnabled
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project

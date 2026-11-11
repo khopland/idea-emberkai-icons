@@ -1,7 +1,10 @@
-package com.github.khopland.emberkai.settings
+package com.github.khopland.emberkai.ui
 
-import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.core.RefreshProjectIconPresentations
+import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.settings.IconRuleCategory
+import com.github.khopland.emberkai.settings.isEnabled
+import com.github.khopland.emberkai.settings.setEnabled
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ToggleAction

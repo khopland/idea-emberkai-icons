@@ -4,6 +4,7 @@ import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.folders.FolderIconPalette
 import com.github.khopland.emberkai.folders.ServiceFolderIconStyle
 import com.github.khopland.emberkai.folders.ServiceFolderIcons
+import com.github.khopland.emberkai.folders.serviceFolderPalette
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.roots.ProjectFileIndex

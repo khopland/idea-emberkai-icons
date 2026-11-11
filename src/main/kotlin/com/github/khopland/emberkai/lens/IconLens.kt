@@ -5,7 +5,7 @@ import com.github.khopland.emberkai.badges.KubernetesSecrets
 import com.github.khopland.emberkai.badges.RegistryTokens
 import com.github.khopland.emberkai.badges.SecretFileNames
 import com.github.khopland.emberkai.ownership.CodeOwners
-import com.github.khopland.emberkai.settings.EmberkaiScope
+import com.github.khopland.emberkai.scopes.EmberkaiScope
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 

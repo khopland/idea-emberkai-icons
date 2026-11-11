@@ -1,6 +1,7 @@
 package com.github.khopland.emberkai.folders
 
 import com.github.khopland.emberkai.accents.ModuleAccentColor
+import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.accents.ModuleAccentColor.BLUE
 import com.github.khopland.emberkai.accents.ModuleAccentColor.GREEN
 import com.github.khopland.emberkai.accents.ModuleAccentColor.ORANGE
@@ -20,3 +21,10 @@ internal enum class FolderIconPalette(val displayName: String, val colors: List<
             entries.firstOrNull { it.name == id } ?: EMBERKAI
     }
 }
+
+/** The service-folder palette; settings store it by name, so they need not know the palettes. */
+internal var EmberkaiIconsSettings.serviceFolderPalette: FolderIconPalette
+    get() = FolderIconPalette.fromId(serviceFolderPaletteId)
+    set(value) {
+        updateState { it.serviceFolderPalette = value.name }
+    }

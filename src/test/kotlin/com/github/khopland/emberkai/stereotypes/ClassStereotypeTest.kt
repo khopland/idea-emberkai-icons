@@ -2,10 +2,10 @@ package com.github.khopland.emberkai.stereotypes
 
 import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.audit.StereotypeRow
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.lens.IconLens
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
-import com.github.khopland.emberkai.settings.EmberkaiScope
+import com.github.khopland.emberkai.scopes.EmberkaiScope
 import com.github.khopland.emberkai.settings.setEnabled
 import com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator
 import com.intellij.icons.AllIcons

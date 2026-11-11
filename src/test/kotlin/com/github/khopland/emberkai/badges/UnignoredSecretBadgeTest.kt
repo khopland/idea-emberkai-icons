@@ -4,7 +4,7 @@ import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.core.BadgedIcon
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.core.fact
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
 import com.github.khopland.emberkai.settings.setEnabled

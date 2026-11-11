@@ -1,8 +1,8 @@
-package com.github.khopland.emberkai.settings
+package com.github.khopland.emberkai.scopes
 
 import com.github.khopland.emberkai.badges.EnvironmentVariant
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.generated.GeneratedFiles
 import com.github.khopland.emberkai.ownership.CodeOwners
 import com.github.khopland.emberkai.ownership.CodeOwnersRule

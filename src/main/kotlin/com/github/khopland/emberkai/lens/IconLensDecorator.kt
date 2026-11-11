@@ -1,6 +1,6 @@
 package com.github.khopland.emberkai.lens
 
-import com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator
+import com.github.khopland.emberkai.core.appendTooltip
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
@@ -27,7 +27,7 @@ class IconLensDecorator : ProjectViewNodeDecorator {
             data.clearText()
             fragments.forEach { data.addText(it.text, SimpleTextAttributes.GRAYED_ATTRIBUTES) }
         }
-        data.tooltip = SemanticTooltipDecorator.appendTooltip(
+        data.tooltip = appendTooltip(
             data.tooltip,
             "Outside the ${snapshot.lens.displayName} lens",
         )

@@ -1,4 +1,4 @@
-package com.github.khopland.emberkai.core
+package com.github.khopland.emberkai.settings
 
 import com.intellij.openapi.util.IconLoader
 import com.intellij.openapi.util.IconPathPatcher

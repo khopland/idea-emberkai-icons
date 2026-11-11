@@ -3,7 +3,7 @@ package com.github.khopland.emberkai.rules
 import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.core.FileContentCache
 import com.github.khopland.emberkai.core.IconResolver
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.core.SymbolsIconProvider
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager

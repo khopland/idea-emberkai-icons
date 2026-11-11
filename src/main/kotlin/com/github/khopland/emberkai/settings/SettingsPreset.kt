@@ -1,7 +1,5 @@
 package com.github.khopland.emberkai.settings
 
-import com.github.khopland.emberkai.core.CategoryGroup
-import com.github.khopland.emberkai.core.IconRuleCategory
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings.State
 import kotlin.reflect.KMutableProperty1
 

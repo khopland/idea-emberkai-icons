@@ -3,7 +3,7 @@ package com.github.khopland.emberkai.badges
 import com.github.khopland.emberkai.core.IconDecorator
 import com.github.khopland.emberkai.core.IconFact
 import com.github.khopland.emberkai.core.IconResolution
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.core.decorated
 import com.github.khopland.emberkai.core.iconOrFileTypeIcon
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings

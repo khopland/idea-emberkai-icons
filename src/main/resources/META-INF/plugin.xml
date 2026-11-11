@@ -127,7 +127,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
             parentId="appearance"
-            instance="com.github.khopland.emberkai.settings.EmberkaiIconsConfigurable"
+            instance="com.github.khopland.emberkai.ui.EmberkaiIconsConfigurable"
             id="com.github.khopland.symbols.EmberkaiIconsConfigurable"
             displayName="Emberkai Icons"/>
         <applicationConfigurable
@@ -152,7 +152,7 @@
         <editorTabColorProvider implementation="com.github.khopland.emberkai.editor.ProductionEditorTabColorProvider"/>
         <editorNotificationProvider implementation="com.github.khopland.emberkai.editor.ProductionEditorNotificationProvider"/>
         <generatedSourcesFilter implementation="com.github.khopland.emberkai.generated.EmberkaiGeneratedSourcesFilter"/>
-        <customScopesProvider implementation="com.github.khopland.emberkai.settings.EmberkaiScopesProvider"/>
+        <customScopesProvider implementation="com.github.khopland.emberkai.scopes.EmberkaiScopesProvider"/>
         <localInspection shortName="EmberkaiUnmatchedCodeOwnersPattern"
                          displayName="CODEOWNERS pattern matches nothing"
                          groupName="Emberkai"
@@ -180,31 +180,31 @@
                    popup="true"/>
             <separator/>
             <action id="com.github.khopland.symbols.ToggleServiceFolderColors"
-                    class="com.github.khopland.emberkai.settings.ToggleServiceFolderColorsAction"
+                    class="com.github.khopland.emberkai.ui.ToggleServiceFolderColorsAction"
                     text="Color service folders"
                     description="Color folders that contain a Gradle, Maven, or Node package manifest"/>
             <action id="com.github.khopland.symbols.ToggleModuleAwareColors"
-                    class="com.github.khopland.emberkai.settings.ToggleModuleAwareColorsAction"
+                    class="com.github.khopland.emberkai.ui.ToggleModuleAwareColorsAction"
                     text="Module-aware accent colors"
                     description="Give every IntelliJ module a stable folder accent color"/>
             <action id="com.github.khopland.symbols.ToggleHighContrastFolders"
-                    class="com.github.khopland.emberkai.settings.ToggleHighContrastFoldersAction"
+                    class="com.github.khopland.emberkai.ui.ToggleHighContrastFoldersAction"
                     text="High-contrast folder markers"
                     description="Use shape-coded high-contrast folder markers"/>
             <action id="com.github.khopland.symbols.ToggleMonochromeFolders"
-                    class="com.github.khopland.emberkai.settings.ToggleMonochromeFoldersAction"
+                    class="com.github.khopland.emberkai.ui.ToggleMonochromeFoldersAction"
                     text="Monochrome service folders"
                     description="Draw service folders without color"/>
             <action id="com.github.khopland.symbols.ToggleReducedFolderColor"
-                    class="com.github.khopland.emberkai.settings.ToggleReducedFolderColorAction"
+                    class="com.github.khopland.emberkai.ui.ToggleReducedFolderColorAction"
                     text="Reduce service-folder color"
                     description="Use softer service-folder colors"/>
             <action id="com.github.khopland.symbols.ToggleArchitectureFolders"
-                    class="com.github.khopland.emberkai.settings.ToggleArchitectureFoldersAction"
+                    class="com.github.khopland.emberkai.ui.ToggleArchitectureFoldersAction"
                     text="JVM architecture folders"
                     description="Show distinct icons for controller, service, repository, and similar packages"/>
             <action id="com.github.khopland.symbols.ToggleStereotypeBadges"
-                    class="com.github.khopland.emberkai.settings.ToggleStereotypeBadgesAction"
+                    class="com.github.khopland.emberkai.ui.ToggleStereotypeBadgesAction"
                     text="Class stereotype icons"
                     description="Show a role icon in place of the native class icon for controllers, message listeners, scheduled jobs, HTTP clients, services, repositories, configuration, entities, and tests"/>
             <add-to-group group-id="ViewMenu" anchor="last"/>

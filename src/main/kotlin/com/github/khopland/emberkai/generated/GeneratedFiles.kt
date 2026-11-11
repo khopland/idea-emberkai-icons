@@ -1,10 +1,10 @@
 package com.github.khopland.emberkai.generated
 
-import com.github.khopland.emberkai.core.IconRuleCategory
+import com.github.khopland.emberkai.core.appendTooltip
 import com.github.khopland.emberkai.rules.ContentIndex
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
+import com.github.khopland.emberkai.settings.IconRuleCategory
 import com.github.khopland.emberkai.settings.isEnabled
-import com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.projectView.ProjectViewNode
 import com.intellij.ide.projectView.ProjectViewNodeDecorator
@@ -149,6 +149,6 @@ class GeneratedFileDecorator : ProjectViewNodeDecorator {
         val file = node.virtualFile?.takeIf { !it.isDirectory } ?: return
         val reason = GeneratedFiles.reason(file, project) ?: return
         if (data.locationString.isNullOrEmpty()) data.locationString = "generated"
-        data.tooltip = SemanticTooltipDecorator.appendTooltip(data.tooltip, "Generated: $reason")
+        data.tooltip = appendTooltip(data.tooltip, "Generated: $reason")
     }
 }

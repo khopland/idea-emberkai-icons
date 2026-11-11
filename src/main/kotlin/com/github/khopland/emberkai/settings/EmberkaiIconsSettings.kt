@@ -1,18 +1,11 @@
 package com.github.khopland.emberkai.settings
 
-import com.github.khopland.emberkai.core.ArtworkPalette
-import com.github.khopland.emberkai.core.ArtworkPalettePatcher
-import com.github.khopland.emberkai.core.IconRuleCategory
-import com.github.khopland.emberkai.folders.FolderIconPalette
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
-import java.nio.file.Files
-import java.nio.file.Path
-import java.util.Properties
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
@@ -25,7 +18,8 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         var preserveNativeJavaKotlinIcons: Boolean = true,
         var colorServiceFolders: Boolean = true,
         var moduleAwareColors: Boolean = false,
-        var serviceFolderPalette: String = FolderIconPalette.EMBERKAI.name,
+        /** A FolderIconPalette name; see the serviceFolderPalette extension in the folders package. */
+        var serviceFolderPalette: String = "EMBERKAI",
         var artworkPalette: String = ArtworkPalette.EMBERKAI.name,
         var highContrastFolderIcons: Boolean = false,
         var monochromeFolderIcons: Boolean = false,
@@ -86,11 +80,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
     var semanticTooltips by flag(State::semanticTooltips)
     var codeOwnerTooltips by flag(State::codeOwnerTooltips)
 
-    internal var serviceFolderPalette: FolderIconPalette
-        get() = FolderIconPalette.fromId(currentState.serviceFolderPalette)
-        set(value) {
-            updateState { it.serviceFolderPalette = value.name }
-        }
+    internal val serviceFolderPaletteId: String get() = currentState.serviceFolderPalette
 
     internal var artworkPalette: ArtworkPalette
         get() = ArtworkPalette.fromId(currentState.artworkPalette)
@@ -109,7 +99,7 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
         updateState { it.productionEditorWarnings = true }
     }
 
-    private fun updateState(update: (State) -> Unit) {
+    internal fun updateState(update: (State) -> Unit) {
         synchronized(stateLock) {
             currentState = currentState.copy().also(update)
         }
@@ -137,9 +127,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             State::semanticTooltips,
             State::codeOwnerTooltips,
         )
-        private val EXPORTED_FLAGS = GENERAL_FLAGS + IconRuleCategory.entries.map(::flag)
-        private const val PALETTE_KEY = "serviceFolderPalette"
-        private const val ARTWORK_PALETTE_KEY = "artworkPalette"
 
         fun getInstance(): EmberkaiIconsSettings =
             ApplicationManager.getApplication().getService(EmberkaiIconsSettings::class.java)
@@ -169,28 +156,6 @@ class EmberkaiIconsSettings : PersistentStateComponent<EmberkaiIconsSettings.Sta
             IconRuleCategory.GENERATED_FILES -> State::generatedFiles
             IconRuleCategory.UNPINNED_REFERENCES -> State::unpinnedReferences
             IconRuleCategory.CONFIG_DRIFT -> State::configDrift
-        }
-
-        /** Writes [state] as a portable properties file. */
-        internal fun export(state: State, path: Path) {
-            val properties = Properties()
-            EXPORTED_FLAGS.forEach { properties.setProperty(it.name, it.get(state).toString()) }
-            properties.setProperty(PALETTE_KEY, state.serviceFolderPalette)
-            properties.setProperty(ARTWORK_PALETTE_KEY, state.artworkPalette)
-            Files.newOutputStream(path).use { properties.store(it, "Emberkai Icons settings") }
-        }
-
-        /** Reads an exported file; missing or invalid values fall back to the defaults. */
-        internal fun import(path: Path): State {
-            val properties = Properties()
-            Files.newInputStream(path).use(properties::load)
-            return State().apply {
-                EXPORTED_FLAGS.forEach { property ->
-                    properties.getProperty(property.name)?.trim()?.toBooleanStrictOrNull()?.let { property.set(this, it) }
-                }
-                serviceFolderPalette = FolderIconPalette.fromId(properties.getProperty(PALETTE_KEY)?.trim()).name
-                artworkPalette = ArtworkPalette.fromId(properties.getProperty(ARTWORK_PALETTE_KEY)?.trim()).name
-            }
         }
     }
 }
