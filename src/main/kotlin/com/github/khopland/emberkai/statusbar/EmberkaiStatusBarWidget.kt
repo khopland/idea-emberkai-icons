@@ -1,5 +1,8 @@
 package com.github.khopland.emberkai.statusbar
 
+import com.github.khopland.emberkai.lens.EmberkaiLensSettings
+import com.github.khopland.emberkai.lens.IconLensListener
+import com.github.khopland.emberkai.lens.LensSettingsListener
 import com.github.khopland.emberkai.lens.IconLensService
 import com.github.khopland.emberkai.spring.ActiveSpringProfiles
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -11,12 +14,14 @@ import com.intellij.openapi.actionSystem.Separator
 import com.intellij.openapi.actionSystem.impl.SimpleDataContext
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.ui.popup.JBPopup
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
 
 /**
  * Shows the active lens and the Spring profiles of the selected run configuration. Clicking it
@@ -24,6 +29,10 @@ import com.intellij.openapi.wm.WindowManager
  */
 internal class EmberkaiStatusBarWidget(private val project: Project) :
     StatusBarWidget, StatusBarWidget.MultipleTextValuesPresentation {
+    init {
+        project.messageBus.connect(this).subscribe(IconLensListener.TOPIC, IconLensListener { update(project) })
+    }
+
     override fun ID(): String = ID
 
     override fun getPresentation(): StatusBarWidget.WidgetPresentation = this
@@ -91,7 +100,21 @@ internal class EmberkaiStatusBarWidgetFactory : StatusBarWidgetFactory {
 
     override fun getDisplayName(): String = "Emberkai Lens and Spring Profile"
 
+    /** Off on the Lenses settings page removes the widget and its entry in the status bar's menu. */
+    override fun isAvailable(project: Project): Boolean = EmberkaiLensSettings.getInstance().showStatusBarWidget
+
     override fun createWidget(project: Project): StatusBarWidget = EmberkaiStatusBarWidget(project)
 
     override fun canBeEnabledOn(statusBar: StatusBar): Boolean = true
+}
+
+/** Adds or removes the widget in every open project after the Lenses settings page is applied. */
+internal class StatusBarWidgetVisibility : LensSettingsListener {
+    override fun lensSettingsChanged() {
+        for (project in ProjectManager.getInstance().openProjects) {
+            if (!project.isDisposed) {
+                project.getService(StatusBarWidgetsManager::class.java).updateWidget(EmberkaiStatusBarWidgetFactory::class.java)
+            }
+        }
+    }
 }

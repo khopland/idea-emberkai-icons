@@ -89,9 +89,7 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
         ChangedOnBranchLens ->
             "Keep files changed since this branch left the default branch, including uncommitted ones, " +
                 "in full color and dim the rest of the Project view"
-        HotspotsLens ->
-            "Keep the ${Hotspots.LIMIT} files changed in the most commits over the last ${Hotspots.DAYS} days " +
-                "in full color and dim the rest of the Project view"
+        HotspotsLens -> hotspotsDescription()
         else -> "Keep ${lens.displayName.lowercase()} files in full color and dim the rest of the Project view"
     },
     null,
@@ -101,6 +99,8 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
     override fun update(event: AnActionEvent) {
         super.update(event)
         event.presentation.isEnabled = event.project != null
+        // The counts are settings, so the description follows them.
+        if (lens == HotspotsLens) event.presentation.description = hotspotsDescription()
     }
 
     override fun isSelected(event: AnActionEvent): Boolean {
@@ -113,4 +113,10 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
         // Unchecking the active lens turns lenses off; unchecking No Lens does nothing.
         IconLensService.getInstance(project).select(if (state) lens else null)
     }
+}
+
+private fun hotspotsDescription(): String {
+    val settings = EmberkaiLensSettings.getInstance()
+    return "Keep the ${settings.hotspotLimit} files changed in the most commits over the last " +
+        "${settings.hotspotDays} days in full color and dim the rest of the Project view"
 }

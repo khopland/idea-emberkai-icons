@@ -5,6 +5,7 @@ import com.github.khopland.emberkai.badges.MigrationBranchBase
 import com.github.khopland.emberkai.badges.OutOfOrderMigration
 import com.github.khopland.emberkai.lens.BranchChanges
 import com.github.khopland.emberkai.lens.ChangedOnBranchLens
+import com.github.khopland.emberkai.lens.EmberkaiLensSettings
 import com.github.khopland.emberkai.lens.Hotspots
 import com.github.khopland.emberkai.lens.HotspotsLens
 import com.github.khopland.emberkai.lens.IconLensService
@@ -123,8 +124,28 @@ internal class GitBranchChangesTest : HeavyPlatformTestCase() {
         val counts = (1..40).associate { "f$it" to 2 } + ("busy" to 9)
         assertEquals("Every file tied with the last place stays", 41, Hotspots.rank(counts).size)
         val ranked = Hotspots.rank((1..40).associate { "f$it" to it + 1 })
-        assertEquals(Hotspots.LIMIT, ranked.size)
+        assertEquals(Hotspots.DEFAULT_LIMIT, ranked.size)
         assertEquals("f40", ranked.first())
+        assertEquals(setOf("f40", "f39"), Hotspots.rank((1..40).associate { "f$it" to it + 1 }, limit = 2))
+        assertEquals(setOf("a"), Hotspots.rank(mapOf("a" to 1), minimumCommits = 1))
+    }
+
+    fun testChangedHotspotSettingsRecountTheActiveLens() {
+        val settings = EmberkaiLensSettings.getInstance()
+        val saved = settings.state
+        try {
+            val service = IconLensService.getInstance(project)
+            service.select(HotspotsLens)
+            PlatformTestUtil.waitWithEventsDispatching("lens snapshot", { service.snapshot != null }, 30)
+            assertEquals(1, service.snapshot!!.memberCount)
+
+            settings.hotspotMinimumCommits = 1
+            Hotspots.getInstance(project)!!.settingsChanged()
+            PlatformTestUtil.waitWithEventsDispatching("recount", { (service.snapshot?.memberCount ?: 0) > 1 }, 30)
+            assertTrue("committed.txt" in Hotspots.getInstance(project)!!.files()!!.map(VirtualFile::getName))
+        } finally {
+            settings.loadState(saved)
+        }
     }
 
     fun testMigrationAddedBelowTheDefaultBranchLatestIsOutOfOrder() {

@@ -95,7 +95,7 @@ internal data object ChangedOnBranchLens : Lens {
 }
 
 /**
- * The files changed in the most commits over the last [Hotspots.DAYS] days: where an unfamiliar
+ * The files changed in the most commits over the last [EmberkaiLensSettings.hotspotDays] days: where an unfamiliar
  * codebase is moving, and where changes most often collide. Membership comes from [Hotspots].
  */
 internal data object HotspotsLens : Lens {
