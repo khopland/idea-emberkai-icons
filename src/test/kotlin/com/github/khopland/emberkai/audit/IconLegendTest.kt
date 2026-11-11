@@ -59,6 +59,7 @@ internal class IconLegendTest : BasePlatformTestCase() {
 
     private companion object {
         val FILL = Regex("""fill="([a-z0-9-]+)"""")
-        val CLASS = Regex("""(abstract )?class (\w+)\((?:[^()]|\([^()]*\))*\)\s*:\s*(\w+)\(""")
+        // Possessive quantifiers: a backtracking group per character overflows the stack on long files.
+        val CLASS = Regex("""(abstract )?class (\w+)\((?:[^()]++|\([^()]*+\))*+\)\s*:\s*(\w+)\(""")
     }
 }
