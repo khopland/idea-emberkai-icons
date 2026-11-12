@@ -7,7 +7,7 @@ import java.util.ResourceBundle
 import javax.swing.Icon
 
 /**
- * Loads artwork and gives local mappings precedence over the upstream bundle.
+ * Loads artwork and gives Emberkai's own mappings precedence over the base associations.
  *
  * Both bundles are read into one map of [MappedIcon]s once, shared by the resolver, the settings
  * preview and the catalog. A [ResourceBundle] lookup is a hash lookup plus fallback work, and the
@@ -16,10 +16,8 @@ import javax.swing.Icon
  */
 internal object IconMappings {
     private val icons: Map<String, MappedIcon> = buildMap {
-        load("symbols.icons").forEach { (key, path) ->
-            put(key, MappedIcon(key, MappingSource.UPSTREAM, artwork("/symbols/icons/$path")))
-        }
-        load("emberkai.icons").forEach { (key, path) -> put(key, MappedIcon(key, MappingSource.CUSTOM, artwork(path))) }
+        load("emberkai.associations").forEach { (key, path) -> put(key, MappedIcon(key, MappingSource.ASSOCIATION, path)) }
+        load("emberkai.icons").forEach { (key, path) -> put(key, MappedIcon(key, MappingSource.CUSTOM, path)) }
     }
 
     private val contextDepths = MappingKeys.contextDepths(icons.keys)
@@ -42,21 +40,17 @@ internal object IconMappings {
         .sortedBy { it.key.lowercase(Locale.ROOT) }
 
     /**
-     * Upstream Symbols artwork, or Emberkai's own redraw of it from `emberkai/icons/originals/` when
-     * there is one. Upstream then supplies only the mapping, and a refresh never brings its art back.
+     * Where a bundled artwork path lives now. Project overrides written before 0.9 may still name
+     * `/symbols/icons/…`, the bundle Emberkai's own artwork in `/emberkai/icons/originals/` replaced.
      */
-    private fun artwork(path: String): String {
-        val relative = path.removePrefix("/")
-        if (!relative.startsWith(UPSTREAM_ART)) return path
-        val original = ORIGINALS + relative.removePrefix(UPSTREAM_ART)
-        return if (SymbolsIconProvider::class.java.classLoader.getResource(original) != null) "/$original" else path
-    }
+    fun currentArtworkPath(path: String): String =
+        if (path.startsWith(RETIRED_ART)) ORIGINALS + path.removePrefix(RETIRED_ART) else path
 
-    private const val UPSTREAM_ART = "symbols/icons/"
-    private const val ORIGINALS = "emberkai/icons/originals/"
+    private const val RETIRED_ART = "/symbols/icons/"
+    private const val ORIGINALS = "/emberkai/icons/originals/"
 
     private fun load(bundle: String): Map<String, String> {
-        val resource = ResourceBundle.getBundle(bundle, Locale.ROOT, SymbolsIconProvider::class.java.classLoader)
+        val resource = ResourceBundle.getBundle(bundle, Locale.ROOT, EmberkaiIconProvider::class.java.classLoader)
         return resource.keys.asSequence().associateWith(resource::getString)
     }
 }
@@ -112,7 +106,7 @@ internal object MappingKeys {
 }
 
 internal enum class MappingSource(val displayName: String) {
-    UPSTREAM("Upstream Symbols mapping"),
+    ASSOCIATION("Bundled association"),
     CUSTOM("Custom Emberkai mapping"),
     PROJECT_OVERRIDE("Project icon override"),
 }
@@ -124,7 +118,7 @@ internal data class MappedIcon(
     val resourcePath: String,
 ) {
     val icon: Icon by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        IconLoader.getIcon(resourcePath, SymbolsIconProvider::class.java)
+        IconLoader.getIcon(resourcePath, EmberkaiIconProvider::class.java)
     }
 }
 
@@ -135,7 +129,7 @@ internal data class IconCatalogEntry(
 ) {
     val icon: Icon?
         get() = try {
-            IconLoader.findIcon(resourcePath, SymbolsIconProvider::class.java)
+            IconLoader.findIcon(resourcePath, EmberkaiIconProvider::class.java)
         } catch (_: RuntimeException) {
             null
         }

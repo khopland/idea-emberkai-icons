@@ -27,7 +27,7 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
     fun testKnownConfigurationNamesReceiveEnvironmentBadges() {
         val compose = myFixture.addFileToProject("docker-compose.production.yaml", "services: {}")
         assertEnvironmentBadge(
-            "symbols/icons/files/docker-pink.svg", EnvironmentVariant.PRODUCTION,
+            "emberkai/icons/originals/files/docker-pink.svg", EnvironmentVariant.PRODUCTION,
             provider.getIcon(compose, 0),
         )
 
@@ -65,10 +65,10 @@ internal class EnvironmentVariantBadgeTest : IconProviderTestCase() {
         val file = myFixture.addFileToProject("docker-compose.prod.yml", "services: {}")
         val badge = provider.getIcon(file, 0) as? EnvironmentVariantBadgeIcon
         assertNotNull(badge)
-        assertResourceIcon("symbols/icons/files/docker-pink.svg", badge!!.baseIcon)
+        assertResourceIcon("emberkai/icons/originals/files/docker-pink.svg", badge!!.baseIcon)
 
         settings.setEnabled(IconRuleCategory.ENVIRONMENT_VARIANTS, false)
-        assertResourceIcon("symbols/icons/files/docker-pink.svg", provider.getIcon(file, 0))
+        assertResourceIcon("emberkai/icons/originals/files/docker-pink.svg", provider.getIcon(file, 0))
     }
 
     fun testEnvironmentFoldersAreRecognizedOnlyInsideEnvironmentContainers() {

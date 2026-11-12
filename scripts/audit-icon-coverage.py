@@ -40,7 +40,7 @@ def load_properties(path: Path) -> dict[str, str]:
 
 def mappings() -> dict[str, str]:
     return {
-        **load_properties(RESOURCE_DIR / "symbols/icons.properties"),
+        **load_properties(RESOURCE_DIR / "emberkai/associations.properties"),
         **load_properties(RESOURCE_DIR / "emberkai/icons.properties"),
     }
 

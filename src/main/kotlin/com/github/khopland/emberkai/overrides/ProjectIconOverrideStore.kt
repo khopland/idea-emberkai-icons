@@ -1,9 +1,10 @@
 package com.github.khopland.emberkai.overrides
 
+import com.github.khopland.emberkai.core.IconMappings
 import com.github.khopland.emberkai.core.MappingKeys
 import com.github.khopland.emberkai.core.ProjectPathUtil
 import com.github.khopland.emberkai.core.RefreshProjectIconPresentations
-import com.github.khopland.emberkai.core.SymbolsIconProvider
+import com.github.khopland.emberkai.core.EmberkaiIconProvider
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
@@ -382,10 +383,10 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
 
         private fun loadArtwork(value: String): Artwork? {
             if (ProjectIconOverrideFile.isBundledPath(value)) {
-                val path = value.trim()
-                if (!ProjectIconOverrideFile.isBundledArtwork(path)) return null
+                if (!ProjectIconOverrideFile.isBundledArtwork(value)) return null
+                val path = IconMappings.currentArtworkPath(value.trim())
                 // Same cached icon instance as the bundled mapping that references this path.
-                return Artwork(IconLoader.getIcon(path, SymbolsIconProvider::class.java), path)
+                return Artwork(IconLoader.getIcon(path, EmberkaiIconProvider::class.java), path)
             }
             val relative = ProjectIconOverrideFile.relativeArtworkPath(value) ?: return null
             val directoryPath = iconsDirectory ?: return null
@@ -414,7 +415,7 @@ internal class ProjectIconOverrideStore(private val project: Project) : Disposab
                 "# Keys use the same format as the bundled icons.properties file:\n" +
                 "#   file.<name>, extension.<ext>, folder.<name>, optionally prefixed with parent folders\n" +
                 "#   such as file.deploy/prod/values.yaml.\n" +
-                "# Values may be a bundled resource path such as /symbols/icons/files/github.svg\n" +
+                "# Values may be a bundled resource path such as /emberkai/icons/originals/files/github.svg\n" +
                 "# or a path relative to .idea/emberkai-icons/ such as my-icon.svg.\n" +
                 "# Add my-icon_dark.svg next to an SVG to provide a dark-theme variant.\n"
 

@@ -47,7 +47,6 @@ internal class ArtworkPaletteTest : BasePlatformTestCase() {
 
         settings.artworkPalette = ArtworkPalette.NORD
         assertEquals("/emberkai/palettes/nord/icons/helm.svg", ArtworkPalettePatcher.patchPath("/emberkai/icons/helm.svg", null))
-        assertNull("Upstream art keeps its colors", ArtworkPalettePatcher.patchPath("/symbols/icons/files/json.svg", null))
         val nord = pixels(icon)
         assertFalse("The same icon instance repaints in Nord colors", emberkai.contentEquals(nord))
 
@@ -56,12 +55,12 @@ internal class ArtworkPaletteTest : BasePlatformTestCase() {
         assertTrue(emberkai.contentEquals(pixels(icon)))
     }
 
-    fun testPalettesRetintUpstreamFoldersButNotBrandFileIcons() {
+    fun testPalettesRetintFoldersAndLeaveOtherResourcesAlone() {
         settings.artworkPalette = ArtworkPalette.GRUVBOX
-        val folder = ArtworkPalettePatcher.patchPath("/symbols/icons/folders/folder-blue.svg", null)
-        assertEquals("/emberkai/palettes/gruvbox/symbols/icons/folders/folder-blue.svg", folder)
+        val folder = ArtworkPalettePatcher.patchPath("/emberkai/icons/originals/folders/folder-blue.svg", null)
+        assertEquals("/emberkai/palettes/gruvbox/icons/originals/folders/folder-blue.svg", folder)
         assertNotNull(ArtworkPalette::class.java.classLoader.getResource(folder!!.removePrefix("/")))
-        assertNull(ArtworkPalettePatcher.patchPath("/symbols/icons/files/docker.svg", null))
+        assertNull(ArtworkPalettePatcher.patchPath("/META-INF/pluginIcon.svg", null))
     }
 
     fun testModuleAccentsFollowThePalette() {

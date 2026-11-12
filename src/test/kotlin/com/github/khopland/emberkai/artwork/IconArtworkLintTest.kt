@@ -14,11 +14,10 @@ import kotlin.math.pow
 import org.w3c.dom.Element
 
 /**
- * Checks the icon SVGs before they ship. All artwork must parse and paint at 16px; Emberkai's own
- * artwork must also use the named palette in design/palette.properties and stay legible on both IDE
- * themes, which is what 0.8.0 had to fix by hand. Upstream Symbols artwork is mid-tone by design, so
- * it is held to the structural checks only. Each rule is also run against known-bad artwork, so a
- * rule that stops finding anything fails here rather than passing quietly.
+ * Checks the icon SVGs before they ship. All artwork must parse and paint at 16px, use the named
+ * palette in design/palette.properties and stay legible on both IDE themes, which is what 0.8.0 had
+ * to fix by hand. Each rule is also run against known-bad artwork, so a rule that stops finding
+ * anything fails here rather than passing quietly.
  */
 internal class IconArtworkLintTest : BasePlatformTestCase() {
     override fun setUp() {
@@ -35,11 +34,11 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     }
 
     fun testEveryIconPaintsAt16Pixels() {
-        assertNoProblems((EMBERKAI.svgs() + SYMBOLS.svgs()).mapNotNull(::structureProblem))
+        assertNoProblems(EMBERKAI.svgs().mapNotNull(::structureProblem))
     }
 
     fun testEmberkaiArtworkUsesSquareGrids() {
-        assertNoProblems(EMBERKAI.ownArtwork().mapNotNull(::gridProblem))
+        assertNoProblems(EMBERKAI.svgs().mapNotNull(::gridProblem))
     }
 
     fun testEmberkaiArtworkUsesThePalette() {
@@ -48,11 +47,11 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
     }
 
     fun testDarkVariantsMatchTheirLightArtwork() {
-        assertNoProblems(EMBERKAI.ownArtwork().filter { it.name.endsWith(DARK_SUFFIX) }.mapNotNull(::darkVariantProblem))
+        assertNoProblems(EMBERKAI.svgs().filter { it.name.endsWith(DARK_SUFFIX) }.mapNotNull(::darkVariantProblem))
     }
 
     fun testEmberkaiArtworkIsLegibleInBothThemes() {
-        assertNoProblems(EMBERKAI.ownArtwork().filterNot { it.name.endsWith(DARK_SUFFIX) }.flatMap(::legibilityProblems))
+        assertNoProblems(EMBERKAI.svgs().filterNot { it.name.endsWith(DARK_SUFFIX) }.flatMap(::legibilityProblems))
     }
 
     fun testEachRuleRejectsKnownBadArtwork() {
@@ -214,7 +213,6 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
 
     private companion object {
         val EMBERKAI = File("src/main/resources/emberkai")
-        val SYMBOLS = File("src/main/resources/symbols")
         val THEME_PALETTES = File("src/main/resources/emberkai/palettes")
         const val DARK_SUFFIX = "_dark.svg"
         val SCALES = listOf(1, 2)
@@ -234,11 +232,6 @@ internal class IconArtworkLintTest : BasePlatformTestCase() {
             get() = if (startsWith(File("src/main/resources"))) relativeTo(File("src/main/resources")).path else name
 
         fun File.svgs(): List<File> = walk().filter { it.isFile && it.extension == "svg" }.sorted().toList()
-
-        /** Emberkai artwork and its palette copies; palette copies of upstream folders are upstream art. */
-        fun File.ownArtwork(): List<File> = svgs().filterNot { file ->
-            file.startsWith(THEME_PALETTES) && file.relativeTo(THEME_PALETTES).invariantSeparatorsPath.substringAfter('/').startsWith("symbols/")
-        }
 
         /** Parses without fetching external DTDs, which editors such as Inkscape declare. */
         fun parse(file: File): Element = DocumentBuilderFactory.newInstance().apply {

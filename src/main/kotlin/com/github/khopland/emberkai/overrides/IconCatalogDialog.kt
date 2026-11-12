@@ -30,7 +30,7 @@ import javax.swing.border.EmptyBorder
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-/** Searchable browser for every bundled Emberkai and upstream Symbols icon. */
+/** Searchable browser for every bundled icon. */
 internal class IconCatalogDialog(
     private val project: Project,
     private val selectable: Boolean,

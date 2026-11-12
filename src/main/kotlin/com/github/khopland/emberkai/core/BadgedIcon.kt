@@ -24,7 +24,7 @@ internal enum class BadgeSlot(val displayName: String, val meaning: String) {
     /** Bottom-left: the environment a configuration file or folder belongs to. */
     ENVIRONMENT("Bottom-left", "The environment a configuration file or folder belongs to."),
 
-    /** Bottom-right: part of the artwork, where Symbols folder glyphs and Kubernetes kinds already sit. */
+    /** Bottom-right: part of the artwork, where folder glyphs and Kubernetes kinds already sit. */
     ARTWORK("Bottom-right", "Part of the artwork, such as a Kubernetes kind or a folder's glyph."),
 }
 

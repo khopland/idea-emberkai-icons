@@ -1,0 +1,7 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M1.5 2.5C1.5 5.75 3.75 7.5 6 7.5H10C12.25 7.5 14.5 5.75 14.5 2.5C13 4.75 11.5 5.25 10 5.25H6C4.5 5.25 3 4.75 1.5 2.5Z" fill="sky-700"/>
+<path d="M4.75 6.5H11.25L10.25 12.25C9.75 14.5 6.25 14.5 5.75 12.25Z" fill="sky-500"/>
+<path d="M11.25 6.5L10.25 12.25C10 13.4 9 14 8 14Z" fill="sky-600"/>
+<circle cx="6.75" cy="9" r="0.75" fill="white"/>
+<circle cx="9.25" cy="9" r="0.75" fill="white"/>
+</svg>

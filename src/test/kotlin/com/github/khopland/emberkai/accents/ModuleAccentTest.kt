@@ -92,7 +92,7 @@ internal class ModuleAccentTest : IconProviderTestCase() {
 
         store.setOverride(moduleName, ModuleAccentColor.RED)
         assertEquals("folder.service.red", ServiceFolderIcons.iconKey(alpha, project))
-        assertResourceIcon("symbols/icons/folders/folder-red.svg", serviceFolderIcon(alpha))
+        assertResourceIcon("emberkai/icons/originals/folders/folder-red.svg", serviceFolderIcon(alpha))
     }
 
     fun testModuleAccentBadgeDecoratesSourcePackagesAndUsesOverrides() {

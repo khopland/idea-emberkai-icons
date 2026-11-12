@@ -8,7 +8,7 @@
     <name>Emberkai Icons</name>
     <vendor url="https://github.com/khopland/idea-emberkai-icons">khopland</vendor>
     <description><![CDATA[
-        <p>Emberkai Icons brings the Symbols file and folder icon set to JetBrains IDEs,
+        <p>Emberkai Icons gives JetBrains IDEs file and folder icons in one faceted style,
         as a companion to the Emberkai theme.</p>
         <p>Java and Kotlin declarations keep their native IntelliJ type icons and badges.</p>
         <p>Gradle Kotlin build scripts and version catalogs use Gradle icons.
@@ -19,7 +19,7 @@
         (including Packer, Vagrant, and Nomad), database migrations, OpenAPI and AsyncAPI contracts, Avro schemas,
         Kubernetes, Kustomize, Flux, Argo CD, and Skaffold, Sealed Secrets, External Secrets, and SOPS, Quarkus, Micronaut, and Ktor configuration,
         JVM quality tooling, developer-tool configuration, and test assets.</p>
-        <p>Symbols-style project folders retain source/test colors, resource and
+        <p>Project folders retain source/test colors, resource and
         package markers, and blue module/source-set badges, including Kotlin Multiplatform.
         Opt-in module-aware accents give every IntelliJ module a stable color that service roots,
         source roots, packages, and their descendants share. Opt-in JVM architecture folders give
@@ -70,8 +70,8 @@
         A <b>No Owner</b> lens and scope show files CODEOWNERS leaves unowned, and an inspection flags
         CODEOWNERS lines that match nothing.
         <b>Tools | Find Reviewers for This Branch</b> lists the owners of every file the current branch changes.</p>
-        <p>Icons by Miguel Solorio, from
-        <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a>.</p>
+        <p>File associations derived from
+        <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a> by Miguel Solorio.</p>
     ]]></description>
     <depends>com.intellij.modules.platform</depends>
     <depends optional="true" config-file="spring-modulith.xml">com.intellij.spring.modulith</depends>
@@ -142,8 +142,8 @@
             displayName="Lenses"/>
         <!-- Content facts for scopes, lenses, and badges; the EDT and dumb mode still read files directly. -->
         <fileBasedIndex implementation="com.github.khopland.emberkai.rules.ContentIndex"/>
-        <iconProvider implementation="com.github.khopland.emberkai.core.SymbolsIconProvider" order="first"/>
-        <fileIconProvider implementation="com.github.khopland.emberkai.core.SymbolsIconProvider" order="first"/>
+        <iconProvider implementation="com.github.khopland.emberkai.core.EmberkaiIconProvider" order="first"/>
+        <fileIconProvider implementation="com.github.khopland.emberkai.core.EmberkaiIconProvider" order="first"/>
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.lens.IconLensDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.generated.GeneratedFileDecorator"/>

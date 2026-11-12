@@ -1,0 +1,6 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="2" y="6.5" width="12" height="8" rx="1.75" fill="$steel"/>
+<path d="M14 10V12.75A1.75 1.75 0 0 1 12.25 14.5H8Z" fill="$steel-shade"/>
+<rect x="2" y="2.5" width="12" height="3" rx="1" fill="$night"/>
+<path d="M5 2.75L4 5.25M8.25 2.75L7.25 5.25M11.5 2.75L10.5 5.25" stroke="white" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

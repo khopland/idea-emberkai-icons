@@ -1,7 +1,7 @@
 Emberkai Icons
 https://github.com/khopland/idea-emberkai-icons
 
-Icons: vscode-symbols by Miguel Solorio (commit 2c95b15b0a8ef95ac62855e3784a6024ee6e5d2e)
+File and folder associations: derived from vscode-symbols by Miguel Solorio (commit 2c95b15b0a8ef95ac62855e3784a6024ee6e5d2e)
 https://github.com/miguelsolorio/vscode-symbols
 Copyright (c) 2020-22 Miguel Solorio
 The original MIT license is included in licenses/vscode-symbols-LICENSE.txt.
@@ -9,7 +9,7 @@ The original MIT license is included in licenses/vscode-symbols-LICENSE.txt.
 The Ansible, Azure Pipelines, Bitbucket, Argo CD, Flux, and infrastructure icons are original Emberkai line artwork: brand palettes and silhouettes inspired by each tool, drawn in-house. Earlier bundled Simple Icons and vscode-icons artwork has been retired; copies of that artwork and the original licenses remain in `design/reference/` and `licenses/` for attribution.
 
 Custom artwork in emberkai/icons/, including the Ansible, Azure Pipelines, Bitbucket, Argo CD, Flux, and infrastructure symbols, is original to Emberkai Icons and covered by the project MIT license. Icons are drawn as line art in the Emberkai palette; alternative variants live in emberkai/icons/alternates/.
-Folder variants and migration artwork build on the Symbols folder outline and database icon.
+No vscode-symbols artwork is bundled. Icons in emberkai/icons/originals/ are Emberkai's own drawings, named after the Symbols icons they replaced and taking their subjects from that set.
 
 Originally based on Symbols Icons for JetBrains:
 https://github.com/joansgarcia/jetbrains-symbols

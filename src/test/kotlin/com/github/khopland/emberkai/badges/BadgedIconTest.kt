@@ -4,7 +4,7 @@ import com.github.khopland.emberkai.accents.ModuleAccentColor
 import com.github.khopland.emberkai.accents.ModuleAccentIcon
 import com.github.khopland.emberkai.core.BadgedIcon
 import com.github.khopland.emberkai.core.BadgeSlot
-import com.github.khopland.emberkai.core.SymbolsIconProvider
+import com.github.khopland.emberkai.core.EmberkaiIconProvider
 import com.github.khopland.emberkai.spring.ActiveSpringProfileIcon
 import com.github.khopland.emberkai.spring.ModulithFolderIcon
 import com.github.khopland.emberkai.spring.ModulithLock
@@ -15,7 +15,7 @@ import java.awt.image.BufferedImage
 import javax.swing.Icon
 
 internal class BadgedIconTest : BasePlatformTestCase() {
-    private val base: Icon = IconLoader.getIcon("/emberkai/icons/folder-helm.svg", SymbolsIconProvider::class.java)
+    private val base: Icon = IconLoader.getIcon("/emberkai/icons/folder-helm.svg", EmberkaiIconProvider::class.java)
 
     // Headless runs (CI) leave the icon loader inactive, so every icon paints as a 1x1 placeholder.
     private val activatesIconLoader = GraphicsEnvironment.isHeadless()
@@ -70,7 +70,7 @@ internal class BadgedIconTest : BasePlatformTestCase() {
     }
 
     fun testOverlaysLeaveTheArtworksOwnCornerBadge() {
-        val deployment = IconLoader.getIcon("/emberkai/icons/kubernetes/deployment.svg", SymbolsIconProvider::class.java)
+        val deployment = IconLoader.getIcon("/emberkai/icons/kubernetes/deployment.svg", EmberkaiIconProvider::class.java)
         val kindBadge = corner(pixels(deployment), deployment.iconWidth)
         val overlays: List<BadgedIcon> = listOf(
             EnvironmentVariantBadgeIcon(deployment, EnvironmentVariant.PRODUCTION),

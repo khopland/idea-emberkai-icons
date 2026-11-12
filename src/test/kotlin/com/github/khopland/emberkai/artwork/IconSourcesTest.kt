@@ -17,13 +17,11 @@ internal class IconSourcesTest {
     @Test
     fun generatedArtworkIsUpToDate() {
         val icons = IconSources.fromRepository().generate()
-        val upstreamFolders = UPSTREAM_FOLDERS.svgs().mapValues { (_, file) -> file.readText() }
-        // Each theme palette in design/palettes gets a retinted copy of Emberkai's set and of the upstream
-        // folders, plus the color table that code-painted accents use.
+        // Each theme palette in design/palettes gets a retinted copy of Emberkai's set, plus the color
+        // table that code-painted accents use.
         val generated = icons.mapKeys { (path) -> "icons/$path" } + IconPalette.fromRepository().flatMap { palette ->
             val root = "palettes/${palette.id}"
             icons.map { (path, text) -> "$root/icons/$path" to palette.apply(text) } +
-                upstreamFolders.map { (path, text) -> "$root/symbols/icons/folders/$path" to palette.apply(text) } +
                 ("$root/colors.properties" to palette.colorTable())
         }
         val shipped = GENERATED.flatMap { File(ARTWORK, it).generatedFiles().entries }
@@ -130,11 +128,7 @@ internal class IconSourcesTest {
 
         // Tailwind's own red and orange, the closest pair, are 23° apart.
         const val MIN_HUE_DISTANCE = 20.0
-        val UPSTREAM_FOLDERS = File("src/main/resources/symbols/icons/folders")
         val GENERATED = listOf("icons", "palettes")
-
-        fun File.svgs(): Map<String, File> = walk().filter { it.isFile && it.extension == "svg" }
-            .associateBy { it.relativeTo(this).invariantSeparatorsPath }
 
         fun File.generatedFiles(): Map<String, File> = walk().filter { it.isFile && it.extension in setOf("svg", "properties") }
             .associateBy { it.relativeTo(this).invariantSeparatorsPath }

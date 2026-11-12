@@ -4,7 +4,7 @@ import com.github.khopland.emberkai.IconProviderTestCase
 import com.github.khopland.emberkai.core.FileContentCache
 import com.github.khopland.emberkai.core.IconResolver
 import com.github.khopland.emberkai.settings.IconRuleCategory
-import com.github.khopland.emberkai.core.SymbolsIconProvider
+import com.github.khopland.emberkai.core.EmberkaiIconProvider
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.util.IconLoader
@@ -228,9 +228,9 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
     }
 
     fun testExistingWorkflowAndChartContextWins() {
-        assertContentIcon(".github/workflows/openapi.yml", "openapi: 3.1.0", "symbols/icons/files/github.svg")
+        assertContentIcon(".github/workflows/openapi.yml", "openapi: 3.1.0", "emberkai/icons/originals/files/github.svg")
         assertContentIcon(
-            ".github/workflows/deploy.yaml", "apiVersion: v1\nkind: Service", "symbols/icons/files/github.svg",
+            ".github/workflows/deploy.yaml", "apiVersion: v1\nkind: Service", "emberkai/icons/originals/files/github.svg",
         )
         myFixture.addFileToProject("chart/Chart.yaml", "apiVersion: v2")
         assertContentIcon(
@@ -394,7 +394,7 @@ internal class ContextIconRulesTest : IconProviderTestCase() {
             "devloop/dagger", "infra/packer", "infra/vagrant", "infra/nomad",
         )) {
             val path = "emberkai/icons/$name.svg"
-            val icon = IconLoader.getIcon("/$path", SymbolsIconProvider::class.java)
+            val icon = IconLoader.getIcon("/$path", EmberkaiIconProvider::class.java)
             assertIconAtIdeSize(path, icon)
             if (GraphicsEnvironment.isHeadless()) continue
             val image = BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB)

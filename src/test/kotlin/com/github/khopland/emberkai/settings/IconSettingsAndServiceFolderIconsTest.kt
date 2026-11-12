@@ -230,8 +230,8 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         assertNull(provider.getIcon(file.virtualFile, 0, project))
 
         settings.preserveNativeJavaKotlinIcons = false
-        assertResourceIcon("symbols/icons/files/kotlin.svg", provider.getIcon(file, 0))
-        assertResourceIcon("symbols/icons/files/kotlin.svg", provider.getIcon(file.virtualFile, 0, project))
+        assertResourceIcon("emberkai/icons/originals/files/kotlin.svg", provider.getIcon(file, 0))
+        assertResourceIcon("emberkai/icons/originals/files/kotlin.svg", provider.getIcon(file.virtualFile, 0, project))
     }
 
     fun testServiceRootCacheTracksManifestCreationAndDeletion() {
@@ -261,8 +261,8 @@ internal class IconSettingsAndServiceFolderIconsTest : IconProviderTestCase() {
         assertNotNull(alphaIcon)
         assertNotNull(betaIcon)
         assertNotSame(alphaIcon, betaIcon)
-        assertResourceIcon("symbols/icons/folders/folder-blue.svg", alphaIcon)
-        assertResourceIcon("symbols/icons/folders/folder-green.svg", betaIcon)
+        assertResourceIcon("emberkai/icons/originals/folders/folder-blue.svg", alphaIcon)
+        assertResourceIcon("emberkai/icons/originals/folders/folder-green.svg", betaIcon)
     }
 
     fun testDependenciesAreNotClassifiedAsServiceRoots() {

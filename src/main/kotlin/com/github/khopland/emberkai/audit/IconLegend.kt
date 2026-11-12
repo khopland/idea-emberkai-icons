@@ -100,7 +100,7 @@ internal object IconLegend {
             ),
             LegendSection(
                 "Bottom-right: part of the artwork",
-                "Kubernetes kinds and Symbols folder glyphs are drawn into the icon; Emberkai adds Spring Modulith locks.",
+                "Kubernetes kinds and folder glyphs are drawn into the icon; Emberkai adds Spring Modulith locks.",
                 badges(BadgeSlot.ARTWORK, all),
             ),
             LegendSection(
