@@ -52,7 +52,7 @@ internal class IconContactSheet : BasePlatformTestCase() {
                 else -> listOf(before, after)
             }
         }
-        // An upstream icon refresh can touch hundreds of icons; nobody reviews those row by row.
+        // A restyle can touch hundreds of icons; nobody reviews those row by row.
         val sheet = render(rows.take(MAX_ROWS), hidden = (rows.size - MAX_ROWS).coerceAtLeast(0))
         val target = checkNotNull(output) { "emberkai.iconSheet.output is not set" }
         target.parentFile.mkdirs()

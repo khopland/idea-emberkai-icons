@@ -45,7 +45,7 @@ internal class EdtSlowOperationsTest : HeavyPlatformTestCase() {
      * button and key listeners, including right after a save or an edit dropped the cached overrides.
      */
     fun testOverrideDialogsEditOverridesFromUiEvents() {
-        write(".idea/emberkai-icons.properties", "file.readme.md=/symbols/icons/files/github.svg\n")
+        write(".idea/emberkai-icons.properties", "file.readme.md=/emberkai/icons/originals/files/github.svg\n")
         write("artwork/brand.svg", SVG)
         write("artwork/brand_dark.svg", SVG)
         LocalFileSystem.getInstance().refreshAndFindFileByNioFile(base.resolve(".idea"))
@@ -53,7 +53,7 @@ internal class EdtSlowOperationsTest : HeavyPlatformTestCase() {
         val store = ProjectIconOverrideStore.getInstance(project)
 
         onEdtOutsideAnAction {
-            assertEquals("/symbols/icons/files/github.svg", store.overrides()["file.readme.md"])
+            assertEquals("/emberkai/icons/originals/files/github.svg", store.overrides()["file.readme.md"])
             assertEquals("brand.svg", store.importArtwork(artwork))
             assertTrue(store.putOverride("extension.md", "brand.svg"))
             assertEquals(setOf("file.readme.md", "extension.md"), store.overrides().keys)

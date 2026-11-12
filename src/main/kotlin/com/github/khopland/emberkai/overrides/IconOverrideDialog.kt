@@ -79,7 +79,7 @@ internal class IconOverrideDialog(
         }))
         content.add(Box.createVerticalStrut(8))
         content.add(JLabel(
-            "<html>Use a bundled path such as <tt>/symbols/icons/files/github.svg</tt>, or put an SVG in " +
+            "<html>Use a bundled path such as <tt>/emberkai/icons/originals/files/github.svg</tt>, or put an SVG in " +
                 "<b>.idea/${ProjectIconOverrideStore.ICONS_DIRECTORY}/</b> and reference it by relative name.</html>",
         ))
         content.add(Box.createVerticalStrut(10))

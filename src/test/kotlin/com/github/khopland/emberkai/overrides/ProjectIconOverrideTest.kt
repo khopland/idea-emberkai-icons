@@ -37,14 +37,23 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
         }
     }
 
-    fun testProjectFileOverrideWinsOverBundledMappings() {
+    fun testOverridesNamingTheRetiredSymbolsBundleShowEmberkaiArtwork() {
         writeOverrideFile("extension.yaml=/symbols/icons/files/github.svg\n")
+        val file = myFixture.addFileToProject("deployment.yaml", "apiVersion: v1\nkind: Service")
+
+        val resolution = resolve(file.virtualFile)
+        assertEquals(MappingSource.PROJECT_OVERRIDE, resolution.mappingSource)
+        assertResourceIcon("emberkai/icons/originals/files/github.svg", resolution.icon)
+    }
+
+    fun testProjectFileOverrideWinsOverBundledMappings() {
+        writeOverrideFile("extension.yaml=/emberkai/icons/originals/files/github.svg\n")
         val file = myFixture.addFileToProject("deployment.yaml", "apiVersion: v1\nkind: Service")
 
         val resolution = resolve(file.virtualFile)
         assertEquals("extension.yaml", resolution.mappingKey)
         assertEquals(MappingSource.PROJECT_OVERRIDE, resolution.mappingSource)
-        assertResourceIcon("symbols/icons/files/github.svg", resolution.icon)
+        assertResourceIcon("emberkai/icons/originals/files/github.svg", resolution.icon)
     }
 
     fun testContextualOverrideUsesTheLongestParentSuffix() {
@@ -68,16 +77,16 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
     }
 
     fun testFolderOverrideWinsOverProjectRolesAndFolderNames() {
-        writeOverrideFile("folder.assets=/symbols/icons/files/github.svg\n")
+        writeOverrideFile("folder.assets=/emberkai/icons/originals/files/github.svg\n")
         val folder = myFixture.addFileToProject("assets/readme.md", "data").parent!!.virtualFile
         val resolution = resolve(folder)
         assertEquals("folder.assets", resolution.mappingKey)
         assertEquals(MappingSource.PROJECT_OVERRIDE, resolution.mappingSource)
-        assertResourceIcon("symbols/icons/files/github.svg", resolution.icon)
+        assertResourceIcon("emberkai/icons/originals/files/github.svg", resolution.icon)
     }
 
     fun testNativeIconsStillTakePrecedenceOverProjectOverrides() {
-        writeOverrideFile("extension.kt=/symbols/icons/files/github.svg\n")
+        writeOverrideFile("extension.kt=/emberkai/icons/originals/files/github.svg\n")
         val file = myFixture.addFileToProject("Example.kt", "fun example() = Unit")
         val resolution = resolve(file.virtualFile)
         assertEquals(IconPrecedence.NATIVE_POLICY, resolution.precedence)
@@ -87,8 +96,8 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
     fun testOverridesCanBeAddedAndRemovedThroughTheStore() {
         val store = ProjectIconOverrideStore.getInstance(project)
         store.ensurePropertiesFile()
-        store.putOverride("extension.custom", "/symbols/icons/files/github.svg")
-        assertEquals("/symbols/icons/files/github.svg", store.overrides()["extension.custom"])
+        store.putOverride("extension.custom", "/emberkai/icons/originals/files/github.svg")
+        assertEquals("/emberkai/icons/originals/files/github.svg", store.overrides()["extension.custom"])
         assertNotNull(store.fileOverride(myFixture.addFileToProject("a.custom", "x").virtualFile, "a.custom"))
 
         store.removeOverride("extension.custom")
@@ -96,7 +105,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
     }
 
     fun testCatalogContainsBundledKeysWithoutProjectOverrides() {
-        writeOverrideFile("extension.custom=/symbols/icons/files/github.svg\n")
+        writeOverrideFile("extension.custom=/emberkai/icons/originals/files/github.svg\n")
         val catalog = IconMappings.catalog()
         assertTrue(catalog.any { it.key == "extension.yaml" })
         assertTrue(catalog.none { it.key == "extension.custom" })
@@ -140,12 +149,12 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
     fun testMalformedOverridesAndMissingArtworkFallBackToBundledMappings() {
         writeOverrideFile(
             "extension.yaml=missing.svg\n" +
-                "extension.md=/symbols/icons/files/does-not-exist.svg\n" +
+                "extension.md=/emberkai/icons/originals/files/does-not-exist.svg\n" +
                 "extension.txt=../../outside.svg\n" +
                 "file.broken=\\uZZZZ\n",
         )
         val yaml = resolve(myFixture.addFileToProject("plain.yaml", "a: 1").virtualFile)
-        assertEquals(MappingSource.UPSTREAM, yaml.mappingSource)
+        assertEquals(MappingSource.ASSOCIATION, yaml.mappingSource)
         val markdown = resolve(myFixture.addFileToProject("notes.md", "# notes").virtualFile)
         assertNotSame(MappingSource.PROJECT_OVERRIDE, markdown.mappingSource)
         val text = resolve(myFixture.addFileToProject("notes.txt", "text").virtualFile)
@@ -159,9 +168,11 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
         assertNull(ProjectIconOverrideFile.relativeArtworkPath("nested/../../icon.svg"))
         assertNull(ProjectIconOverrideFile.relativeArtworkPath("C:\\icons\\icon.svg"))
         assertNull(ProjectIconOverrideFile.relativeArtworkPath("\\\\server\\icon.svg"))
-        assertTrue(ProjectIconOverrideFile.isBundledArtwork("/symbols/icons/files/github.svg"))
-        assertFalse(ProjectIconOverrideFile.isBundledArtwork("/META-INF/plugin.xml"))
+        assertTrue(ProjectIconOverrideFile.isBundledArtwork("/emberkai/icons/originals/files/github.svg"))
+        assertTrue("retired Symbols paths still resolve", ProjectIconOverrideFile.isBundledArtwork("/symbols/icons/files/github.svg"))
         assertFalse(ProjectIconOverrideFile.isBundledArtwork("/symbols/icons/files/does-not-exist.svg"))
+        assertFalse(ProjectIconOverrideFile.isBundledArtwork("/META-INF/plugin.xml"))
+        assertFalse(ProjectIconOverrideFile.isBundledArtwork("/emberkai/icons/originals/files/does-not-exist.svg"))
         assertEquals("folder.deploy/prod", ProjectIconOverrideFile.normalizeKey(" Folder.Deploy\\Prod "))
     }
 
@@ -183,7 +194,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
         val properties = ProjectIconOverrideStore.getInstance(project).propertiesFile()!!
         val document = FileDocumentManager.getInstance().getDocument(properties)!!
         WriteCommandAction.runWriteCommandAction(project) {
-            document.setText("extension.custom=/symbols/icons/files/github.svg\n")
+            document.setText("extension.custom=/emberkai/icons/originals/files/github.svg\n")
         }
         assertTrue(FileDocumentManager.getInstance().isDocumentUnsaved(document))
         assertEquals(MappingSource.PROJECT_OVERRIDE, resolve(file).mappingSource)
@@ -213,7 +224,7 @@ internal class ProjectIconOverrideTest : IconProviderTestCase() {
     }
 
     fun testOverriddenFilesAreDescribedInTooltips() {
-        writeOverrideFile("extension.custom=/symbols/icons/files/github.svg\n")
+        writeOverrideFile("extension.custom=/emberkai/icons/originals/files/github.svg\n")
         val file = myFixture.addFileToProject("a.custom", "x").virtualFile
         assertEquals("Project icon override", IconDescriptions.describe(file, resolve(file)))
     }

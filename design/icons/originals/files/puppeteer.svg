@@ -1,0 +1,8 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M3 2.5H13" stroke="emerald-700" stroke-width="2" stroke-linecap="round"/>
+<path d="M5 3V7.5M11 3V7.5" stroke="emerald-700" stroke-width="1.25"/>
+<rect x="2.5" y="7" width="11" height="7.5" rx="2.25" fill="emerald-500"/>
+<path d="M13.5 10V12.25A2.25 2.25 0 0 1 11.25 14.5H7.5Z" fill="emerald-700"/>
+<circle cx="5.9" cy="10.25" r="1.2" fill="white"/>
+<circle cx="10.1" cy="10.25" r="1.2" fill="white"/>
+</svg>

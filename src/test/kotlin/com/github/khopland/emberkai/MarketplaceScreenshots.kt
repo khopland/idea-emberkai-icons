@@ -1,6 +1,6 @@
 package com.github.khopland.emberkai
 
-import com.github.khopland.emberkai.core.SymbolsIconProvider
+import com.github.khopland.emberkai.core.EmberkaiIconProvider
 import com.github.khopland.emberkai.core.IconDescriptions
 import com.github.khopland.emberkai.core.IconResolver
 import com.github.khopland.emberkai.settings.EmberkaiIconsSettings
@@ -371,7 +371,7 @@ internal class MarketplaceScreenshots : IconProviderTestCase() {
         val node = (element as? KtFile)?.declarations?.singleOrNull() ?: element
         // The bundled Kubernetes plugin also registers its icon providers first, and which of two "first"
         // providers the platform asks first depends on plugin load order. The screenshots show Emberkai's icon.
-        var icon = SymbolsIconProvider().getIcon(node!!, 0) ?: node.getIcon(0)
+        var icon = EmberkaiIconProvider().getIcon(node!!, 0) ?: node.getIcon(0)
         if (icon is DeferredIcon) icon = icon.evaluate()
         return if (theme.dark) IconLoader.getDarkIcon(icon, true) else icon
     }

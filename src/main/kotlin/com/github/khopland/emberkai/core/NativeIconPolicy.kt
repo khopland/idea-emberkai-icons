@@ -11,7 +11,7 @@ import java.util.ResourceBundle
 /** Keeps native file icons and protects folders owned by other IDE features. */
 internal object NativeIconPolicy {
     private val CONFIG = ResourceBundle.getBundle(
-        "emberkai.native", Locale.ROOT, SymbolsIconProvider::class.java.classLoader,
+        "emberkai.native", Locale.ROOT, EmberkaiIconProvider::class.java.classLoader,
     )
     private val SOURCE_EXTENSIONS = names("file.extensions")
     private val TOOL_SCRIPT_SUFFIXES = names("file.toolScriptSuffixes")

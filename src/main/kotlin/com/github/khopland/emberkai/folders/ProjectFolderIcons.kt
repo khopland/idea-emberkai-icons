@@ -10,7 +10,7 @@ import org.jetbrains.jps.model.java.JavaResourceRootProperties
 import org.jetbrains.jps.model.java.JavaSourceRootProperties
 import org.jetbrains.jps.model.module.JpsModuleSourceRoot
 
-/** Applies IntelliJ's root and package roles to Symbols-style folder artwork. */
+/** Applies IntelliJ's root and package roles to folder artwork. */
 internal object ProjectFolderIcons {
     enum class Role(val iconKey: String?) {
         CONTENT_ROOT("folder.role.content-root"),

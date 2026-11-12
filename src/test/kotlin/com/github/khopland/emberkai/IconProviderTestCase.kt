@@ -3,7 +3,7 @@ package com.github.khopland.emberkai
 import com.github.khopland.emberkai.badges.EnvironmentVariant
 import com.github.khopland.emberkai.badges.EnvironmentVariantBadgeIcon
 import com.github.khopland.emberkai.core.IconMappings
-import com.github.khopland.emberkai.core.SymbolsIconProvider
+import com.github.khopland.emberkai.core.EmberkaiIconProvider
 import com.github.khopland.emberkai.folders.ServiceFolderIcons
 import com.intellij.openapi.roots.ModuleRootModificationUtil
 import com.intellij.openapi.util.IconLoader
@@ -20,7 +20,7 @@ import java.nio.file.Paths
 import javax.swing.Icon
 
 internal abstract class IconProviderTestCase : BasePlatformTestCase() {
-    protected val provider = SymbolsIconProvider()
+    protected val provider = EmberkaiIconProvider()
 
     override fun setUp() {
         super.setUp()
@@ -122,16 +122,12 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
         }
     }
 
-    /** Asserts the artwork an upstream mapping to [path] shows: Emberkai's redraw when there is one. */
-    protected fun assertIcon(path: String, actual: Icon?) {
-        val original = "emberkai/icons/originals/$path"
-        val loader = SymbolsIconProvider::class.java.classLoader
-        assertResourceIcon(if (loader.getResource(original) != null) original else "symbols/icons/$path", actual)
-    }
+    /** Asserts the artwork a base association to [path], such as `files/yaml.svg`, shows. */
+    protected fun assertIcon(path: String, actual: Icon?) = assertResourceIcon("emberkai/icons/originals/$path", actual)
 
     protected fun assertResourceIcon(path: String, actual: Icon?) {
         assertNotNull(actual)
-        assertSame(IconLoader.getIcon("/$path", SymbolsIconProvider::class.java), actual)
+        assertSame(IconLoader.getIcon("/$path", EmberkaiIconProvider::class.java), actual)
     }
 
     protected fun assertEnvironmentBadge(
@@ -149,7 +145,7 @@ internal abstract class IconProviderTestCase : BasePlatformTestCase() {
         if (GraphicsEnvironment.isHeadless()) {
             // IconLoader may return a 1x1 placeholder in headless test runs. Check
             // the bundled SVG's declared size instead of the placeholder size.
-            val resource = SymbolsIconProvider::class.java.getResourceAsStream("/$path")
+            val resource = EmberkaiIconProvider::class.java.getResourceAsStream("/$path")
             assertNotNull("Missing icon resource: $path", resource)
             val svg = resource!!.bufferedReader().use { it.readText() }
             val root = Regex("<svg\\b([^>]*)>").find(svg)?.groupValues?.get(1)

@@ -7,9 +7,8 @@ import java.util.Properties
 
 /**
  * Colors for Emberkai's artwork. Each palette other than [EMBERKAI] ships a retinted copy of Emberkai's
- * set and of the upstream folders under `/emberkai/palettes/<id>/`, generated from the same sources:
- * every shade keeps its luminance, so icons stay as legible as Emberkai's, and takes the theme's hue.
- * Upstream file icons, mostly brand logos, keep their own colors.
+ * set under `/emberkai/palettes/<id>/`, generated from the same sources: every shade keeps its
+ * luminance, so icons stay as legible as Emberkai's, and takes the theme's hue.
  */
 internal enum class ArtworkPalette(val displayName: String, val id: String?) {
     EMBERKAI("Emberkai", null),
@@ -36,7 +35,7 @@ internal enum class ArtworkPalette(val displayName: String, val id: String?) {
 
 /**
  * Redirects artwork to the selected palette's copy. A path patcher reaches every place that loads
- * `/emberkai/icons/…` or an upstream folder (mappings, folders, stereotype badges, previews) without each
+ * `/emberkai/icons/…` (mappings, folders, stereotype badges, previews) without each
  * knowing about palettes, and installing one makes IntelliJ reload icons it already resolved.
  */
 internal object ArtworkPalettePatcher : IconPathPatcher() {
@@ -66,14 +65,9 @@ internal object ArtworkPalettePatcher : IconPathPatcher() {
         val id = palette.id ?: return null
         if (classLoader != null && classLoader !== pluginClassLoader) return null
         val relative = path.removePrefix("/")
-        val retinted = when {
-            relative.startsWith(EMBERKAI_ICONS) -> relative.removePrefix("emberkai/")
-            relative.startsWith(UPSTREAM_FOLDERS) -> relative
-            else -> return null
-        }
-        return path.removeSuffix(relative) + "emberkai/palettes/$id/" + retinted
+        if (!relative.startsWith(EMBERKAI_ICONS)) return null
+        return path.removeSuffix(relative) + "emberkai/palettes/$id/" + relative.removePrefix("emberkai/")
     }
 
     private const val EMBERKAI_ICONS = "emberkai/icons/"
-    private const val UPSTREAM_FOLDERS = "symbols/icons/folders/"
 }

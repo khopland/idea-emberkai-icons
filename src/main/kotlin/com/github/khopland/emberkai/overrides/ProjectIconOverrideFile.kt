@@ -1,5 +1,6 @@
 package com.github.khopland.emberkai.overrides
 
+import com.github.khopland.emberkai.core.IconMappings
 import java.io.IOException
 import java.io.StringReader
 import java.util.Locale
@@ -53,7 +54,7 @@ internal object ProjectIconOverrideFile {
 
     /** Only SVG or PNG resources shipped with the plugin may be referenced by absolute path. */
     fun isBundledArtwork(path: String): Boolean {
-        val trimmed = path.trim()
+        val trimmed = IconMappings.currentArtworkPath(path.trim())
         val lower = trimmed.lowercase(Locale.ROOT)
         return isBundledPath(trimmed) && (lower.endsWith(".svg") || lower.endsWith(".png")) &&
             ProjectIconOverrideFile::class.java.getResource(trimmed) != null
