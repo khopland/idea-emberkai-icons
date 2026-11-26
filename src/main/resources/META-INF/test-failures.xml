@@ -1,0 +1,13 @@
+<idea-plugin>
+    <!-- Without the test runner no failure tracker exists, so the Failing tests lens is not offered. -->
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService
+            serviceInterface="com.github.khopland.emberkai.lens.TestFailures"
+            serviceImplementation="com.github.khopland.emberkai.lens.SmTestFailures"/>
+    </extensions>
+    <projectListeners>
+        <listener
+            class="com.github.khopland.emberkai.lens.TestFailuresListener"
+            topic="com.intellij.execution.testframework.sm.runner.SMTRunnerEventsListener"/>
+    </projectListeners>
+</idea-plugin>

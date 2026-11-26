@@ -17,8 +17,9 @@ import com.intellij.openapi.roots.ProjectFileIndex
 
 /**
  * View > Emberkai Icons > Lens: one radio-style entry per lens, plus No Lens, Changed on this branch
- * when Git is available, Depends on for the selected module and the one the active lens names, and
- * an Owned by submenu with every owner named in the project's CODEOWNERS file.
+ * and Hotspots when Git is available, Failing tests when the IDE runs tests, Depends on for the
+ * selected module and the one the active lens names, and an Owned by submenu with every owner named
+ * in the project's CODEOWNERS file.
  */
 class IconLensActionGroup : ActionGroup(), DumbAware {
     private val fixed: List<AnAction> = listOf(
@@ -29,15 +30,21 @@ class IconLensActionGroup : ActionGroup(), DumbAware {
 
     private val changedOnBranch = SelectIconLensAction(ChangedOnBranchLens)
     private val hotspots = SelectIconLensAction(HotspotsLens)
+    private val failingTests = SelectIconLensAction(FailingTestsLens)
 
     override fun getChildren(event: AnActionEvent?): Array<AnAction> {
         val project = event?.project
         val children = fixed.toMutableList()
-        if (project != null && BranchChanges.getInstance(project) != null) {
+        // Lenses that follow Git and the test runner, offered only when the IDE has them.
+        val live = if (project == null) emptyList() else listOfNotNull(
+            changedOnBranch.takeIf { BranchChanges.getInstance(project) != null },
+            hotspots.takeIf { Hotspots.getInstance(project) != null },
+            failingTests.takeIf { TestFailures.getInstance(project) != null },
+        )
+        if (live.isNotEmpty()) {
             children += Separator.create()
-            children += changedOnBranch
+            children += live
         }
-        if (project != null && Hotspots.getInstance(project) != null) children += hotspots
         val moduleLenses = project?.let { moduleDependentsLenses(it, event) }.orEmpty()
         if (moduleLenses.isNotEmpty()) {
             children += Separator.create()
@@ -90,6 +97,9 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
             "Keep files changed since this branch left the default branch, including uncommitted ones, " +
                 "in full color and dim the rest of the Project view"
         HotspotsLens -> hotspotsDescription()
+        FailingTestsLens ->
+            "Keep test files with a test that failed the last time it ran in full color " +
+                "and dim the rest of the Project view"
         else -> "Keep ${lens.displayName.lowercase()} files in full color and dim the rest of the Project view"
     },
     null,
@@ -101,6 +111,7 @@ internal class SelectIconLensAction(private val lens: Lens?) : ToggleAction(
         event.presentation.isEnabled = event.project != null
         // The counts are settings, so the description follows them.
         if (lens == HotspotsLens) event.presentation.description = hotspotsDescription()
+        if (lens == FailingTestsLens) event.presentation.text = failingTestsText(event.project)
     }
 
     override fun isSelected(event: AnActionEvent): Boolean {
@@ -119,4 +130,10 @@ private fun hotspotsDescription(): String {
     val settings = EmberkaiLensSettings.getInstance()
     return "Keep the ${settings.hotspotLimit} files changed in the most commits over the last " +
         "${settings.hotspotDays} days in full color and dim the rest of the Project view"
+}
+
+/** "Failing tests", with how many files hold one once a run has failed. */
+private fun failingTestsText(project: Project?): String {
+    val count = project?.let { TestFailures.getInstance(it)?.files()?.size } ?: 0
+    return if (count == 0) FailingTestsLens.displayName else "${FailingTestsLens.displayName} ($count)"
 }
