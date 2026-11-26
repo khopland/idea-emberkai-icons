@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added Python stereotypes: Python modules get the same top-left role glyphs as TypeScript and JavaScript files. FastAPI, Flask, and Django Ninja route decorators, Django class-based views and Django REST framework views, viewsets, and `@api_view` get the web-controller square; Celery `@shared_task` and `@app.task`, Dramatiq actors, FastStream subscribers, and Django `@receiver` signal handlers the envelope; APScheduler jobs the hourglass; Django models, SQLAlchemy models with a `__tablename__`, Flask-SQLAlchemy `db.Model` classes, and SQLModel tables the cube; and pydantic-settings `BaseSettings` and Django `AppConfig` classes the toggle. In `test_*.py`, `*_test.py`, and `conftest.py`, modules that import Testcontainers get the shipping container, and modules that use FastAPI's `TestClient` or subclass Django's `TestCase` the flask. A role counts only when the module imports what it uses, and sources are read only in projects whose `pyproject.toml`, `requirements.txt`, `setup.py`, `setup.cfg`, `Pipfile`, or `manage.py` names one of those frameworks. Routes, views, listeners, and jobs join the **Emberkai: Entry points** scope and the **Entry points** lens. Follows the **Class stereotype icons** setting.
+
 ## [0.9.0] - 2026-11-12
 
 - Added a **Lenses** page under **Settings > Appearance & Behavior > Emberkai Icons**: choose how many days of commits the **Hotspots** lens counts, how many files it keeps, and how many commits make a hotspot. The defaults are unchanged (90 days, 30 files, 2 commits), and an active Hotspots lens recounts when you apply. The page also turns the **Emberkai** status bar widget on or off; when off, it leaves the status bar's menu as well.

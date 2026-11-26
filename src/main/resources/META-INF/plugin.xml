@@ -96,6 +96,7 @@
     -->
     <extensions defaultExtensionNs="com.github.khopland.symbols">
         <iconDecorator implementation="com.github.khopland.emberkai.node.NodeStereotypeDecorator"/>
+        <iconDecorator implementation="com.github.khopland.emberkai.python.PythonStereotypeDecorator"/>
         <iconDecorator implementation="com.github.khopland.emberkai.badges.EnvironmentVariantDecorator"/>
         <iconDecorator implementation="com.github.khopland.emberkai.badges.UnignoredSecretDecorator"/>
         <iconDecorator implementation="com.github.khopland.emberkai.badges.ConfigDriftDecorator"/>
@@ -118,6 +119,8 @@
         <listener class="com.github.khopland.emberkai.badges.HelmLockDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
         <listener class="com.github.khopland.emberkai.node.NodePackageListener"
+                  topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
+        <listener class="com.github.khopland.emberkai.python.PythonProjectListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
         <listener class="com.github.khopland.emberkai.badges.ConfigDriftListener"
                   topic="com.intellij.openapi.vfs.newvfs.BulkFileListener"/>
