@@ -153,6 +153,8 @@
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.tooltips.SemanticTooltipDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.lens.IconLensDecorator"/>
         <projectViewNodeDecorator implementation="com.github.khopland.emberkai.generated.GeneratedFileDecorator"/>
+        <notificationGroup id="Emberkai Icons" displayType="BALLOON"/>
+        <postStartupActivity implementation="com.github.khopland.emberkai.ui.WelcomeNotificationActivity"/>
         <statusBarWidgetFactory id="com.github.khopland.symbols.StatusBar"
                                 implementation="com.github.khopland.emberkai.statusbar.EmberkaiStatusBarWidgetFactory"/>
         <editorTabColorProvider implementation="com.github.khopland.emberkai.editor.ProductionEditorTabColorProvider"/>
