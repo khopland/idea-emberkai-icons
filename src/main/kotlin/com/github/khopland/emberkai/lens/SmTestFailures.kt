@@ -2,7 +2,6 @@ package com.github.khopland.emberkai.lens
 
 import com.intellij.execution.testframework.sm.runner.SMTRunnerEventsAdapter
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
-import com.intellij.execution.testframework.sm.runner.states.TestStateInfo
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.ReadAction
@@ -38,18 +37,12 @@ internal class SmTestFailures(private val project: Project) : TestFailures, Disp
     /** Records [test]'s result once it finishes; any thread. */
     fun finished(test: SMTestProxy) {
         val url = test.locationUrl ?: return
-        when (test.magnitudeInfo) {
-            TestStateInfo.Magnitude.FAILED_INDEX, TestStateInfo.Magnitude.ERROR_INDEX -> {
-                synchronized(lock) {
-                    // Already located by an earlier failure: the file has not moved.
-                    if (failing[url] != null) return
-                    failing[url] = null
-                    unlocated[url] = test
-                }
-                locate()
-            }
-            TestStateInfo.Magnitude.PASSED_INDEX, TestStateInfo.Magnitude.COMPLETE_INDEX,
-            TestStateInfo.Magnitude.IGNORED_INDEX, TestStateInfo.Magnitude.SKIPPED_INDEX -> {
+        // Stopped and ignored tests also count as defects, so they are asked about first.
+        when {
+            // Stopped: nothing new is known about the test.
+            test.isInterrupted -> Unit
+            // Passed, skipped, or ignored.
+            test.isPassed || test.isIgnored -> {
                 val changed = synchronized(lock) {
                     unlocated.remove(url)
                     val located = failing.containsKey(url) && failing.remove(url) != null
@@ -58,7 +51,17 @@ internal class SmTestFailures(private val project: Project) : TestFailures, Disp
                 }
                 if (changed) changed()
             }
-            // Running, terminated, or not run: nothing new is known about the test.
+            // Failed, or errored.
+            test.isDefect -> {
+                synchronized(lock) {
+                    // Already located by an earlier failure: the file has not moved.
+                    if (failing[url] != null) return
+                    failing[url] = null
+                    unlocated[url] = test
+                }
+                locate()
+            }
+            // Running, or not run.
             else -> Unit
         }
     }
