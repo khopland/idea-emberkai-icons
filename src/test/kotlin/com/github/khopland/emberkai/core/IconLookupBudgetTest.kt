@@ -34,7 +34,11 @@ internal class IconLookupBudgetTest : IconProviderTestCase() {
 
         assertTrue(
             "The corpus exercises the NestJS stereotype path",
-            files.any { IconResolver.resolve(it, project) is StereotypeBadgeIcon },
+            files.any { it.extension == "ts" && IconResolver.resolve(it, project) is StereotypeBadgeIcon },
+        )
+        assertTrue(
+            "The corpus exercises the Python stereotype path",
+            files.any { it.extension == "py" && IconResolver.resolve(it, project) is StereotypeBadgeIcon },
         )
 
         val fileCount = files.count { !it.isDirectory }
@@ -79,6 +83,13 @@ internal class IconLookupBudgetTest : IconProviderTestCase() {
             add("$node/src/orders.controller.ts", "import { Controller } from '@nestjs/common';\n@Controller('orders')\nexport class Orders {}\n")
             add("$node/src/orders.service.ts", "import { Injectable } from '@nestjs/common';\n@Injectable()\nexport class Orders {}\n")
             for (index in 0 until 10) add("$node/src/model$index.ts", "export interface Model$index { id: string }\n")
+
+            // A FastAPI service: stereotypes read pyproject.toml and the modules beside it.
+            val python = "py/svc$service"
+            add("$python/pyproject.toml", "[project]\ndependencies = [\"fastapi\", \"sqlalchemy\"]\n")
+            add("$python/app/routes.py", "from fastapi import APIRouter\nrouter = APIRouter()\n\n@router.get('/')\ndef index(): ...\n")
+            add("$python/app/models.py", "from app.db import Base\nimport sqlalchemy\n\nclass Order(Base):\n    __tablename__ = 'orders'\n")
+            for (index in 0 until 10) add("$python/app/util$index.py", "def helper$index():\n    return $index\n")
         }
 
         val root = myFixture.tempDirFixture.findOrCreateDir("")

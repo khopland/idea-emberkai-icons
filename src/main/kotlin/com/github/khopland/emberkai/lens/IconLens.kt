@@ -110,3 +110,14 @@ internal data object HotspotsLens : Lens {
     override fun contains(file: VirtualFile, project: Project): Boolean =
         !file.isDirectory && Hotspots.getInstance(project)?.files()?.contains(file) == true
 }
+
+/**
+ * Test files with a test that failed the last time it ran in this IDE session: what is still broken
+ * after a large run. Membership comes from [TestFailures], which follows the IDE's test runner.
+ */
+internal data object FailingTestsLens : Lens {
+    override val displayName: String get() = "Failing tests"
+
+    override fun contains(file: VirtualFile, project: Project): Boolean =
+        !file.isDirectory && TestFailures.getInstance(project)?.files()?.contains(file) == true
+}

@@ -32,9 +32,11 @@ dependencies {
         intellijIdea(providers.gradleProperty("platformVersion"))
         bundledPlugin("com.intellij.java")
         bundledPlugin("Git4Idea")
-        // 263 moved VCS out of the core into its own plugin, so -PplatformVersion=2026.3 needs it on the classpath.
+        // 263 moved VCS and the test runner out of the core into their own plugins, so
+        // -PplatformVersion=2026.3 needs them on the classpath.
         if (providers.gradleProperty("platformVersion").get() >= "2026.3") {
             bundledPlugin("com.intellij.platform.vcs")
+            bundledPlugin("com.intellij.platform.testRunner")
         }
         testFramework(TestFrameworkType.Platform)
         testFramework(TestFrameworkType.Plugin.Java)

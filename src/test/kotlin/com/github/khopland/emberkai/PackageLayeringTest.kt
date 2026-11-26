@@ -15,7 +15,7 @@ internal class PackageLayeringTest : TestCase() {
         // Resolving file and folder icons.
         setOf("core", "rules", "folders", "accents", "overrides", "generated"),
         // Badges, markers, and the project facts behind them.
-        setOf("badges", "spring", "run", "node", "ownership", "git", "tooltips", "stereotypes", "scopes"),
+        setOf("badges", "spring", "run", "node", "python", "ownership", "git", "tooltips", "stereotypes", "scopes"),
         // Features with their own settings pages.
         setOf("lens", "editor"),
         // Settings pages, menus, dialogs, and the status bar, which may use everything.

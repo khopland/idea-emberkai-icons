@@ -7,6 +7,7 @@ import com.github.khopland.emberkai.generated.GeneratedFiles
 import com.github.khopland.emberkai.ownership.CodeOwners
 import com.github.khopland.emberkai.ownership.CodeOwnersRule
 import com.github.khopland.emberkai.node.NodeStereotypes
+import com.github.khopland.emberkai.python.PythonStereotypes
 import com.github.khopland.emberkai.stereotypes.ClassStereotypes
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ModalityState
@@ -44,7 +45,8 @@ internal enum class EmberkaiScope(val displayName: String, private val categorie
         if (file.isDirectory || !file.isValid || project.isDisposed) return false
         if (this == PRODUCTION_CONFIG) return EnvironmentVariant.fromFile(file) == EnvironmentVariant.PRODUCTION
         if (this == ENTRY_POINTS) {
-            return NodeStereotypes.isEntryPoint(file, project) || ClassStereotypes.isEntryPoint(file, project)
+            return NodeStereotypes.isEntryPoint(file, project) || PythonStereotypes.isEntryPoint(file, project) ||
+                ClassStereotypes.isEntryPoint(file, project)
         }
         if (this == GENERATED) return runReadActionBlocking { GeneratedFiles.reason(file, project) } != null
         // Rules read VFS children and cached documents; Find in Files may call from a pooled thread.

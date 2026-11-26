@@ -85,7 +85,7 @@ internal object IconLegend {
             ),
             LegendSection(
                 "Top-left: what a source file does",
-                "The same roles as a small glyph on TypeScript and JavaScript file icons.",
+                "The same roles as a small glyph on TypeScript, JavaScript, and Python file icons.",
                 badges(BadgeSlot.ROLE, all),
             ),
             LegendSection(

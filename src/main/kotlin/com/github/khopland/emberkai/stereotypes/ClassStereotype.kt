@@ -18,7 +18,7 @@ import javax.swing.Icon
 
 /**
  * Spring, Quarkus, Micronaut, and JPA roles, in priority order. A Java or Kotlin class with a role
- * shows [classIcon] in place of the native type icon; TypeScript and JavaScript sources carry the
+ * shows [classIcon] in place of the native type icon; TypeScript, JavaScript, and Python sources carry the
  * small [icon] glyph in the top-left corner of their file icon. Entry points, where work enters a service from outside it, outrank the roles a
  * class plays inside it, so a service with a scheduled method shows the hourglass. Test kinds come
  * last, most expensive first, so a slice that starts containers shows the container.
