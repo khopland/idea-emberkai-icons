@@ -8,68 +8,58 @@
     <name>Emberkai Icons</name>
     <vendor url="https://github.com/khopland/idea-emberkai-icons">khopland</vendor>
     <description><![CDATA[
-        <p>Emberkai Icons gives JetBrains IDEs file and folder icons in one faceted style,
-        as a companion to the Emberkai theme.</p>
-        <p>Java and Kotlin declarations keep their native IntelliJ type icons and badges.</p>
-        <p>Gradle Kotlin build scripts and version catalogs use Gradle icons.
-        Spring Boot configuration and Helm charts have context-aware icons, and Spring XML
-        configuration uses Emberkai artwork. Spring Modulith package locks are painted onto
-        Emberkai folders when that plugin is installed.</p>
-        <p>Includes CI pipelines (including CircleCI, Tekton, and Bazel), Ansible, infrastructure as code
-        (including Packer, Vagrant, and Nomad), database migrations, OpenAPI and AsyncAPI contracts, Avro schemas,
-        Kubernetes, Kustomize, Flux, Argo CD, and Skaffold, Sealed Secrets, External Secrets, and SOPS, Quarkus, Micronaut, and Ktor configuration,
-        JVM quality tooling, developer-tool configuration, and test assets.</p>
-        <p>Project folders retain source/test colors, resource and
-        package markers, and blue module/source-set badges, including Kotlin Multiplatform.
-        Opt-in module-aware accents give every IntelliJ module a stable color that service roots,
-        source roots, packages, and their descendants share. Opt-in JVM architecture folders give
-        controller, service, repository, domain, and similar packages distinct icons.</p>
-        <p>Production, staging, test, and local variants of Spring profiles, Docker Compose files,
-        Helm values, and <code>.env</code> files get shape-and-color environment badges, and so do
-        environment folders such as <code>overlays/production/</code>, along with the configuration files inside them.
-        Production files open with a red-tinted editor tab and a warning banner, each switched separately
-        under <b>Emberkai Icons | Editor Warnings</b>.
-        Private keys, keystores, <code>.env</code> files, and similar credentials that sit in a VCS root
-        without being ignored get a red stop-sign warning badge, and so do Kubernetes manifests that hold a
-        plaintext Secret. Spring profile files activated by the
-        selected run configuration get a ring-and-dot live marker, and module folders with a live run or
-        debug session get a running marker that names the configuration and Spring Boot port.</p>
-        <p>An amber warning badge marks problems that would otherwise surface late: Flyway migrations that
-        share a version with a sibling, or that this branch added below the default branch's latest version;
-        Liquibase changelogs that repeat a changeSet; a Helm <code>Chart.lock</code> that is out of date with
-        <code>Chart.yaml</code>; workflows, Dockerfiles, and manifests with unpinned actions or <code>latest</code> images;
-        and profile, Helm values, and <code>.env</code> variants that lack a key all their siblings define.
-        Generated files get a grey <i>generated</i> hint, and those marked by their header are reported to the IDE
-        as generated, so it warns before you edit them.</p>
-        <p>Spring, Quarkus, Micronaut, and JPA classes show a stereotype icon in place of the letter on the
-        native Java/Kotlin class icon, under the IDE's own marks: applications, controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
-        configuration classes, and entities. Test classes show whether they start containers, the whole
-        application, or a Spring Boot test slice. Next.js routes and NestJS controllers, gateways, jobs, services,
-        modules, and TypeORM entities get the same roles as a small badge on their TypeScript and JavaScript file icons.</p>
-        <p>Configure everything under <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>
-        with a live preview, including accessibility modes: a colorblind-friendly palette,
-        high-contrast markers, monochrome folders, and reduced folder color. Quick toggles live in
-        <b>View | Emberkai Icons</b>.</p>
-        <p>Each corner of an icon means one thing: top-left what a class does, top-right something to act on
-        or live now, bottom-left the environment, bottom-right the artwork. <b>View | Emberkai Icons | Icon Legend</b>
-        shows every mark with its meaning. Right-click a file or folder in the Project view, or an editor tab,
-        and choose <b>Explain This Icon</b> to see what its marks mean and which rule or
-        mapping selected it. Project view tooltips describe recognized tool files, project roles,
-        environment variants, and module accents. Run <b>Tools | Audit Project Icon Coverage</b>
-        to find files that still use generic icons.</p>
-        <p>Emberkai scopes such as <b>Emberkai: Database migrations</b> and <b>Emberkai: Production config</b>
-        use the same recognition in Find in Files, the Project view, inspections, and File Colors.</p>
-        <p>Choose a lens under <b>View | Emberkai Icons | Lens</b>, such as <b>Production blast radius</b>,
-        <b>Infrastructure</b>, or <b>Entry points</b>, to keep matching files in full color and dim the rest of the Project view.
-        <b>Changed on this branch</b> highlights the files the current Git branch touches, including uncommitted ones.
-        <b>Hotspots</b> highlights the files changed in the most commits over the last 90 days, adjustable under <b>Emberkai Icons | Lenses</b>,
-        and <b>Depends on</b> highlights a module and every module that depends on it.
-        A status bar widget shows the active lens and Spring profile and switches either with one click.</p>
-        <p>Repositories with a CODEOWNERS file show each file's owners in Project view tooltips and
-        <b>Explain This Icon</b>, with an <b>Emberkai: Owned by</b> scope and lens for every owner.
-        A <b>No Owner</b> lens and scope show files CODEOWNERS leaves unowned, and an inspection flags
-        CODEOWNERS lines that match nothing.
-        <b>Tools | Find Reviewers for This Branch</b> lists the owners of every file the current branch changes.</p>
+        <p>File and folder icons that also show what each file does and whether it needs your attention.
+        More than 450 icons, all drawn in one faceted style as a companion to the Emberkai theme.
+        Java and Kotlin keep IntelliJ's own type icons and markers.</p>
+
+        <p><b>Class roles at a glance</b></p>
+        <ul>
+          <li>Spring, Quarkus, Micronaut, and JPA classes show their role in place of the letter in a circle:
+          applications, controllers, message listeners, scheduled jobs, HTTP clients, services, repositories,
+          configuration, and entities.</li>
+          <li>Test classes show what they start: containers, the whole application, or a Spring Boot test slice.</li>
+          <li>Next.js and NestJS files, and FastAPI, Flask, Django, Celery, and SQLAlchemy modules, get the same
+          roles as a small corner glyph.</li>
+        </ul>
+
+        <p><b>Production and problems stand out</b></p>
+        <ul>
+          <li>Production, staging, test, and local variants of Spring profiles, Docker Compose files, Helm values,
+          <code>.env</code> files, and environment folders such as <code>overlays/production/</code> get a
+          shape-and-color badge. Production files open with a red editor tab and a warning banner.</li>
+          <li>A red badge marks private keys, keystores, <code>.env</code> files, and registry tokens that sit in
+          a VCS root without being ignored, and Kubernetes manifests with a plaintext Secret.</li>
+          <li>An amber badge marks Flyway versions that collide or land below the default branch, repeated
+          Liquibase changeSets, a stale Helm <code>Chart.lock</code>, unpinned GitHub Actions and
+          <code>latest</code> images, and config variants that lack a key their siblings define.</li>
+          <li>Live markers show the Spring profiles the selected run configuration activates, and which module
+          is running or being debugged, with its port.</li>
+        </ul>
+
+        <p><b>Lenses</b></p>
+        <p><b>View | Emberkai Icons | Lens</b> keeps the files that answer one question in full color and dims the
+        rest of the Project view: <b>Production blast radius</b>, <b>Entry points</b>, <b>Infrastructure</b>,
+        <b>API contracts</b>, <b>Database migrations</b>, <b>Changed on this branch</b>, <b>Hotspots</b>,
+        <b>Failing tests</b>, <b>Depends on</b> a module, and <b>Owned by</b> any CODEOWNERS owner.
+        The same recognition powers <b>Emberkai</b> scopes for Find in Files, inspections, and File Colors.</p>
+
+        <p><b>Recognized by content, not just name</b></p>
+        <p>Kubernetes manifests by <code>kind</code>, Helm charts, Kustomize, Flux, Argo CD, Terraform and
+        OpenTofu, Ansible, CloudFormation, OpenAPI and AsyncAPI contracts, Avro schemas, Flyway and Liquibase
+        migrations, SOPS, Sealed Secrets, and External Secrets, Spring, Quarkus, Micronaut, and Ktor
+        configuration, CI pipelines from GitHub Actions to Tekton and Bazel, and dozens of developer tools.</p>
+
+        <p><b>Easy to learn, easy to tune</b></p>
+        <ul>
+          <li>Each corner of an icon means one thing. <b>View | Emberkai Icons | Icon Legend</b> shows every mark,
+          and <b>Explain This Icon</b> on any file says what its marks mean and which rule chose it.</li>
+          <li>Pick <b>Icons only</b>, <b>Recommended</b>, or <b>Everything</b> under
+          <b>Settings | Appearance &amp; Behavior | Emberkai Icons</b>, with a live preview, Catppuccin, Nord, and
+          Gruvbox palettes, and colorblind-friendly, high-contrast, monochrome, and reduced-color folder modes.</li>
+          <li>CODEOWNERS owners appear in tooltips, and <b>Tools | Find Reviewers for This Branch</b> lists the
+          owners of every file the branch changes.</li>
+        </ul>
+
         <p>File associations derived from
         <a href="https://github.com/miguelsolorio/vscode-symbols">vscode-symbols</a> by Miguel Solorio.</p>
     ]]></description>
