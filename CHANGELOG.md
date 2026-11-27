@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-27
+
 - Added Python stereotypes: Python modules get the same top-left role glyphs as TypeScript and JavaScript files. FastAPI, Flask, and Django Ninja route decorators, Django class-based views and Django REST framework views, viewsets, and `@api_view` get the web-controller square; Celery `@shared_task` and `@app.task`, Dramatiq actors, FastStream subscribers, and Django `@receiver` signal handlers the envelope; APScheduler jobs the hourglass; Django models, SQLAlchemy models with a `__tablename__`, Flask-SQLAlchemy `db.Model` classes, and SQLModel tables the cube; and pydantic-settings `BaseSettings` and Django `AppConfig` classes the toggle. In `test_*.py`, `*_test.py`, and `conftest.py`, modules that import Testcontainers get the shipping container, and modules that use FastAPI's `TestClient` or subclass Django's `TestCase` the flask. A role counts only when the module imports what it uses, and sources are read only in projects whose `pyproject.toml`, `requirements.txt`, `setup.py`, `setup.cfg`, `Pipfile`, or `manage.py` names one of those frameworks. Routes, views, listeners, and jobs join the **Emberkai: Entry points** scope and the **Entry points** lens. Follows the **Class stereotype icons** setting.
 - Added the **Failing tests** lens (**View > Emberkai Icons > Lens**): test files with a test that failed the last time it ran in the IDE keep full color, and the rest of the Project view is dimmed. A test that passes again, in the same run or a later one, leaves the lens, and so does one that is skipped or ignored; a stopped run changes nothing. It follows the IDE's test runner, so it works with JUnit, Kotest, Jest, pytest, and any other framework the IDE runs, and the menu entry counts the files with a failing test.
 - The first project opened after installing the plugin shows a short introduction with links to the icon legend and the settings, and a choice between **Icons only** and **Everything**. It is shown once, and not at all to users who already changed the features.
@@ -132,7 +134,8 @@
 - Established the Symbols-based Java/Kotlin icon provider, checked-in SVG assets, and a minimal Gradle build.
 - Added upstream icon, license, and attribution updates with a check mode and manual CI workflow; included original icon notices under the MIT license.
 
-[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/khopland/idea-emberkai-icons/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/khopland/idea-emberkai-icons/compare/v0.6.1...v0.7.0
