@@ -240,8 +240,45 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
     fun testLookalikeAnnotationsAreIgnored() {
         assertJava(null, "import com.acme.Service;", "@Service")
         assertJava(null, "", "@Service")
-        assertJava(null, "import org.springframework.stereotype.Component;", "@Component")
+        assertJava(null, "import com.acme.Component;", "@Component")
         assertJava(null, "import org.springframework.stereotype.*;", "@Deprecated")
+    }
+
+    fun testComponentIsTheFallbackStereotype() {
+        assertJava(ClassStereotype.COMPONENT, "import org.springframework.stereotype.Component;", "@Component")
+        assertJava(ClassStereotype.COMPONENT, "import org.springframework.stereotype.*;", "@Component")
+        assertJava(ClassStereotype.COMPONENT, "", "@org.springframework.stereotype.Component")
+        assertJava(ClassStereotype.COMPONENT, "import org.springframework.stereotype.Component;", "@Component(\"orders\")")
+
+        val service = javaFile(
+            "Billing",
+            "import org.springframework.stereotype.Component;\nimport org.springframework.stereotype.Service;",
+            "@Component @Service public class Billing {}",
+        )
+        assertEquals(ClassStereotype.SERVICE, ClassStereotypes.fileStereotype(service)?.stereotype)
+        assertEquals("@Service", ClassStereotypes.fileStereotype(service)?.evidence)
+
+        val repository = javaFile(
+            "OrderRepository",
+            "import org.springframework.stereotype.Component;\nimport org.springframework.data.jpa.repository.JpaRepository;",
+            "@Component public interface OrderRepository extends JpaRepository<Order, Long> {}",
+        )
+        assertEquals(ClassStereotype.REPOSITORY, ClassStereotypes.fileStereotype(repository)?.stereotype)
+
+        val job = javaFile(
+            "Cleanup",
+            "import org.springframework.stereotype.Component;\nimport org.springframework.scheduling.annotation.Scheduled;",
+            "@Component public class Cleanup {\n  @Scheduled void purge() {}\n}",
+        )
+        assertEquals(ClassStereotype.SCHEDULED, ClassStereotypes.fileStereotype(job)?.stereotype)
+
+        val alias = kotlinFile(
+            "OrderEventPublisher",
+            "import org.springframework.stereotype.Component as Bean",
+            "@Bean\nclass OrderEventPublisher",
+        )
+        assertEquals(ClassStereotype.COMPONENT, ClassStereotypes.badgeFor(alias.declarations.single())?.stereotype)
+        assertEquals("@Bean", ClassStereotypes.badgeFor(alias.declarations.single())?.evidence)
     }
 
     fun testJavaClassIconSwapsTheTypeIconAndKeepsNativeMarks() {
@@ -260,6 +297,13 @@ internal class ClassStereotypeTest : IconProviderTestCase() {
         val finalLayers = layers(finalClass.getIcon(Iconable.ICON_FLAG_VISIBILITY))
         assertEquals(ClassStereotype.SERVICE.classIcon, finalLayers.first())
         assertTrue("Java's final mark is layered over the stereotype icon", AllIcons.Nodes.FinalMark in finalLayers)
+
+        val bean = javaFile(
+            "OrderEventPublisher",
+            "import org.springframework.stereotype.Component;",
+            "@Component public class OrderEventPublisher {}",
+        ).classes.single()
+        assertEquals(ClassStereotype.COMPONENT.classIcon, layers(bean.getIcon(Iconable.ICON_FLAG_VISIBILITY)).first())
 
         settings.setEnabled(IconRuleCategory.STEREOTYPE_BADGES, false)
         assertNull(JavaStereotypeIconProvider().getIcon(psiClass, Iconable.ICON_FLAG_VISIBILITY))

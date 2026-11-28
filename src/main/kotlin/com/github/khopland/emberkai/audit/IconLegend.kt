@@ -200,6 +200,7 @@ internal object IconLegend {
         ClassStereotype.CONTAINER_TEST -> "A test that starts containers, such as @Testcontainers."
         ClassStereotype.APPLICATION_TEST -> "A test that starts the whole application, such as @SpringBootTest."
         ClassStereotype.SLICE_TEST -> "A test that starts part of it, such as @WebMvcTest or @DataJpaTest."
+        ClassStereotype.COMPONENT -> "A general Spring bean, such as @Component, with no more specific role."
     }
 
     private fun environmentName(variant: EnvironmentVariant): String =

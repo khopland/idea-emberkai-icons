@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added an indigo puzzle-piece icon for Java and Kotlin classes annotated directly with Spring's `@Component`. It is the last stereotype checked, so beans with a more specific role keep their existing icon, and look-alikes from other packages still get no stereotype. Follows the **Class stereotype icons** setting.
+
 ## [0.10.0] - 2026-11-27
 
 - Added Python stereotypes: Python modules get the same top-left role glyphs as TypeScript and JavaScript files. FastAPI, Flask, and Django Ninja route decorators, Django class-based views and Django REST framework views, viewsets, and `@api_view` get the web-controller square; Celery `@shared_task` and `@app.task`, Dramatiq actors, FastStream subscribers, and Django `@receiver` signal handlers the envelope; APScheduler jobs the hourglass; Django models, SQLAlchemy models with a `__tablename__`, Flask-SQLAlchemy `db.Model` classes, and SQLModel tables the cube; and pydantic-settings `BaseSettings` and Django `AppConfig` classes the toggle. In `test_*.py`, `*_test.py`, and `conftest.py`, modules that import Testcontainers get the shipping container, and modules that use FastAPI's `TestClient` or subclass Django's `TestCase` the flask. A role counts only when the module imports what it uses, and sources are read only in projects whose `pyproject.toml`, `requirements.txt`, `setup.py`, `setup.cfg`, `Pipfile`, or `manage.py` names one of those frameworks. Routes, views, listeners, and jobs join the **Emberkai: Entry points** scope and the **Entry points** lens. Follows the **Class stereotype icons** setting.

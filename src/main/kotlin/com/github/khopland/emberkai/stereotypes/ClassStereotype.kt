@@ -21,7 +21,8 @@ import javax.swing.Icon
  * shows [classIcon] in place of the native type icon; TypeScript, JavaScript, and Python sources carry the
  * small [icon] glyph in the top-left corner of their file icon. Entry points, where work enters a service from outside it, outrank the roles a
  * class plays inside it, so a service with a scheduled method shows the hourglass. Test kinds come
- * last, most expensive first, so a slice that starts containers shows the container.
+ * last, most expensive first, so a slice that starts containers shows the container. A plain Spring
+ * `@Component` comes after all of them: it is the fallback for a bean with no more specific role.
  */
 internal enum class ClassStereotype(val displayName: String, icon: String, val isEntryPoint: Boolean = false) {
     APPLICATION("Spring Boot application", "application", isEntryPoint = true),
@@ -35,7 +36,8 @@ internal enum class ClassStereotype(val displayName: String, icon: String, val i
     ENTITY("Persistent entity", "entity"),
     CONTAINER_TEST("Testcontainers test", "container-test"),
     APPLICATION_TEST("Full application test", "application-test"),
-    SLICE_TEST("Test slice", "slice-test");
+    SLICE_TEST("Test slice", "slice-test"),
+    COMPONENT("Spring component", "component");
 
     /** The 7px glyph painted over file artwork and folder badges. */
     val icon: Icon = IconLoader.getIcon("/emberkai/icons/stereotypes/$icon.svg", ClassStereotype::class.java)
@@ -94,6 +96,7 @@ internal enum class ClassStereotype(val displayName: String, icon: String, val i
             "io.micronaut.data.r2dbc.annotation.R2dbcRepository" to REPOSITORY,
             "org.springframework.stereotype.Service" to SERVICE,
             "jakarta.enterprise.context.ApplicationScoped" to SERVICE,
+            "org.springframework.stereotype.Component" to COMPONENT,
             "org.springframework.context.annotation.Configuration" to CONFIGURATION,
             "org.springframework.boot.autoconfigure.AutoConfiguration" to CONFIGURATION,
             "org.springframework.boot.context.properties.ConfigurationProperties" to CONFIGURATION,
